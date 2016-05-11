@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 class Processor
 {
     /**
-     * @var Builder
+     * @var QueryBuilder
      */
     protected $builder;
 
@@ -28,9 +28,9 @@ class Processor
     /**
      * Constructor.
      *
-     * @param Builder $builder
+     * @param QueryBuilder $builder
      */
-    public function __construct(Builder $builder)
+    public function __construct(QueryBuilder $builder)
     {
         $this->builder = $builder;
         $this->connection = $builder->getConnection();

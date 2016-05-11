@@ -3,12 +3,12 @@
 namespace chrmorandi\ldap\Models;
 
 use chrmorandi\ldap\interfaces\SchemaInterface;
-use chrmorandi\ldap\Query\Builder;
+use chrmorandi\ldap\Query\QueryBuilder;
 
 class Factory
 {
     /**
-     * @var Builder
+     * @var QueryBuilder
      */
     protected $query;
 
@@ -20,10 +20,10 @@ class Factory
     /**
      * Constructor.
      *
-     * @param Builder         $builder
+     * @param QueryBuilder         $builder
      * @param SchemaInterface $schema
      */
-    public function __construct(Builder $builder, SchemaInterface $schema)
+    public function __construct(QueryBuilder $builder, SchemaInterface $schema)
     {
         $this->setQuery($builder);
         $this->setSchema($schema);
@@ -32,9 +32,9 @@ class Factory
     /**
      * Sets the current query builder.
      *
-     * @param Builder $builder
+     * @param QueryBuilder $builder
      */
-    public function setQuery(Builder $builder)
+    public function setQuery(QueryBuilder $builder)
     {
         $this->query = $builder;
     }

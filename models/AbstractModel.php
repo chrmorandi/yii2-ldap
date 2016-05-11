@@ -7,7 +7,7 @@ use chrmorandi\ldap\exceptions\AdldapException;
 use chrmorandi\ldap\exceptions\ModelNotFoundException;
 use chrmorandi\ldap\objects\BatchModification;
 use chrmorandi\ldap\objects\DistinguishedName;
-use chrmorandi\ldap\query\Builder;
+use chrmorandi\ldap\query\QueryBuilder;
 use ArrayAccess;
 use JsonSerializable;
 
@@ -32,7 +32,7 @@ abstract class AbstractModel implements ArrayAccess, JsonSerializable
     /**
      * The current query builder instance.
      *
-     * @var Builder
+     * @var QueryBuilder
      */
     protected $query;
 
@@ -68,9 +68,9 @@ abstract class AbstractModel implements ArrayAccess, JsonSerializable
      * Constructor.
      *
      * @param array   $attributes
-     * @param Builder $builder
+     * @param QueryBuilder $builder
      */
-    public function __construct(array $attributes, Builder $builder)
+    public function __construct(array $attributes, QueryBuilder $builder)
     {
         $this->fill($attributes);
 
@@ -106,9 +106,9 @@ abstract class AbstractModel implements ArrayAccess, JsonSerializable
     /**
      * Sets the current query builder.
      *
-     * @param Builder $builder
+     * @param QueryBuilder $builder
      */
-    public function setQuery(Builder $builder)
+    public function setQuery(QueryBuilder $builder)
     {
         $this->query = $builder;
     }
@@ -116,7 +116,7 @@ abstract class AbstractModel implements ArrayAccess, JsonSerializable
     /**
      * Returns the current query builder.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function getQuery()
     {
@@ -126,7 +126,7 @@ abstract class AbstractModel implements ArrayAccess, JsonSerializable
     /**
      * Returns a new query builder instance.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function newQuery()
     {

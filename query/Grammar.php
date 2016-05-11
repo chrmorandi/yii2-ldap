@@ -4,7 +4,7 @@ namespace chrmorandi\ldap\Query;
 
 use chrmorandi\ldap\Query\Bindings\Where;
 
-class Grammar
+trait GrammarTrait
 {
     /**
      * Wraps a query string in brackets.
@@ -29,7 +29,7 @@ class Grammar
      *
      * @return string
      */
-    public function compileQuery(Builder $builder)
+    public function compileQuery(QueryBuilder $builder)
     {
         // Retrieve the query 'where' bindings.
         $wheres = $builder->getWheres();

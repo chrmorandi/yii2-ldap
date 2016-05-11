@@ -6,7 +6,7 @@ use chrmorandi\ldap\Configuration;
 use chrmorandi\ldap\interfaces\ConnectionInterface;
 use chrmorandi\ldap\interfaces\SchemaInterface;
 use chrmorandi\ldap\models\AbstractModel;
-use chrmorandi\ldap\query\Builder;
+use chrmorandi\ldap\query\QueryBuilder;
 use chrmorandi\ldap\query\Grammar;
 
 class Factory
@@ -24,7 +24,7 @@ class Factory
     /**
      * Stores the current query builder instance.
      *
-     * @var Builder
+     * @var QueryBuilder
      */
     protected $query;
 
@@ -54,9 +54,9 @@ class Factory
     /**
      * Sets the query property.
      *
-     * @param Builder $query
+     * @param QueryBuilder $query
      */
-    public function setQuery(Builder $query)
+    public function setQuery(QueryBuilder $query)
     {
         $this->query = $query;
     }
@@ -76,12 +76,12 @@ class Factory
      *
      * @param string $baseDn
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function newQuery($baseDn = '')
     {
         // Create a new Builder.
-        $builder = new Builder($this->connection, $this->newGrammar(), $this->schema);
+        $builder = new QueryBuilder($this->connection, $this->newGrammar(), $this->schema);
 
         // Set the Base DN on the Builder.
         $builder->setDn($baseDn);
@@ -93,7 +93,7 @@ class Factory
     /**
      * Returns the current query Builder instance.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function getQuery()
     {
@@ -125,7 +125,7 @@ class Factory
     /**
      * Returns a query builder limited to users.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function users()
     {
@@ -139,7 +139,7 @@ class Factory
     /**
      * Returns a query builder limited to printers.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function printers()
     {
@@ -151,7 +151,7 @@ class Factory
     /**
      * Returns a query builder limited to organizational units.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function ous()
     {
@@ -163,7 +163,7 @@ class Factory
     /**
      * Returns a query builder limited to groups.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function groups()
     {
@@ -175,7 +175,7 @@ class Factory
     /**
      * Returns a query builder limited to exchange servers.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function containers()
     {
@@ -187,7 +187,7 @@ class Factory
     /**
      * Returns a query builder limited to exchange servers.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function contacts()
     {
@@ -199,7 +199,7 @@ class Factory
     /**
      * Returns a query builder limited to exchange servers.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function computers()
     {
@@ -211,7 +211,7 @@ class Factory
     /**
      * Returns a query builder limited to the root DSE scope.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function getRootDse()
     {

@@ -27,8 +27,13 @@ use yii\base\Object;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0.0
  */
-class Builder extends Object
+class QueryBuilder extends Object
 {
+    /*
+     * Build filter in ldap required format.
+     */
+    use GrammarTrait;
+    
     /**
      * Stores the bool to determine whether or
      * not the current query is paginated.
@@ -144,16 +149,6 @@ class Builder extends Object
     }
 
     /**
-     * Sets the current filter grammar.
-     *
-     * @param Grammar $grammar
-     */
-    public function setGrammar(Grammar $grammar)
-    {
-        $this->grammar = $grammar;
-    }
-
-    /**
      * Sets the current schema.
      *
      * @param SchemaInterface $schema
@@ -176,11 +171,11 @@ class Builder extends Object
     /**
      * Returns a new Query Builder instance.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function newInstance()
     {
-        $new = new static($this->conn, $this->grammar, $this->schema);
+        $new = new static($this->conn, $this->schema);
 
         // We'll set the base DN of the new Builder so
         // devs don't need to do this manually.
@@ -196,17 +191,7 @@ class Builder extends Object
      */
     public function get()
     {
-        return $this->query($this->grammar->compileQuery($this));
-    }
-
-    /**
-     * Returns the current Grammar instance.
-     *
-     * @return Grammar
-     */
-    public function getGrammar()
-    {
-        return $this->grammar;
+        return $this->build($this->compileQuery($this));
     }
 
     /**
@@ -235,7 +220,7 @@ class Builder extends Object
      *
      * @param string|null $dn
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function setDn($dn = null)
     {
@@ -251,7 +236,7 @@ class Builder extends Object
      *
      * @return array|\Illuminate\Support\Collection
      */
-    public function query($query)
+    public function build($query)
     {
         $dn = $this->getDn();
 
@@ -294,7 +279,7 @@ class Builder extends Object
             $this->conn->controlPagedResult($perPage, $isCritical, $cookie);
 
             // Run the search.
-            $results = $this->conn->search($this->getDn(), $this->grammar->compileQuery($this), $this->getSelects());
+            $results = $this->conn->search($this->getDn(), $this->compileQuery($this), $this->getSelects());
 
             if ($results) {
                 $this->conn->controlPagedResultResponse($results, $cookie);
@@ -504,7 +489,7 @@ class Builder extends Object
      *
      * @param array|string $fields
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function select($fields = [])
     {
@@ -522,7 +507,7 @@ class Builder extends Object
      *
      * @param array|string $filters
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function rawFilter($filters = [])
     {
@@ -543,7 +528,7 @@ class Builder extends Object
      * @param string $value
      * @param string $type
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function where($field, $operator = null, $value = null, $type = 'where')
     {
@@ -583,7 +568,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function whereEquals($field, $value)
     {
@@ -598,7 +583,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function whereApproximatelyEquals($field, $value)
     {
@@ -612,7 +597,7 @@ class Builder extends Object
      *
      * @param string $field
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function whereHas($field)
     {
@@ -626,7 +611,7 @@ class Builder extends Object
      *
      * @param string $field
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function whereNotHas($field)
     {
@@ -641,7 +626,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function whereContains($field, $value)
     {
@@ -656,7 +641,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function whereNotContains($field, $value)
     {
@@ -671,7 +656,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function whereStartsWith($field, $value)
     {
@@ -686,7 +671,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function whereNotStartsWith($field, $value)
     {
@@ -701,7 +686,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function whereEndsWith($field, $value)
     {
@@ -713,7 +698,7 @@ class Builder extends Object
     /**
      * Adds a enabled filter to the current query.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function whereEnabled()
     {
@@ -725,7 +710,7 @@ class Builder extends Object
     /**
      * Adds a disabled filter to the current query.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function whereDisabled()
     {
@@ -741,7 +726,7 @@ class Builder extends Object
      * @param string|null $operator
      * @param string|null $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function orWhere($field, $operator = null, $value = null)
     {
@@ -753,7 +738,7 @@ class Builder extends Object
      *
      * @param string $field
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function orWhereHas($field)
     {
@@ -767,7 +752,7 @@ class Builder extends Object
      *
      * @param string $field
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function orWhereNotHas($field)
     {
@@ -782,7 +767,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function orWhereEquals($field, $value)
     {
@@ -797,7 +782,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function orWhereApproximatelyEquals($field, $value)
     {
@@ -812,7 +797,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function orWhereContains($field, $value)
     {
@@ -827,7 +812,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function orWhereNotContains($field, $value)
     {
@@ -842,7 +827,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function orWhereStartsWith($field, $value)
     {
@@ -857,7 +842,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function orWhereNotStartsWith($field, $value)
     {
@@ -872,7 +857,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function orWhereEndsWith($field, $value)
     {
@@ -887,7 +872,7 @@ class Builder extends Object
      * @param string $field
      * @param string $value
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function orWhereNotEndsWith($field, $value)
     {
@@ -981,7 +966,7 @@ class Builder extends Object
      * @param string   $direction
      * @param int|null $flags
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function sortBy($field, $direction = 'asc', $flags = null)
     {
@@ -1009,7 +994,7 @@ class Builder extends Object
      *
      * @param bool $recursive
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function recursive($recursive = true)
     {
@@ -1025,7 +1010,7 @@ class Builder extends Object
      *
      * @param bool $read
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function read($read = true)
     {
@@ -1041,7 +1026,7 @@ class Builder extends Object
      *
      * @param bool $raw
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function raw($raw = true)
     {
@@ -1121,7 +1106,7 @@ class Builder extends Object
      *
      * @throws InvalidArgumentException
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function addBinding(AbstractBinding $value, $type = 'where')
     {
@@ -1137,7 +1122,7 @@ class Builder extends Object
     /**
      * Clears all query bindings.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     public function clearBindings()
     {

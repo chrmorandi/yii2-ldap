@@ -2,7 +2,7 @@
 
 namespace chrmorandi\ldap;
 
-use chrmorandi\ldap\Query\Builder;
+use chrmorandi\ldap\Query\QueryBuilder;
 use yii\base\Component;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveQueryTrait;
@@ -80,7 +80,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
     /**
      * Stores the current query builder instance.
      *
-     * @var Builder
+     * @var QueryBuilder
      */
     protected $query;
     
@@ -122,7 +122,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
         }
         
         // Create a new Builder.
-        $this->query = new Builder($db, $this);
+        $this->query = new QueryBuilder($db, $this);
 
         return $this->query->get();
     }
@@ -146,7 +146,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
         }
         
         // Create a new Builder.
-        $this->query = new Builder($db, $this);
+        $this->query = new QueryBuilder($db, $this);
         
         // TODO: limit is default 1000 entries. How change?
         return $db->countEntries($this->query->get());
@@ -179,7 +179,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
         }
         
         // Create a new Builder.
-        $this->query = new Builder($db, $this);
+        $this->query = new QueryBuilder($db, $this);
 
         return $this->query->read(true)->first();
     }
