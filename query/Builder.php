@@ -2,9 +2,10 @@
 
 namespace chrmorandi\ldap\Query;
 
+use chrmorandi\ldap\ActiveQuery;
+use chrmorandi\ldap\exceptions\ModelNotFoundException;
 use chrmorandi\ldap\interfaces\ConnectionInterface;
 use chrmorandi\ldap\interfaces\SchemaInterface;
-use chrmorandi\ldap\exceptions\ModelNotFoundException;
 use chrmorandi\ldap\models\Entry;
 use chrmorandi\ldap\objects\Paginator;
 use chrmorandi\ldap\query\bindings\AbstractBinding;
@@ -14,8 +15,19 @@ use chrmorandi\ldap\query\bindings\Select;
 use chrmorandi\ldap\query\bindings\Where;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
+use yii\base\Object;
 
-class Builder
+/**
+ * Builder builds a SEARCH PHP LDAP statement based on the specification given as a [[Query]] object.
+ *
+ * SQL statements are created from [[Query]] objects using the [[build()]]-method.
+ *
+ * QueryBuilder is also used by [[Command]] to build SQL statements such as INSERT, UPDATE, DELETE, CREATE TABLE.
+ *
+ * @author Christopher Mota <chrmorandi@gmail.com>
+ * @since 1.0.0
+ */
+class Builder extends Object
 {
     /**
      * Stores the bool to determine whether or
@@ -94,7 +106,7 @@ class Builder
      *
      * @var ConnectionInterface
      */
-    protected $connection;
+    protected $conn;
 
     /**
      * Stores the current grammar instance.
@@ -109,19 +121,16 @@ class Builder
      * @var SchemaInterface
      */
     protected $schema;
-
+    
     /**
      * Constructor.
-     *
-     * @param ConnectionInterface $connection
-     * @param Grammar             $grammar
-     * @param SchemaInterface     $schema
+     * @param Connection $connection the database connection.
+     * @param array $config name-value pairs that will be used to initialize the object properties
      */
-    public function __construct(ConnectionInterface $connection, Grammar $grammar, SchemaInterface $schema)
+    public function __construct(ConnectionInterface $connection, ActiveQuery $query, $config = [])
     {
-        $this->setConnection($connection);
-        $this->setGrammar($grammar);
-        $this->setSchema($schema);
+        $this->db = $connection;
+        parent::__construct($config);
     }
 
     /**
@@ -129,9 +138,9 @@ class Builder
      *
      * @param ConnectionInterface $connection
      */
-    public function setConnection(ConnectionInterface $connection)
+    public function setConn(ConnectionInterface $connection)
     {
-        $this->connection = $connection;
+        $this->conn = $connection;
     }
 
     /**
@@ -171,7 +180,7 @@ class Builder
      */
     public function newInstance()
     {
-        $new = new static($this->connection, $this->grammar, $this->schema);
+        $new = new static($this->conn, $this->grammar, $this->schema);
 
         // We'll set the base DN of the new Builder so
         // devs don't need to do this manually.
@@ -187,17 +196,7 @@ class Builder
      */
     public function get()
     {
-        return $this->query($this->getQuery());
-    }
-
-    /**
-     * Compiles and returns the current query string.
-     *
-     * @return string
-     */
-    public function getQuery()
-    {
-        return $this->grammar->compileQuery($this);
+        return $this->query($this->grammar->compileQuery($this));
     }
 
     /**
@@ -217,7 +216,7 @@ class Builder
      */
     public function getConnection()
     {
-        return $this->connection;
+        return $this->conn;
     }
 
     /**
@@ -260,13 +259,13 @@ class Builder
 
         if ($this->read) {
             // If read is true, we'll perform a read search, retrieving one record
-            $results = $this->connection->read($dn, $query, $selects);
+            $results = $this->conn->read($dn, $query, $selects);
         } elseif ($this->recursive) {
             // If recursive is true, we'll perform a recursive search
-            $results = $this->connection->search($dn, $query, $selects);
+            $results = $this->conn->search($dn, $query, $selects);
         } else {
             // Read and recursive is false, we'll return a listing
-            $results = $this->connection->listing($dn, $query, $selects);
+            $results = $this->conn->listing($dn, $query, $selects);
         }
 
         return $this->process($results);
@@ -292,13 +291,13 @@ class Builder
         $cookie = '';
 
         do {
-            $this->connection->controlPagedResult($perPage, $isCritical, $cookie);
+            $this->conn->controlPagedResult($perPage, $isCritical, $cookie);
 
             // Run the search.
-            $results = $this->connection->search($this->getDn(), $this->getQuery(), $this->getSelects());
+            $results = $this->conn->search($this->getDn(), $this->grammar->compileQuery($this), $this->getSelects());
 
             if ($results) {
-                $this->connection->controlPagedResultResponse($results, $cookie);
+                $this->conn->controlPagedResultResponse($results, $cookie);
 
                 // We'll collect the results into the pages array.
                 $pages[] = $results;

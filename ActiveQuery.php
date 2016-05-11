@@ -2,6 +2,7 @@
 
 namespace chrmorandi\ldap;
 
+use chrmorandi\ldap\Query\Builder;
 use yii\base\Component;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveQueryTrait;
@@ -13,7 +14,7 @@ use yii\db\QueryTrait;
  *
  * An ActiveQuery can be a normal query or be used in a relational context.
  *
- * ActiveQuery instances are usually created by [[ActiveRecord::find()]] and [[ActiveRecord::findBySql()]].
+ * ActiveQuery instances are usually created by [[ActiveRecord::find()]].
  * Relational queries are created by [[ActiveRecord::hasOne()]] and [[ActiveRecord::hasMany()]].
  *
  * Normal Query
@@ -24,11 +25,8 @@ use yii\db\QueryTrait;
  * - [[one()]]: returns a single record populated with the first row of data.
  * - [[all()]]: returns all records based on the query results.
  * - [[count()]]: returns the number of records.
- * - [[sum()]]: returns the sum over the specified column.
- * - [[average()]]: returns the average over the specified column.
  * - [[min()]]: returns the min over the specified column.
  * - [[max()]]: returns the max over the specified column.
- * - [[scalar()]]: returns the value of the first column in the first row of the query result.
  * - [[column()]]: returns the value of the first column in the query result.
  * - [[exists()]]: returns a value indicating whether the query result has data or not.
  *
@@ -80,6 +78,13 @@ class ActiveQuery extends Component implements ActiveQueryInterface
     const EVENT_INIT = 'init';
     
     /**
+     * Stores the current query builder instance.
+     *
+     * @var Builder
+     */
+    protected $query;
+    
+    /**
      * Constructor.
      * @param string $modelClass the model class associated with this query
      * @param array $config configurations to be applied to the newly created query object
@@ -103,15 +108,25 @@ class ActiveQuery extends Component implements ActiveQueryInterface
     }
 
     /**
-     * Executes the query and returns all results as an array.
+     * Executes the query and returns all results as an array contain a common name attribute.
      * @param Connection $db the database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      */
     public function all($db = null)
     {
-        return $this->query->whereHas($this->schema->commonName())->get();
+        /* @var $modelClass ActiveRecord */
+        $modelClass = $this->modelClass;
+        if ($db === null) {
+            $db = $modelClass::getDb();
+        }
+        
+        // Create a new Builder.
+        $this->query = new Builder($db, $this);
+
+        return $this->query->get();
     }
+    
 
     /**
      * Returns the number of records.
@@ -124,7 +139,17 @@ class ActiveQuery extends Component implements ActiveQueryInterface
      */
     public function count($q = '*', $db = null)
     {
-        // TODO
+        /* @var $modelClass ActiveRecord */
+        $modelClass = $this->modelClass;
+        if ($db === null) {
+            $db = $modelClass::getDb();
+        }
+        
+        // Create a new Builder.
+        $this->query = new Builder($db, $this);
+        
+        // TODO: limit is default 1000 entries. How change?
+        return $db->countEntries($this->query->get());
     }
 
     /**
@@ -147,7 +172,16 @@ class ActiveQuery extends Component implements ActiveQueryInterface
      */
     public function one($db = null)
     {
-        // TODO
+        /* @var $modelClass ActiveRecord */
+        $modelClass = $this->modelClass;
+        if ($db === null) {
+            $db = $modelClass::getDb();
+        }
+        
+        // Create a new Builder.
+        $this->query = new Builder($db, $this);
+
+        return $this->query->read(true)->first();
     }
 
 }

@@ -1,1 +1,43 @@
-/nbproject/private/
+# phpstorm project files
+.idea
+
+# netbeans project files
+nbproject
+
+# zend studio for eclipse project files
+.buildpath
+.project
+.settings
+
+# windows thumbnail cache
+Thumbs.db
+
+# composer vendor dir
+/vendor
+
+# cubrid install dir
+/cubrid
+
+# composer itself is not needed
+composer.phar
+
+
+# Mac DS_Store Files
+.DS_Store
+
+# phpunit itself is not needed
+phpunit.phar
+# local phpunit config
+/phpunit.xml
+
+# ignore sub directory for dev installed apps and extensions
+/apps
+/extensions
+
+# box vagrant do cajui
+.vagrant
+/cajui.box
+
+# arquivos do yii
+/console/config/main-local.php
+/cajui/config/main-local.php
