@@ -1,0 +1,26 @@
+{
+    "name": "chrmorandi/yii2-ldap",
+    "description": "Ldap",
+    "type": "library",
+    "keywords": ["yii2","extension"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Christopher Mota",
+            "email": "chrmorandi@gmail.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*",
+        "ext-ldap": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.6.*",
+        "mockery/mockery": "0.9.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "chrmorandi\\ldap\\": ""
+        }
+    }
+}
