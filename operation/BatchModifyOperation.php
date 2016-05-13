@@ -18,9 +18,10 @@ use chrmorandi\ldap\Utilities\LdapUtilities;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0
  */
-class BatchModifyOperation implements LdapOperationInterface
+class BatchModifyOperation extends \yii\base\Object implements OperationInterface
 {
-    use LdapOperationTrait;
+    use OperationTrait;
+    use ModOperationTrait;
 
     /**
      * @var array

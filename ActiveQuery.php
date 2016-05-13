@@ -4,6 +4,7 @@ namespace chrmorandi\ldap;
 
 use chrmorandi\ldap\ActiveRecord;
 use chrmorandi\ldap\Connection;
+use chrmorandi\ldap\operation\QueryOperation;
 use chrmorandi\ldap\query\QueryBuilder;
 use yii\base\Component;
 use yii\db\ActiveQueryInterface;
@@ -84,7 +85,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
      *
      * @var QueryBuilder
      */
-    protected $query;
+    protected $queryBuilder;
     
     /**
      * Constructor.
@@ -110,10 +111,10 @@ class ActiveQuery extends Component implements ActiveQueryInterface
     }
 
     /**
-     * Executes the query and returns all results as an array contain a common name attribute.
-     * @param Connection $db the database connection used to generate the SQL statement.
-     * If this parameter is not given, the `db` application component will be used.
-     * @return array the query results. If the query results in nothing, an empty array will be returned.
+     * Executes query and returns all results as an array.
+     * @param Connection $db the DB connection used to create the DB command.
+     * If null, the DB connection returned by [[modelClass]] will be used.
+     * @return array|ActiveRecord[] the query results. If the query results in nothing, an empty array will be returned.
      */
     public function all($db = null)
     {
@@ -123,10 +124,15 @@ class ActiveQuery extends Component implements ActiveQueryInterface
             $db = $modelClass::getDb();
         }
         $db->open();
-        // Create a new Builder.
-        $this->query = new QueryBuilder($db, $this);
-
-        return $this->query->get();
+        
+        // Create a new QueryBuilder and colect 
+        $this->queryBuilder = new QueryBuilder($db, $this);
+        $filter = $this->queryBuilder->compileQuery();
+        $selects = $this->queryBuilder->getSelects();        
+        
+        $operation = new QueryOperation($filter, $selects);
+        
+        return $this->populate($db->execute($operation));
     }
     
 
@@ -184,6 +190,29 @@ class ActiveQuery extends Component implements ActiveQueryInterface
         $this->query = new QueryBuilder($db, $this);
 
         return $this->query->read(true)->first();
+    }    
+    
+    /**
+     * @inheritdoc
+     */
+    public function populate($rows)
+    {
+        if (empty($rows)) {
+            return [];
+        }
+
+        $models = $this->createModels($rows);
+
+        if (!empty($this->with)) {
+            $this->findWith($this->with, $models);
+        }
+        if (!$this->asArray) {
+            foreach ($models as $model) {
+                $model->afterFind();
+            }
+        }
+
+        return $models;
     }
 
 }

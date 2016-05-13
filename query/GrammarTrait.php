@@ -25,20 +25,18 @@ trait GrammarTrait
     /**
      * Compiles the Builder instance into an LDAP query string.
      *
-     * @param \Adldap\Query\Builder $builder
-     *
      * @return string
      */
-    public function compileQuery(QueryBuilder $builder)
+    public function compileQuery()
     {
         // Retrieve the query 'where' bindings.
-        $wheres = $builder->getWheres();
+        $wheres = $this->getWheres();
 
         // Retrieve the query 'orWhere' bindings.
-        $orWheres = $builder->getOrWheres();
+        $orWheres = $this->getOrWheres();
 
         // Retrieve the query filter bindings.
-        $filters = $builder->getFilters();
+        $filters = $this->getFilters();
 
         // We'll combine all raw filters together first.
         $query = implode(null, $filters);

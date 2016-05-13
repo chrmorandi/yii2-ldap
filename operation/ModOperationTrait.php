@@ -20,7 +20,7 @@ trait ModOperationTrait
     /**
      * Execute a LDAP operation and return a response.
      *
-     * @param LdapOperationInterface $operation
+     * @param OperationInterface $operation
      * @return mixed
      */
     static public function execute(OperationInterface $operation, \chrmorandi\ldap\Connection $conn)

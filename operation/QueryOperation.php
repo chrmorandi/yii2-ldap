@@ -18,9 +18,10 @@ use chrmorandi\ldap\Query\OperatorCollection;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0
  */
-class QueryOperation implements LdapOperationInterface
+class QueryOperation extends \yii\base\Object implements OperationInterface
 {
-    use LdapOperationTrait;
+    use OperationTrait;
+    use QueryOperationTrait;
 
     /**
      * Scope name to LDAP function mappings.
@@ -264,22 +265,6 @@ class QueryOperation implements LdapOperationInterface
     public function getName()
     {
         return 'Query';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getLogArray()
-    {
-        return $this->mergeLogDefaults([
-            'Filter' => $this->getLdapFilter(),
-            'Base DN' => $this->properties['baseDn'],
-            'Attributes' => implode(',', $this->properties['attributes']),
-            'Scope' => $this->properties['scope'],
-            'Use Paging' => var_export($this->properties['usePaging'], true),
-            'Page Size' => $this->properties['pageSize'],
-            'Size Limit' => $this->properties['sizeLimit'],
-        ]);
     }
 
     /**

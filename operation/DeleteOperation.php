@@ -15,7 +15,7 @@ namespace chrmorandi\ldap\operation;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0
  */
-class DeleteOperation implements operationInterface
+class DeleteOperation extends \yii\base\Object implements operationInterface
 {
     use OperationTrait;
     use ModOperationTrait;

@@ -1,6 +1,6 @@
 <?php
 
-namespace chrmorandi\ldap\interfaces;
+namespace chrmorandi\ldap;
 
 /**
  * The Connection interface used for making connections. Implementing
@@ -12,28 +12,14 @@ namespace chrmorandi\ldap\interfaces;
 interface ConnectionInterface
 {
     /**
-     * The SSL LDAP protocol string.
-     *
-     * @var string
-     */
-    const PROTOCOL_SSL = 'ldaps://';
-
-    /**
-     * The non-SSL LDAP protocol string.
+     * LDAP protocol string.
      *
      * @var string
      */
     const PROTOCOL = 'ldap://';
 
     /**
-     * The LDAP SSL Port number.
-     *
-     * @var string
-     */
-    const PORT_SSL = '636';
-
-    /**
-     * The non SSL LDAP port number.
+     * LDAP port number.
      *
      * @var string
      */
@@ -76,24 +62,6 @@ interface ConnectionInterface
     public function isBatchSupported();
 
     /**
-     * Returns true / false if the
-     * current connection instance is using
-     * SSL.
-     *
-     * @return bool
-     */
-    public function isUsingSSL();
-
-    /**
-     * Returns true / false if the
-     * current connection instance is using
-     * TLS.
-     *
-     * @return bool
-     */
-    public function isUsingTLS();
-
-    /**
      * Returns true / false if the current
      * connection is able to modify passwords.
      *
@@ -110,25 +78,35 @@ interface ConnectionInterface
     public function isBound();
 
     /**
-     * Sets the current connection to use TLS.
-     *
-     * @return ConnectionInterface
-     */
-    public function useTLS();
-
-    /**
-     * Sets the current connection to use SSL.
-     *
-     * @return ConnectionInterface
-     */
-    public function useSSL();
-
-    /**
      * Get the current connection.
      *
      * @return mixed
      */
     public function getConnection();
+    
+    /**
+     * Binds to the current connection using the
+     * inserted credentials.
+     *
+     * @param string $username The username to bind with.
+     * @param string $password The password to bind with.
+     * @param string $prefix
+     * @param string $suffix
+     * @param bool $anonymous Whether this is an anonymous bind attempt.
+     *
+     * @returns void
+     *
+     * @throws BindException
+     */
+    public function bind($username, $password, $prefix = null, $suffix = null, $anonymous = false);
+
+    /**
+     * Binds to the current LDAP server using the
+     * configuration administrator credentials.
+     *
+     * @throws BindException
+     */
+    public function bindAsAdministrator();
 
     /**
      * Retrieve the entries from a search result.
@@ -230,20 +208,6 @@ interface ConnectionInterface
      * @return mixed
      */
     public function startTLS();
-
-    /**
-     * Binds to the current connection using
-     * the specified username and password. If sasl
-     * is true, the current connection is bound using
-     * SASL.
-     *
-     * @param string $username
-     * @param string $password
-     * @param bool   $sasl
-     *
-     * @return bool
-     */
-    public function bind($username, $password, $sasl = false);
 
     /**
      * Closes the current connection.
@@ -404,7 +368,7 @@ interface ConnectionInterface
      *
      * @return mixed
      */
-    public function errNo();
+    public function getErrNo();
 
     /**
      * Returns the extended error string of the last command.
@@ -463,12 +427,6 @@ interface ConnectionInterface
      */
     public function getConfiguration();
 
-    /**
-     * Returns the current Guard instance.
-     *
-     * @return \Adldap\Auth\Guard
-     */
-    public function getGuard();
 
     /**
      * Sets the current configuration.
@@ -490,13 +448,6 @@ interface ConnectionInterface
      * @return SchemaInterface
      */
     public function getSchema();
-
-    /**
-     * Sets the current Guard instance.
-     *
-     * @param GuardInterface $guard
-     */
-    public function setGuard(GuardInterface $guard);
 
     
     /**

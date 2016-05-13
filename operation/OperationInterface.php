@@ -59,8 +59,8 @@ interface OperationInterface
     /**
      * Execute a LDAP operation and return a response.
      *
-     * @param LdapOperationInterface $operation
+     * @param OperationInterface $operation
      * @return mixed
      */
-    public function execute(LdapOperationInterface $operation);
+    public function execute(OperationInterface $operation);
 }

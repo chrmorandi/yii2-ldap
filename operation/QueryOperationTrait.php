@@ -10,7 +10,7 @@
 namespace chrmorandi\ldap\operation;
 
 use chrmorandi\ldap\Exception\LdapConnectionException;
-use chrmorandi\ldap\operation\LdapOperationInterface;
+use chrmorandi\ldap\operation\OperationInterface;
 use chrmorandi\ldap\operation\QueryOperation;
 
 /**
@@ -38,20 +38,20 @@ trait QueryOperationTrait
     /**
      * {@inheritdoc}
      */
-    public function execute(OperationInterface $operation)
+    public function execute()
     {
         $allEntries = [];
 
         /** @var QueryOperation $operation */
-        $this->paging()->setIsEnabled($this->shouldUsePaging($operation));
-        $this->paging()->start($operation->getPageSize(), $operation->getSizeLimit());
+        $this->paging()->setIsEnabled($this->shouldUsePaging());
+        $this->paging()->start($this->getPageSize(), $this->getSizeLimit());
         do {
             $this->paging()->next();
 
             $result = @call_user_func(
-                $operation->getLdapFunction(),
+                $this->getLdapFunction(),
                 $this->connection->getConnection(),
-                ...$operation->getArguments()
+                ...$this->getArguments()
             );
             $allEntries = $this->processSearchResult($result, $allEntries);
 
@@ -60,14 +60,6 @@ trait QueryOperationTrait
         $this->paging()->end();
 
         return $allEntries;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function supports(LdapOperationInterface $operation)
-    {
-        return $operation instanceof QueryOperation;
     }
 
     /**
@@ -94,7 +86,7 @@ trait QueryOperationTrait
     /**
      * {@inheritdoc}
      */
-    public function setOperationDefaults(LdapOperationInterface $operation)
+    public function setOperationDefaults(OperationInterface $operation)
     {
         /** @var QueryOperation $operation */
         if (is_null($operation->getPageSize())) {
@@ -148,11 +140,10 @@ trait QueryOperationTrait
     /**
      * Based on the query operation, determine whether paging should be used.
      *
-     * @param QueryOperation $operation
      * @return bool
      */
-    protected function shouldUsePaging(QueryOperation $operation)
+    protected function shouldUsePaging()
     {
-        return ($operation->getUsePaging() && $operation->getScope() != QueryOperation::SCOPE['BASE']);
+        return ($this->getUsePaging() && $this->getScope() != QueryOperation::SCOPE['BASE']);
     }
 }

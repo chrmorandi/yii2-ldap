@@ -8,7 +8,7 @@ use chrmorandi\ldap\exceptions\InvalidArgumentException;
 use chrmorandi\ldap\objects\DistinguishedName;
 use Traversable;
 
-class Configuration
+class Configuration extends \yii\base\Object
 {
     /**
      * The LDAP base dn.
@@ -34,14 +34,6 @@ class Configuration
      * @var string
      */
     protected $port = ConnectionInterface::PORT;
-
-    /**
-     * Determines whether or not to use SSL
-     * with the current LDAP connection.
-     *
-     * @var bool
-     */
-    protected $useSSL = false;
 
     /**
      * Determines whether or not to use TLS
@@ -178,36 +170,6 @@ class Configuration
     }
 
     /**
-     * Sets the option whether or not to use SSL when connecting.
-     *
-     * @param $bool
-     *
-     * @throws ConfigurationException
-     */
-    public function setUseSSL($bool)
-    {
-        $bool = (bool) $bool;
-
-        if ($this->useTLS && $bool === true) {
-            $message = 'You can only specify the use of one security protocol. TLS is already enabled.';
-
-            throw new ConfigurationException($message);
-        }
-
-        $this->useSSL = $bool;
-    }
-
-    /**
-     * Returns the use SSL option.
-     *
-     * @return bool
-     */
-    public function getUseSSL()
-    {
-        return $this->useSSL;
-    }
-
-    /**
      * Sets the option whether or not to use TLS when connecting.
      *
      * @param $bool
@@ -217,13 +179,6 @@ class Configuration
     public function setUseTLS($bool)
     {
         $bool = (bool) $bool;
-
-        if ($this->useSSL && $bool === true) {
-            $message = 'You can only specify the use of one security protocol. SSL is already enabled.';
-
-            throw new ConfigurationException($message);
-        }
-
         $this->useTLS = $bool;
     }
 
@@ -394,12 +349,6 @@ class Configuration
                     (is_object($options) ? get_class($options) : gettype($options))
                 )
             );
-        }
-
-        if (array_key_exists('use_ssl', $options)) {
-            if (!array_key_exists('port', $options) && $options['use_ssl'] === true) {
-                $options['port'] = ConnectionInterface::PORT_SSL;
-            }
         }
 
         foreach ($options as $key => $value) {

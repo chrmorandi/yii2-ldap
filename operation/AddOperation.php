@@ -20,7 +20,7 @@ use chrmorandi\ldap\Utilities\LdapUtilities;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0
  */
-class AddOperation implements OperationInterface
+class AddOperation extends \yii\base\Object implements OperationInterface
 {
     use OperationTrait;
     use ModOperationTrait;
@@ -143,14 +143,4 @@ class AddOperation implements OperationInterface
         return 'Add';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getLogArray()
-    {
-        return $this->mergeLogDefaults([
-            'DN' => $this->properties['dn'],
-            'Attributes' => print_r(LdapUtilities::maskAttributeArray($this->properties['attributes']), true),
-        ]);
-    }
 }

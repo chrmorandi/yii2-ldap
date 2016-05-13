@@ -14,7 +14,7 @@ use chrmorandi\ldap\Event\LdapAuthenticationEvent;
 use chrmorandi\ldap\Exception\LdapBindException;
 use chrmorandi\ldap\operation\AuthenticationOperation;
 use chrmorandi\ldap\operation\AuthenticationResponse;
-use chrmorandi\ldap\operation\LdapOperationInterface;
+use chrmorandi\ldap\operation\OperationInterface;
 
 /**
  * Handles a LDAP authentication operation to return an object with the authentication response details.
@@ -28,7 +28,7 @@ trait AuthenticationOperationTrait
     /**
      * {@inheritdoc}
      */
-    public function execute(LdapOperationInterface $operation)
+    public function execute(OperationInterface $operation)
     {
         /** @var AuthenticationOperation $operation */
         $this->dispatcher->dispatch(new LdapAuthenticationEvent(Event::LDAP_AUTHENTICATION_BEFORE, $operation));
@@ -51,7 +51,7 @@ trait AuthenticationOperationTrait
     /**
      * {@inheritdoc}
      */
-    public function supports(LdapOperationInterface $operation)
+    public function supports(OperationInterface $operation)
     {
         return $operation instanceof AuthenticationOperation;
     }

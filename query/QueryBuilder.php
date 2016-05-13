@@ -186,16 +186,6 @@ class QueryBuilder extends Object
     }
 
     /**
-     * Returns the current query.
-     *
-     * @return array|\Illuminate\Support\Collection
-     */
-    public function get()
-    {
-        return $this->build($this->compileQuery($this));
-    }
-
-    /**
      * Returns the current Connection instance.
      *
      * @return ConnectionInterface

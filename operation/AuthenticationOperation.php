@@ -18,9 +18,10 @@ use chrmorandi\ldap\Utilities\LdapUtilities;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0
  */
-class AuthenticationOperation implements OperationInterface
+class AuthenticationOperation extends \yii\base\Object implements OperationInterface
 {
     use OperationTrait;
+    use AuthenticationOperationTrait;
 
     /**
      * @var array
@@ -157,21 +158,6 @@ class AuthenticationOperation implements OperationInterface
             $this->properties['isAnonymousBind'],
             $this->server,
         ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getLogArray()
-    {
-        // By default we probably shouldn't expose password info to the logger.
-        // Though it is still available via the getPassword() method if needed.
-        return $this->mergeLogDefaults([
-            'Username' => $this->properties['username'],
-            'Password' => LdapUtilities::MASK,
-            'Anonymous' => var_export($this->properties['isAnonymousBind'], true),
-            'Switch to Credentials' => var_export($this->properties['switchToCredentials'], true),
-        ]);
     }
 
     /**

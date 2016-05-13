@@ -15,9 +15,10 @@ namespace chrmorandi\ldap\operation;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0
  */
-class RenameOperation implements LdapOperationInterface
+class RenameOperation extends \yii\base\Object implements OperationInterface
 {
-    use LdapOperationTrait;
+    use OperationTrait;
+    use ModOperationTrait;
 
     /**
      * @var array

@@ -7,9 +7,10 @@ use chrmorandi\ldap\Connection;
 use chrmorandi\ldap\exceptions\InvalidArgumentException;
 use chrmorandi\ldap\Object\LdapObject;
 use chrmorandi\ldap\operation\DeleteOperation;
-use yii\base\InvalidConfigException;
-use yii\db\BaseActiveRecord;
+use chrmorandi\ldap\Schemas\ActiveDirectory;
 use Yii;
+use yii\db\BaseActiveRecord;
+use yii\helpers\ArrayHelper;
 
 /**
  * ActiveRecord is the base class for classes representing relational data in terms of objects.
@@ -64,7 +65,7 @@ class ActiveRecord extends BaseActiveRecord
      */
     public static function primaryKey()
     {
-        return ['id'];
+        return ['cn'];
     }
     
     /**
@@ -74,7 +75,7 @@ class ActiveRecord extends BaseActiveRecord
      */
     public function attributes()
     {
-        throw new InvalidConfigException('The attributes() method of ldap ActiveRecord has to be implemented by child classes.');
+        return ArrayHelper::toArray(new ActiveDirectory);
     }
     
     /**
