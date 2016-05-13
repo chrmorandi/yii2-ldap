@@ -1,6 +1,6 @@
 <?php
 
-namespace chrmorandi\ldap\Query;
+namespace chrmorandi\ldap\query;
 
 use chrmorandi\ldap\ActiveQuery;
 use chrmorandi\ldap\exceptions\ModelNotFoundException;
@@ -127,6 +127,7 @@ class QueryBuilder extends Object
      */
     protected $schema;
     
+
     /**
      * Constructor.
      * @param Connection $connection the database connection.
@@ -134,7 +135,7 @@ class QueryBuilder extends Object
      */
     public function __construct(ConnectionInterface $connection, ActiveQuery $query, $config = [])
     {
-        $this->db = $connection;
+        $this->conn = $connection;
         parent::__construct($config);
     }
 
@@ -238,7 +239,7 @@ class QueryBuilder extends Object
      */
     public function build($query)
     {
-        $dn = $this->getDn();
+        $dn = $this->conn->getConfiguration()->getBaseDn();
 
         $selects = $this->getSelects();
 

@@ -2,7 +2,7 @@
 
 namespace chrmorandi\ldap\Query;
 
-use chrmorandi\ldap\Query\Bindings\Where;
+use chrmorandi\ldap\query\Bindings\Where;
 
 trait GrammarTrait
 {

@@ -2,7 +2,9 @@
 
 namespace chrmorandi\ldap;
 
-use chrmorandi\ldap\Query\QueryBuilder;
+use chrmorandi\ldap\ActiveRecord;
+use chrmorandi\ldap\Connection;
+use chrmorandi\ldap\query\QueryBuilder;
 use yii\base\Component;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveQueryTrait;
@@ -120,7 +122,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
         if ($db === null) {
             $db = $modelClass::getDb();
         }
-        
+        $db->open();
         // Create a new Builder.
         $this->query = new QueryBuilder($db, $this);
 

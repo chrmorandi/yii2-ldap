@@ -1,6 +1,6 @@
 <?php
 
-namespace chrmorandi\ldap\Query;
+namespace chrmorandi\ldap\query;
 
 use chrmorandi\ldap\interfaces\ConnectionInterface;
 use chrmorandi\ldap\interfaces\SchemaInterface;

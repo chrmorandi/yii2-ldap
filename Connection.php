@@ -1,11 +1,34 @@
 <?php
+/**
+ * @package   yii2-ldap
+ * @author    @author Christopher Mota <chrmorandi@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace chrmorandi\ldap;
 
+use chrmorandi\ldap\Exception\LdapConnectionException;
 use chrmorandi\ldap\exceptions\AdldapException;
+use chrmorandi\ldap\exceptions\BindException;
+use chrmorandi\ldap\exceptions\ConnectionException;
+use chrmorandi\ldap\exceptions\InvalidArgumentException;
 use chrmorandi\ldap\interfaces\ConnectionInterface;
+use chrmorandi\ldap\interfaces\GuardInterface;
+use chrmorandi\ldap\interfaces\SchemaInterface;
+use chrmorandi\ldap\operation\AuthenticationOperation;
+use chrmorandi\ldap\operation\OperationInterface;
+use Yii;
 use yii\base\Component;
+use yii\db\sqlite\Schema;
 
+/**
+ * 
+ *
+ * @author Christopher Mota <chrmorandi@gmail.com>
+ * @since 1.0
+ */
 class Connection extends Component implements ConnectionInterface
 {
     use LdapFunctionSupportTrait;
@@ -53,7 +76,12 @@ class Connection extends Component implements ConnectionInterface
      * @var Configuration
      */
     protected $configuration;
-
+    
+    /**
+     * @var string|null The LDAP server that we are currently connected to.
+     */  
+    protected $server;
+    
     /**
      * @var SchemaInterface
      */
@@ -63,6 +91,14 @@ class Connection extends Component implements ConnectionInterface
      * @var GuardInterface
      */
     protected $guard;
+    
+    public $options;
+    
+    public function init() {
+        $this->setConfiguration($this->options);
+        parent::init();
+    }
+    
     
     /**
      * {@inheritdoc}
@@ -138,7 +174,7 @@ class Connection extends Component implements ConnectionInterface
     public function getGuard()
     {
         if (!$this->guard instanceof GuardInterface) {
-            $this->guard = new Guard($this->connection, $this->configuration);
+            $this->guard = new Guard($this, $this->configuration);
         }
 
         return $this->guard;
@@ -153,8 +189,8 @@ class Connection extends Component implements ConnectionInterface
      * @param string|null $username
      * @param string|null $password
      *
-     * @throws \chrmorandi\ldap\exceptions\ConnectionException
-     * @throws \chrmorandi\ldap\exceptions\BindException
+     * @throws ConnectionException
+     * @throws BindException
      *
      */
     public function open($username = null, $password = null)
@@ -182,14 +218,73 @@ class Connection extends Component implements ConnectionInterface
             if (is_null($username) && is_null($password)) {
                 // If both the username and password are null, we'll connect to the server
                 // using the configured administrator username and password.
-                $guard->bindAsAdministrator();
+                $this->bindAsAdministrator();
             } else {
                 // Bind to the server with the specified username and password otherwise.
-                $guard->bind($username, $password);
+                $this->bind($username, $password);
             }
         } else {
             throw new ConnectionException('Unable to connect to LDAP server.');
         }
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function bindt($username, $password, $prefix = null, $suffix = null)
+    {
+        if (empty($username)) {
+            // Allow binding with null username.
+            $username = null;
+        } else {
+            // If the username isn't empty, we'll append the configured
+            // account prefix and suffix to bind to the LDAP server.
+            if (is_null($prefix)) {
+                $prefix = $this->configuration->getAccountPrefix();
+            }
+
+            if (is_null($suffix)) {
+                $suffix = $this->configuration->getAccountSuffix();
+            }
+
+            $username = $prefix.$username.$suffix;
+        }
+
+        if (empty($password)) {
+            // Allow binding with null password.
+            $password = null;
+        }
+
+        // We'll mute any exceptions / warnings here. All we need to know
+        // is if binding failed and we'll throw our own exception.
+        if (!$this->bind($username, $password)) {
+            $error = $this->connection->getLastError();
+
+            if ($this->isUsingSSL() && $this->connection->isUsingTLS() === false) {
+                $message = 'Bind to Active Directory failed. Either the LDAP SSL connection failed or the login credentials are incorrect. AD said: '.$error;
+            } else {
+                $message = 'Bind to Active Directory failed. Check the login credentials and/or server details. AD said: '.$error;
+            }
+
+            throw new BindException($message, $this->connection->errNo());
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function bindAsAdministrator()
+    {
+        $credentials = $this->configuration->getAdminCredentials();
+
+        list($username, $password, $suffix) = array_pad($credentials, 3, null);
+
+        if (empty($suffix)) {
+            // Use the user account suffix if no administrator account suffix is given.
+            $suffix = $this->configuration->getAccountSuffix();
+        }
+
+        $this->bindt($username, $password, '', $suffix);
     }
     
     /**
@@ -369,6 +464,38 @@ class Connection extends Component implements ConnectionInterface
 
         return $this->connection = ldap_connect($hostname, $port);
     }
+    /**
+     * Makes the initial connection to LDAP, sets connection options, and starts TLS if specified.
+     *
+     * @param null|string $server
+     * @throws LdapConnectionException
+     */
+//    protected function initiateLdapConnection($server = null)
+//    {
+//        $ldapUrl = $this->getLdapUrl($server);
+//
+//        $this->connection = @ldap_connect($ldapUrl, $this->config->getPort());
+//        if (!$this->connection) {
+//            throw new LdapConnectionException(
+//                sprintf("Failed to initiate LDAP connection with URI: %s", $ldapUrl)
+//            );
+//        }
+//
+//        foreach ($this->config->getLdapOptions() as $option => $value) {
+//            if (!ldap_set_option($this->connection, $option, $value)) {
+//                throw new LdapConnectionException("Failed to set LDAP connection option.");
+//            }
+//        }
+//
+//        if ($this->config->getUseTls() && !@ldap_start_tls($this->connection)) {
+//            throw new LdapConnectionException(
+//                sprintf("Failed to start TLS: %s", $this->getLastError()),
+//                $this->getExtendedErrorNumber()
+//            );
+//        }
+//
+//        $this->server = explode('://', $ldapUrl)[1];
+//    }
 
     /**
      * {@inheritdoc}
@@ -389,7 +516,7 @@ class Connection extends Component implements ConnectionInterface
      */
     public function search($dn, $filter, array $fields)
     {
-        return ldap_search($this->getConnection(), $dn, $filter, $fields);
+        return ldap_search($this->getConnection(), $this->configuration->getBaseDn(), $filter, $fields);
     }
 
     /**
@@ -431,6 +558,35 @@ class Connection extends Component implements ConnectionInterface
 
         return $this->bound = ldap_bind($this->getConnection(), $username, $password);
     }
+    
+    /**
+     * Binds to LDAP with the supplied credentials or anonymously if specified.
+     *
+     * @param string $username The username to bind with.
+     * @param string $password The password to bind with.
+     * @param bool $anonymous Whether this is an anonymous bind attempt.
+     * @throws LdapBindException
+     */
+//    protected function bind($username, $password, $anonymous = false)
+//    {
+//        if ($anonymous) {
+//            $this->isBound = @ldap_bind($this->connection);
+//        } else {
+//            $this->isBound = @ldap_bind(
+//                $this->connection,
+//                LdapUtilities::encode($username, $this->config->getEncoding()),
+//                LdapUtilities::encode($password, $this->config->getEncoding())
+//            );
+//        }
+//
+//        if (!$this->isBound) {
+//            throw new LdapBindException(
+//                sprintf('Unable to bind to LDAP: %s', $this->getLastError()),
+//                $this->getExtendedErrorNumber()
+//            );
+//        }
+//    }
+    
 
     /**
      * {@inheritdoc}
@@ -580,5 +736,55 @@ class Connection extends Component implements ConnectionInterface
         return $matches[1];
     }
     
+    /**
+     * @param OperationInterface $operation
+     * @return mixed
+     * @throws ConnectionException
+     */
+    public function execute(OperationInterface $operation)
+    {        
+        $result = true;
+        $this->open();
+        $token = $operation->name;
+        
+        try {           
+            Yii::beginProfile($token, 'chrmorandi\ldap\Connection::execute');
+            return $operation->execute();
+        } catch (\Exception $e) {
+            $this->logExceptionAndThrow($e, $log);
+        } finally {
+            Yii::endProfile($token, 'chrmorandi\ldap\Connection::execute');
+            $this->resetLdapControls($operation);
+        }        
+
+        return $result;
+    }
     
+    /**
+     * Close the connection before serializing.
+     * @return array
+     */
+    public function __sleep()
+    {
+        $this->close();
+        return array_keys((array) $this);
+    }
+    
+    /**
+     * Performs the logic for switching the LDAP server connection.
+     *
+     * @param string|null $currentServer The server we are currently on.
+     * @param string|null $wantedServer The server we want the connection to be on.
+     * @param LdapOperationInterface $operation
+     */
+    protected function switchServerIfNeeded($currentServer, $wantedServer, $operation)
+    {
+        if ($operation instanceof AuthenticationOperation || strtolower($currentServer) == strtolower($wantedServer)) {
+            return;
+        }
+        if ($this->connection->isBound()) {
+            $this->connection->close();
+        }
+        $this->connection->connect(null, null, false, $wantedServer);
+    }
 }

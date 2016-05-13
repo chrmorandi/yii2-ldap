@@ -2,7 +2,7 @@
     "name": "chrmorandi/yii2-ldap",
     "description": "Ldap",
     "type": "library",
-    "keywords": ["yii2","extension"],
+    "keywords": ["yii2","extension","ldap", "Active Directory", "Microsoft Exchange", "OpenLDAP"],
     "license": "MIT",
     "authors": [
         {

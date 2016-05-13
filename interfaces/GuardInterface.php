@@ -2,7 +2,6 @@
 
 namespace chrmorandi\ldap\interfaces;
 
-use chrmorandi\ldap\Connections\Configuration;
 use chrmorandi\ldap\interfaces\ConnectionInterface;
 
 interface GuardInterface
@@ -13,7 +12,7 @@ interface GuardInterface
      * @param ConnectionInterface $connection
      * @param Configuration       $configuration
      */
-    public function __construct(ConnectionInterface $connection, Configuration $configuration);
+    public function __construct(Connection $connection, Configuration $configuration);
 
     /**
      * Authenticates a user using the specified credentials.

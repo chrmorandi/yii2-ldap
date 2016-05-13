@@ -2,7 +2,14 @@
 
 namespace chrmorandi\ldap;
 
+use chrmorandi\ldap\ActiveQuery;
+use chrmorandi\ldap\Connection;
+use chrmorandi\ldap\exceptions\InvalidArgumentException;
+use chrmorandi\ldap\Object\LdapObject;
+use chrmorandi\ldap\operation\DeleteOperation;
+use yii\base\InvalidConfigException;
 use yii\db\BaseActiveRecord;
+use Yii;
 
 /**
  * ActiveRecord is the base class for classes representing relational data in terms of objects.
@@ -76,5 +83,41 @@ class ActiveRecord extends BaseActiveRecord
     public function insert($runValidation = true, $attributes = null)
     {
         // TODO
+    }
+    
+    /**
+     * Delete an object from LDAP. Optionally you can set the second argument to true which sends a control to LDAP to
+     * perform a recursive deletion. This is helpful in the case of deleting an OU with with objects underneath it. By
+     * setting the second parameter to true the OU and all objects below it would be deleted. Use with care!
+     *
+     * If recursive deletion does not work, first check that 'accidental deletion' is not enabled on the object (AD).
+     *
+     * @param LdapObject $ldapObject
+     * @param bool $recursively
+     * @return $this
+     */
+    public static function deleteAll($condition = null, $recursively = false)
+    {
+        $db = static::getDb();
+        
+        $this->validateObject($ldapObject);        
+        $operation = new DeleteOperation($ldapObject->get('dn'));
+        if ($recursively) {
+            //$operation->addControl((new LdapControl(LdapControlType::SUB_TREE_DELETE))->setCriticality(true));
+        }
+        $result = $db->execute($operation);
+        return end($result);
+    }
+    
+    /**
+     * The DN attribute must be present to perform LDAP operations.
+     *
+     * @param LdapObject $ldapObject
+     */
+    protected function validateObject(LdapObject $ldapObject)
+    {
+        if (!$ldapObject->has('dn')) {
+            throw new InvalidArgumentException('To persist/delete/move/restore a LDAP object it must have the DN attribute.');
+        }
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace chrmorandi\ldap\Query;
+namespace chrmorandi\ldap\query;
 
 use ReflectionClass;
 

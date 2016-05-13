@@ -8,7 +8,7 @@ use chrmorandi\ldap\exceptions\UsernameRequiredException;
 use chrmorandi\ldap\interfaces\ConnectionInterface;
 use chrmorandi\ldap\interfaces\GuardInterface;
 
-class Guard implements GuardInterface
+class Guard// implements GuardInterface
 {
     /**
      * @var ConnectionInterface
@@ -23,7 +23,7 @@ class Guard implements GuardInterface
     /**
      * {@inheritdoc}
      */
-    public function __construct(ConnectionInterface $connection, Configuration $configuration)
+    public function __construct(Connection $connection, Configuration $configuration)
     {
         $this->connection = $connection;
         $this->configuration = $configuration;
