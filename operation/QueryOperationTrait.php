@@ -9,9 +9,11 @@
 
 namespace chrmorandi\ldap\operation;
 
-use chrmorandi\ldap\Exception\LdapConnectionException;
+use chrmorandi\ldap\exceptions\ConnectionException;
 use chrmorandi\ldap\operation\OperationInterface;
 use chrmorandi\ldap\operation\QueryOperation;
+use chrmorandi\ldap\PageControl;
+use yii\helpers\ArrayHelper;
 
 /**
  * Handles LDAP query operations.
@@ -41,32 +43,60 @@ trait QueryOperationTrait
     public function execute()
     {
         $allEntries = [];
-
+//$token = $operation->name;
         /** @var QueryOperation $operation */
-        $this->paging()->setIsEnabled($this->shouldUsePaging());
-        $this->paging()->start($this->getPageSize(), $this->getSizeLimit());
+        //$this->paging($this->conn->getConnection)->setIsEnabled($this->shouldUsePaging());
+        //$this->paging($this->conn->getConnection)->start($this->getPageSize(), $this->getSizeLimit());
         do {
-            $this->paging()->next();
-
+            //$this->paging()->next();
+$teste1 = $this->getLdapFunction();
+$teste2 = $this->conn->getConnection();
+$teste3 = $this->getArguments();
+           // Yii::beginProfile($token, 'chrmorandi\ldap\Connection::execute');
             $result = @call_user_func(
                 $this->getLdapFunction(),
-                $this->connection->getConnection(),
+                $this->conn->getConnection(),
                 ...$this->getArguments()
             );
             $allEntries = $this->processSearchResult($result, $allEntries);
 
-            $this->paging()->update($result);
-        } while ($this->paging()->isActive());
-        $this->paging()->end();
+            //$this->paging()->update($result);
+        } while (false);//($this->paging()->isActive());
+        //$this->paging()->end();
+//finally {
+//            Yii::endProfile($token, 'chrmorandi\ldap\Connection::execute');
+//            //$this->resetLdapControls($operation);
+//        }
+        $entries = [];
+        if (is_array($allEntries) && array_key_exists('count', $allEntries)) {
+            for ($i = 0; $i < $allEntries['count']; $i++) {
+                $entries[] = $this->convertLdapArray($allEntries[$i]);
+            }
+        }
 
-        return $allEntries;
+        return $entries;
+    }
+    
+    protected function convertLdapArray($resultArray)
+    {
+        $attributes = array();
+        foreach ($resultArray as $key => $value) {
+            ArrayHelper::remove($resultArray[$key], 'count');
+            
+            if (!is_String($key) || !isset($resultArray[$key]) || !is_array($resultArray[$key])) {
+                continue;
+            }
+            
+            $attributes[$key] = implode(",", $resultArray[$key]) ;
+        }
+        return $attributes;
     }
 
     /**
      * Gets the base DN for a search based off of the config and then the RootDSE.
      *
      * @return string
-     * @throws LdapConnectionException
+     * @throws ConnectionException
      */
     protected function getBaseDn()
     {
@@ -77,7 +107,7 @@ trait QueryOperationTrait
         } elseif ($this->connection->getRootDse()->has('namingContexts')) {
             $baseDn =  $this->connection->getRootDse()->get('namingContexts')[0];
         } else {
-            throw new LdapConnectionException('The base DN is not defined and could not be found in the RootDSE.');
+            throw new ConnectionException('The base DN is not defined and could not be found in the RootDSE.');
         }
 
         return $baseDn;
@@ -107,15 +137,15 @@ trait QueryOperationTrait
      * @param resource $result
      * @param array $allEntries
      * @return array
-     * @throws LdapConnectionException
+     * @throws ConnectionException
      */
     protected function processSearchResult($result, array $allEntries)
     {
         if (!$result) {
-            throw new LdapConnectionException(sprintf('LDAP search failed: %s', $this->connection->getLastError()));
+            throw new ConnectionException(sprintf('LDAP search failed: %s', $this->conn->getLastError()));
         }
 
-        $entries = @ldap_get_entries($this->connection->getConnection(), $result);
+        $entries = @ldap_get_entries($this->conn->getConnection(), $result);
         if (!$entries) {
             return $allEntries;
         }
@@ -131,7 +161,7 @@ trait QueryOperationTrait
     protected function paging()
     {
         if (!$this->paging) {
-            $this->paging = new PageControl($this->connection);
+            $this->paging = new PageControl($this->conn->getConnection);
         }
 
         return $this->paging;

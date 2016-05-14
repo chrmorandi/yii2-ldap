@@ -2,7 +2,7 @@
 
 namespace chrmorandi\ldap\objects;
 
-use chrmorandi\ldap\Schemas\Schema;
+use chrmorandi\ldap\schemas\Schema;
 use chrmorandi\ldap\Utilities;
 
 class DistinguishedName

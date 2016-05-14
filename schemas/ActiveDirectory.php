@@ -7,7 +7,7 @@ namespace chrmorandi\ldap\schemas;
  *
  * The active directory attribute schema.
  */
-class ActiveDirectory
+class ActiveDirectory extends \yii\base\Model
 {
     /**
      * The date when the account expires. This value represents the number of 100-nanosecond
@@ -30,7 +30,7 @@ class ActiveDirectory
      *
      * @var string
      */
-    public $samaccountname;
+    public $samaccountname = 'teset';
 
     /**
      * This attribute contains information about every account type object.
@@ -403,7 +403,7 @@ class ActiveDirectory
     /**
      * {@inheritdoc}
      */
-    public $ms-exch-exchange-server;
+    //public $ms-exch-exchange-server;
 
     /**
      * {@inheritdoc}
@@ -414,11 +414,6 @@ class ActiveDirectory
      * {@inheritdoc}
      */
     public $objectcategory;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $computer;
 
     /**
      * {@inheritdoc}
@@ -448,17 +443,12 @@ class ActiveDirectory
     /**
      * {@inheritdoc}
      */
-    public $organizational-unit;
+    //public $organizational-unit;
 
     /**
      * {@inheritdoc}
      */
-    public $person;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $print-queue;
+    //public $print-queue;
 
     /**
      * {@inheritdoc}
@@ -474,31 +464,6 @@ class ActiveDirectory
      * {@inheritdoc}
      */
     public $user;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $computer;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $contact;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $group;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $organizationalunit;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $container;
 
     /**
      * {@inheritdoc}
@@ -554,11 +519,6 @@ class ActiveDirectory
      * {@inheritdoc}
      */
     public $pwdlastset;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $person;
 
     /**
      * {@inheritdoc}
@@ -774,17 +734,6 @@ class ActiveDirectory
      * @return string
      */
     public $url;
-
-    /**
-     * The user object class.
-     *
-     * This class is used to store information about an employee or contractor who works for an organization.
-     *
-     * @link https://msdn.microsoft.com/en-us/library/ms683980(v=vs.85).aspx
-     *
-     * @return string
-     */
-    public $user;
 
     /**
      * Flags that control the behavior of the user account.

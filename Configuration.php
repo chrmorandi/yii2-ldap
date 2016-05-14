@@ -2,7 +2,6 @@
 
 namespace chrmorandi\ldap;
 
-use chrmorandi\ldap\interfaces\ConnectionInterface;
 use chrmorandi\ldap\exceptions\ConfigurationException;
 use chrmorandi\ldap\exceptions\InvalidArgumentException;
 use chrmorandi\ldap\objects\DistinguishedName;
@@ -104,13 +103,7 @@ class Configuration extends \yii\base\Object
      */
     public function setBaseDn($dn)
     {
-        // We'll construct a new Distinguished name with
-        // the DN we're given so we know it's valid.
-        if (!$dn instanceof DistinguishedName) {
-            $dn = new DistinguishedName($dn);
-        }
-
-        $this->baseDn = $dn->get();
+        $this->baseDn = $dn;
     }
 
     /**

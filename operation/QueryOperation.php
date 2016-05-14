@@ -9,8 +9,10 @@
 
 namespace chrmorandi\ldap\operation;
 
+use chrmorandi\ldap\ConnectionInterface;
 use chrmorandi\ldap\Exception\LdapQueryException;
 use chrmorandi\ldap\Query\OperatorCollection;
+use yii\base\Object;
 
 /**
  * Represents an operation to query LDAP and return a result set.
@@ -18,7 +20,7 @@ use chrmorandi\ldap\Query\OperatorCollection;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0
  */
-class QueryOperation extends \yii\base\Object implements OperationInterface
+class QueryOperation extends Object implements OperationInterface
 {
     use OperationTrait;
     use QueryOperationTrait;
@@ -53,13 +55,19 @@ class QueryOperation extends \yii\base\Object implements OperationInterface
         'scope' => self::SCOPE['SUBTREE'],
         'sizeLimit' => 0,
     ];
+    
+    protected $conn;
 
     /**
      * @param null|string|OperatorCollection $filter
      * @param array $attributes
      */
-    public function __construct($filter = null, array $attributes = [])
+    public function __construct(ConnectionInterface $conn, $filter = null, array $attributes = [])
     {
+        $this->conn = $conn;
+        $this->conn->open();
+        $config = $this->conn->getConfiguration();
+        $this->properties['baseDn'] = $config->getBaseDn();
         $this->properties['filter'] = $filter;
         $this->properties['attributes'] = $attributes;
         $this->properties['scope'] = self::SCOPE['SUBTREE'];

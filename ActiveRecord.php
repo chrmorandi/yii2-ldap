@@ -7,10 +7,11 @@ use chrmorandi\ldap\Connection;
 use chrmorandi\ldap\exceptions\InvalidArgumentException;
 use chrmorandi\ldap\Object\LdapObject;
 use chrmorandi\ldap\operation\DeleteOperation;
-use chrmorandi\ldap\Schemas\ActiveDirectory;
+use chrmorandi\ldap\schemas\ActiveDirectory;
+use ReflectionClass;
+use ReflectionProperty;
 use Yii;
 use yii\db\BaseActiveRecord;
-use yii\helpers\ArrayHelper;
 
 /**
  * ActiveRecord is the base class for classes representing relational data in terms of objects.
@@ -68,14 +69,24 @@ class ActiveRecord extends BaseActiveRecord
         return ['cn'];
     }
     
+        
     /**
-     * Returns the list of all attribute names of the model.
-     * This method must be overridden by child classes to define available attributes.
+     * Returns the list of attribute names.
+     * By default, this method returns all public non-static properties of the class.
+     * You may override this method to change the default behavior.
      * @return array list of attribute names.
      */
     public function attributes()
     {
-        return ArrayHelper::toArray(new ActiveDirectory);
+        $class = new ReflectionClass(new ActiveDirectory);
+        $names = [];
+        foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic()) {
+                $names[] = $property->getName();
+            }
+        }
+
+        return $names;
     }
     
     /**

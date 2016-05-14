@@ -130,9 +130,10 @@ class ActiveQuery extends Component implements ActiveQueryInterface
         $filter = $this->queryBuilder->compileQuery();
         $selects = $this->queryBuilder->getSelects();        
         
-        $operation = new QueryOperation($filter, $selects);
+        $filter = '(cn=*)';
+        $operation = new QueryOperation($db, $filter, $selects);
         
-        return $this->populate($db->execute($operation));
+        return $this->populate($operation->execute());
     }
     
 

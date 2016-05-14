@@ -13,7 +13,6 @@ use chrmorandi\ldap\exceptions\AdldapException;
 use chrmorandi\ldap\exceptions\BindException;
 use chrmorandi\ldap\exceptions\ConnectionException;
 use chrmorandi\ldap\exceptions\InvalidArgumentException;
-use chrmorandi\ldap\interfaces\SchemaInterface;
 use chrmorandi\ldap\operation\OperationInterface;
 use Yii;
 use yii\base\Component;
@@ -50,7 +49,7 @@ class Connection extends Component implements ConnectionInterface
     
     
     /**
-     * @var SchemaInterface
+     * @var array|object
      */
     protected $schema;
     
@@ -70,8 +69,8 @@ class Connection extends Component implements ConnectionInterface
      */
     public function __destruct()
     {
-        if ($this->conn instanceof ConnectionInterface && $this->conn->isBound()) {
-            $this->conn->close();
+        if ($this->conn instanceof ConnectionInterface && $this->isBound()) {
+            $this->close();
         }
     }
     
@@ -192,10 +191,10 @@ class Connection extends Component implements ConnectionInterface
      * @param bool $anonymous Whether this is an anonymous bind attempt.
      * @throws BindException
      */
-    protected function bind($username, $password, $prefix = null, $suffix = null, $anonymous = false)
+    public function bind($username, $password, $prefix = null, $suffix = null, $anonymous = false)
     {
         if ($anonymous) {
-            $this->isBound = @ldap_bind($this->conn);
+            $this->bound = @ldap_bind($this->conn);
         } else {
             // If the username isn't empty, we'll append the configured
             // account prefix and suffix to bind to the LDAP server.
@@ -209,10 +208,10 @@ class Connection extends Component implements ConnectionInterface
 
             $username = $prefix.$username.$suffix;
             
-            $this->isBound = @ldap_bind($this->conn, $username, $password);
+            $this->bound = @ldap_bind($this->conn, $username, $password);
         }
 
-        if (!$this->isBound) {
+        if (!$this->bound) {
             throw new BindException(
                 sprintf('Unable to bind to LDAP: %s', $this->lastError),
                 $this->errNo
@@ -348,21 +347,7 @@ class Connection extends Component implements ConnectionInterface
      */
     public function execute(OperationInterface $operation)
     {        
-        $result = true;
-        $this->open();
-        $token = $operation->name;
-        
-        try {           
-            Yii::beginProfile($token, 'chrmorandi\ldap\Connection::execute');
-            return $operation->execute();
-        } catch (\Exception $e) {
-            $this->logExceptionAndThrow($e, $log);
-        } finally {
-            Yii::endProfile($token, 'chrmorandi\ldap\Connection::execute');
-            $this->resetLdapControls($operation);
-        }        
 
-        return $result;
     }
     
     /**

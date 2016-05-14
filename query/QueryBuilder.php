@@ -3,8 +3,9 @@
 namespace chrmorandi\ldap\query;
 
 use chrmorandi\ldap\ActiveQuery;
+use chrmorandi\ldap\Connection;
+use chrmorandi\ldap\ConnectionInterface;
 use chrmorandi\ldap\exceptions\ModelNotFoundException;
-use chrmorandi\ldap\interfaces\ConnectionInterface;
 use chrmorandi\ldap\interfaces\SchemaInterface;
 use chrmorandi\ldap\models\Entry;
 use chrmorandi\ldap\objects\Paginator;
@@ -225,7 +226,7 @@ class QueryBuilder extends Object
      *
      * @param string $query
      *
-     * @return array|\Illuminate\Support\Collection
+     * @return array|Collection
      */
     public function build($query)
     {

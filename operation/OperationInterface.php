@@ -10,6 +10,7 @@
 namespace chrmorandi\ldap\operation;
 
 use chrmorandi\ldap\Connection\LdapControl;
+use chrmorandi\ldap\ConnectionInterface;
 
 /**
  * The interface to represent a LDAP operation to be executed.
@@ -59,8 +60,7 @@ interface OperationInterface
     /**
      * Execute a LDAP operation and return a response.
      *
-     * @param OperationInterface $operation
      * @return mixed
      */
-    public function execute(OperationInterface $operation);
+    public function execute();
 }
