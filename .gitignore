@@ -36,6 +36,7 @@ phpunit.phar
 
 # box vagrant do cajui
 .vagrant
+Vagrantfile
 /cajui.box
 
 # arquivos do yii

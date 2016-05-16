@@ -326,8 +326,13 @@ class Connection extends Component implements ConnectionInterface
     }
     
     /**
-     * @param OperationInterface $operation
-     * @return mixed
+     * Execute ldap functions like.
+     * 
+     * http://php.net/manual/en/ref.ldap.php
+     * 
+     * @param  string $function php LDAP function
+     * @param  array $params params for execute ldap function
+     * @return bool|resource
      * @throws ConnectionException
      */
     public function execute($function, $params)
@@ -339,7 +344,11 @@ class Connection extends Component implements ConnectionInterface
             throw new LdapException($this, sprintf('LDAP search failed: %s', $this->getLastError()), $this->getErrNo());
         }
         
-        return (new DataReader($this, $result))->toArray();
+        if(is_resource($result)){
+            return new DataReader($this, $result);
+        }
+
+        return $result;
     }
     
     /**

@@ -43,17 +43,17 @@ class FilterBuilder extends Object
         'NOT LIKE' => 'buildLikeCondition',
         'OR LIKE' => 'buildLikeCondition',
         'OR NOT LIKE' => 'buildLikeCondition',
-        'EXISTS' => 'buildExistsCondition',
-        'NOT EXISTS' => 'buildExistsCondition',
     ];
     
-    const TYPE_EQUALS         = '=';
-    const TYPE_GREATER        = '>';
-    const TYPE_GREATEROREQUAL = '>=';
-    const TYPE_LESS           = '<';
-    const TYPE_LESSOREQUAL    = '<=';
-    const TYPE_APPROX         = '~=';
-
+    /**
+     * @var array map of operator for builder methods.
+     */
+    protected $operator = [
+        'NOT' => '!',
+        'AND' => '&',
+        'OR' => '|',
+        'LIKE' => '~=',
+    ];
 
     /**
      * Parses the condition specification and generates the corresponding filters.
@@ -81,67 +81,6 @@ class FilterBuilder extends Object
         } else { // hash format: 'column1' => 'value1', 'column2' => 'value2', ...
             return $this->buildHashCondition($condition);
         }  
-    }
-
-
-    /**
-     * Builds the ORDER BY and LIMIT/OFFSET clauses and appends them to the given SQL.
-     * @param string $sql the existing SQL (without ORDER BY/LIMIT/OFFSET)
-     * @param array $orderBy the order by columns. See [[Query::orderBy]] for more details on how to specify this parameter.
-     * @param integer $limit the limit number. See [[Query::limit]] for more details.
-     * @param integer $offset the offset number. See [[Query::offset]] for more details.
-     * @return string the SQL completed with ORDER BY/LIMIT/OFFSET (if any)
-     */
-    public function buildOrderByAndLimit($sql, $orderBy, $limit, $offset)
-    {
-        $orderBy = $this->buildOrderBy($orderBy);
-        if ($orderBy !== '') {
-            $sql .= $this->separator . $orderBy;
-        }
-        $limit = $this->buildLimit($limit, $offset);
-        if ($limit !== '') {
-            $sql .= $this->separator . $limit;
-        }
-        return $sql;
-    }
-
-    /**
-     * @param integer $limit
-     * @param integer $offset
-     * @return string the LIMIT and OFFSET clauses
-     */
-    public function buildLimit($limit, $offset)
-    {
-        $sql = '';
-        if ($this->hasLimit($limit)) {
-            $sql = 'LIMIT ' . $limit;
-        }
-        if ($this->hasOffset($offset)) {
-            $sql .= ' OFFSET ' . $offset;
-        }
-
-        return ltrim($sql);
-    }
-
-    /**
-     * Checks to see if the given limit is effective.
-     * @param mixed $limit the given limit
-     * @return boolean whether the limit is effective
-     */
-    protected function hasLimit($limit)
-    {
-        return ctype_digit((string) $limit);
-    }
-
-    /**
-     * Checks to see if the given offset is effective.
-     * @param mixed $offset the given offset
-     * @return boolean whether the offset is effective
-     */
-    protected function hasOffset($offset)
-    {
-        $offset = (string) $offset;
-        return ctype_digit($offset) && $offset !== '0';
     }
 
     /**
@@ -182,7 +121,7 @@ class FilterBuilder extends Object
             }
         }
         if (!empty($parts)) {
-            return '(&(' . implode(") (", $parts) . ')'.implode($other).' )';
+            return '('.$this->operator[$operator].'(' . implode(") (", $parts) . ')'.implode($other).' )';
         } else {
             return '';
         }
@@ -210,7 +149,7 @@ class FilterBuilder extends Object
             return '';
         }
 
-        return '(!('.key($operands) .'='.$operand.'))';
+        return '('.$this->operator['NOT'].'('.key($operands) .'='.$operand.'))';
     }
 
     /**
@@ -380,7 +319,7 @@ class FilterBuilder extends Object
         if (!preg_match('/^(AND |OR |)(((NOT |))I?LIKE)/', $operator, $matches)) {
             throw new InvalidParamException("Invalid operator '$operator'.");
         }
-        $andor = ' ' . (!empty($matches[1]) ? $matches[1] : 'AND ');
+        $andor = (!empty($matches[1]) ? $matches[1] : 'AND ');
         $not = !empty($matches[3]);
         $operator = $matches[2];
 
@@ -393,14 +332,16 @@ class FilterBuilder extends Object
         if (empty($values)) {
             return $not ? '' : '0=1';
         }
+        
+        $not = ($operator == 'NOT LIKE') ? '(' . $this->operator['NOT'] : false;
 
         $parts = [];
         foreach ($values as $value) {
-            $value = empty($escape) ? $value : ('*' . strtr($value, $escape) . '*');
-            $parts[] = "$column $operator $value";
+            $value = empty($escape) ? $value : strtr($value, $escape);
+            $parts[] = $not . '(' . $column .'=*'.$value . '*)' . ($not? ')':'');
         }
 
-        return implode($andor, $parts);
+        return '('.$this->operator[trim($andor)] . implode($parts). ')';
     }
 
     /**
@@ -421,7 +362,7 @@ class FilterBuilder extends Object
         if ($value === null) {
             return "$column $operator NULL";
         } else {
-            return "$column $operator $value";
+            return "($column $operator $value)";
         }
     }
     

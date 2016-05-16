@@ -18,9 +18,8 @@ use yii\base\Object;
 /**
  * DataReader represents a forward-only stream of rows from a query result set.
  *
- * To read the current row of data, call [[read()]]. The method [[readAll()]]
- * returns all the rows in a single array. Rows of data can also be read by
- * iterating through the reader. For example,
+ * The method returns [[toArray()]] all the rows in a single array.
+ * Rows of data can also be read by iterating through the reader. For example, 
  *
  * ```php
  * $command = $connection->createCommand('SELECT * FROM post');
@@ -67,7 +66,7 @@ class DataReader extends Object implements Iterator, Countable
     private $_closed = false;
     private $_row;
     private $_index = -1;
-    private $_count = -1;    
+    private $_count = -1;
     private $_result;
 
 
@@ -84,12 +83,12 @@ class DataReader extends Object implements Iterator, Countable
         $this->_result = $result;
         $resource      = $conn->resource;
         
-        Yii::beginProfile('ldap_count_entries', 'chrmorandi\ldap\DataReader::ldap_entries');
+        Yii::beginProfile('ldap_count_entries', 'chrmorandi\ldap\DataReader');
         $this->_count = ldap_count_entries($resource, $this->_result);
-        Yii::endProfile('ldap_count_entries', 'chrmorandi\ldap\DataReader::ldap_entries');
+        Yii::endProfile('ldap_count_entries', 'chrmorandi\ldap\DataReader');
         
         if ($this->_count === false) {
-            throw new LdapException($this->_conn, sprintf('LDAP count entries failed: %s', $this->getLastError()), $this->getErrNo());
+            throw new LdapException($this->_conn, sprintf('LDAP count entries failed: %s', $this->_conn->getLastError()), $this->getErrNo());
         }
 
         $identifier = ldap_first_entry(
@@ -111,6 +110,11 @@ class DataReader extends Object implements Iterator, Countable
 
         parent::__construct($config);
     }
+    
+    public function __destruct()
+    {
+        $this->close();
+    }
 
     /**
      * Get all entries as an array
@@ -118,77 +122,15 @@ class DataReader extends Object implements Iterator, Countable
      */
     public function toArray()
     {
+        if($this->_count <= 0){
+            return [];
+        }
+        
         $data = [];
         foreach ($this as $item) {
             $data[] = $item;
         }
         return $data;
-    }
-
-    /**
-     * Set the default fetch mode for this statement
-     * @param integer $mode fetch mode
-     * @see http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php
-     */
-    public function setFetchMode($mode)
-    {
-        $params = func_get_args();
-        call_user_func_array([$this->_statement, 'setFetchMode'], $params);
-    }
-
-    /**
-     * Advances the reader to the next row in a result set.
-     * @return array the current row, false if no more row available
-     */
-    public function read()
-    {
-        return $this->_statement->fetch();
-    }
-
-    /**
-     * Returns a single column from the next row of a result set.
-     * @param integer $columnIndex zero-based column index
-     * @return mixed the column of the current row, false if no more rows available
-     */
-    public function readColumn($columnIndex)
-    {
-        return $this->_statement->fetchColumn($columnIndex);
-    }
-
-    /**
-     * Returns an object populated with the next row of data.
-     * @param string $className class name of the object to be created and populated
-     * @param array $fields Elements of this array are passed to the constructor
-     * @return mixed the populated object, false if no more row of data available
-     */
-    public function readObject($className, $fields)
-    {
-        return $this->_statement->fetchObject($className, $fields);
-    }
-
-    /**
-     * Reads the whole result set into an array.
-     * @return array the result set (each array element represents a row of data).
-     * An empty array will be returned if the result contains no row.
-     */
-    public function readAll()
-    {
-        return $this->_statement->fetchAll();
-    }
-
-    /**
-     * Advances the reader to the next result when reading the results of a batch of statements.
-     * This method is only useful when there are multiple result sets
-     * returned by the query. Not all DBMS support this feature.
-     * @return boolean Returns true on success or false on failure.
-     */
-    public function nextResult()
-    {
-        if (($result = $this->_statement->nextRowset()) !== false) {
-            $this->_index = -1;
-        }
-
-        return $result;
     }
 
     /**
@@ -198,19 +140,14 @@ class DataReader extends Object implements Iterator, Countable
      */
     public function close()
     {
-        $isClosed = false;
-        if (is_resource($this->resultId)) {
-            //ErrorHandler::start();
-            $isClosed       = ldap_free_result($this->resultId);
-            //ErrorHandler::stop();
+        if (is_resource($this->_result)) {
+            Yii::beginProfile('ldap_free_result', 'chrmorandi\ldap\DataReader');
+            $this->_closed = ldap_free_result($this->_result);
+            Yii::endProfile('ldap_free_result', 'chrmorandi\ldap\DataReader');
 
-            $this->resultId = null;
-            $this->current  = null;
+            $this->_result = null;
+            $this->_row  = null;
         }
-        return $isClosed;
-        
-        $this->_statement->closeCursor();
-        $this->_closed = true;
     }
 
     /**
@@ -235,25 +172,20 @@ class DataReader extends Object implements Iterator, Countable
     }
 
     /**
-     * Returns the number of columns in the result set.
-     * Note, even there's no row in the reader, this still gives correct column number.
-     * @return integer the number of columns in the result set.
-     */
-    public function getColumnCount()
-    {
-        return $this->_statement->columnCount();
-    }
-
-    /**
      * Resets the iterator to the initial state.
      * This method is required by the interface [[\Iterator]].
      * @throws InvalidCallException if this method is invoked twice
      */
     public function rewind()
-    {        
-        reset($this->entries);
-        $nextEntry = current($this->entries);
-        $this->_row = $nextEntry['resource'];
+    {   
+        if ($this->_index < 0) {
+            reset($this->entries);
+            $nextEntry = current($this->entries);
+            $this->_row = $nextEntry['resource'];            
+            $this->_index = 0;
+        } else {
+            throw new InvalidCallException('DataReader cannot rewind. It is a forward-only reader.');
+        }
     }
 
     /**
@@ -263,23 +195,16 @@ class DataReader extends Object implements Iterator, Countable
      */
     public function key()
     {
-        if (!is_resource($this->_row)) {
-            $this->rewind();
-        }
-        if (is_resource($this->_row)) {
-            $resource = $this->_conn->resource;
-            //ErrorHandler::start();
-            $currentDn = ldap_get_dn($resource, $this->_row);
-            //ErrorHandler::stop();
+        Yii::beginProfile('ldap_get_dn', 'chrmorandi\ldap\DataReader');
+        $currentDn = ldap_get_dn($this->_conn->resource, $this->_row);
+        Yii::endProfile('ldap_get_dn', 'chrmorandi\ldap\DataReader');
 
-            if ($currentDn === false) {
-                //throw new Exception\LdapException($this->ldap, 'getting dn');
-            }
-
-            return $currentDn;
-        } else {
-            return;
+        if ($currentDn === false) {
+            throw new LdapException($this->_conn, sprintf('LDAP get dn failed: %s', $this->_conn->getLastError()), $this->getErrNo());
         }
+
+        return $currentDn;
+ 
     }
 
     /**
@@ -289,24 +214,15 @@ class DataReader extends Object implements Iterator, Countable
      */
     public function current()
     {
-        if (!is_resource($this->_row)) {
-            $this->rewind();
-        }
-        if (!is_resource($this->_row)) {
-            return;
-        }
-
         $entry = ['dn' => $this->key()];
 
         $resource = $this->_conn->resource;
-        //ErrorHandler::start();
-        $name = ldap_first_attribute($resource, $this->_row);
-        //ErrorHandler::stop();
         
-        while ($name) {
-            //ErrorHandler::start();
+        Yii::beginProfile('current:' . $this->key(), 'chrmorandi\ldap\DataReader');
+        $name = ldap_first_attribute($resource, $this->_row);        
+        
+        while ($name) {            
             $data = ldap_get_values_len($resource, $this->_row, $name);
-            //ErrorHandler::stop();
 
             if (!$data) {
                 $data = [];
@@ -316,27 +232,13 @@ class DataReader extends Object implements Iterator, Countable
                 unset($data['count']);
             }
 
-//            switch ($this->attributeNameTreatment) {
-//                case self::ATTRIBUTE_TO_LOWER:
-//                    $attrName = strtolower($name);
-//                    break;
-//                case self::ATTRIBUTE_TO_UPPER:
-//                    $attrName = strtoupper($name);
-//                    break;
-//                case self::ATTRIBUTE_NATIVE:
-//                    $attrName = $name;
-//                    break;
-//                default:
-//                    $attrName = call_user_func($this->attributeNameTreatment, $name);
-//                    break;
-//            }
             $attrName = $name;
-            $entry[$attrName] = $data;
+            $entry[$attrName] = implode(",", $data);
 
-            //ErrorHandler::start();
             $name = ldap_next_attribute($resource, $this->_row);
-            //ErrorHandler::stop();
-        }
+        }        
+        Yii::endProfile('ldap_first_attribute', 'chrmorandi\ldap\DataReader');
+        
         ksort($entry, SORT_LOCALE_STRING);
         return $entry;
     }
@@ -354,12 +256,12 @@ class DataReader extends Object implements Iterator, Countable
     }
 
     /**
-     * Returns whether there is a row of data at current position.
+     * Returns whether there is a row of resource at current position.
      * This method is required by the interface [[\Iterator]].
      * @return boolean whether there is a row of data at current position.
      */
     public function valid()
     {
-        return $this->_row !== false;
+        return (is_resource($this->_row));
     }
 }

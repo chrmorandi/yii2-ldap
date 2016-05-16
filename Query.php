@@ -108,25 +108,18 @@ class Query extends Component implements QueryInterface
         }
         
         $filter = (new FilterBuilder)->build($this->where);
-        
+        $select = (is_array($this->select))?$this->select:[];
+
         $params = [
             $db->baseDn,
             $filter,
-            //$this->select,
-            //0,
+            $select,
+            0
             //$sizelimit, 
             //$timelimit 
         ];
        
         return $params;
-
-        /** @var Command $command */
-//        $command = new Command([
-//            'db' => $db,
-//            'scope' => $this->scope            
-//        ]);
-
-        //return $command->bindValues($params);
     }
 
     /**
@@ -200,9 +193,11 @@ class Query extends Component implements QueryInterface
             $db = Yii::$app->get('ldap');
         }
         
-        $params = $this->createCommand($db);        
-        return $db->execute($this->scope, $params);
-        //return $this->populate($rows);
+        $params = $this->createCommand($db);
+        
+        /** @var $result DataReader */
+        $result = $db->execute($this->scope, $params);
+        return $this->populate($result->toArray());
     }
 
     /**
@@ -353,7 +348,7 @@ class Query extends Component implements QueryInterface
      *
      * @return $this the query object itself
      */
-    public function select($columns, $option = null)
+    public function select($columns)
     {
         if (!is_array($columns)) {
             $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);

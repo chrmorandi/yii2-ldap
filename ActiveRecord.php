@@ -60,13 +60,11 @@ class ActiveRecord extends BaseActiveRecord
      * Returns the primary key name(s) for this AR class.
      * This method should be overridden by child classes to define the primary key.
      *
-     * Note that an array should be returned even when it is a single primary key.
-     *
      * @return string[] the primary keys of this record.
      */
     public static function primaryKey()
     {
-        return ['cn'];
+        return 'dn';
     }
     
         
@@ -90,46 +88,135 @@ class ActiveRecord extends BaseActiveRecord
     }
     
     /**
-     * @inheritdoc
+     * Inserts a row into the associated database table using the attribute values of this record.
+     *
+     * This method performs the following steps in order:
+     *
+     * 1. call [[beforeValidate()]] when `$runValidation` is true. If [[beforeValidate()]]
+     *    returns `false`, the rest of the steps will be skipped;
+     * 2. call [[afterValidate()]] when `$runValidation` is true. If validation
+     *    failed, the rest of the steps will be skipped;
+     * 3. call [[beforeSave()]]. If [[beforeSave()]] returns `false`,
+     *    the rest of the steps will be skipped;
+     * 4. insert the record into database. If this fails, it will skip the rest of the steps;
+     * 5. call [[afterSave()]];
+     *
+     * In the above step 1, 2, 3 and 5, events [[EVENT_BEFORE_VALIDATE]],
+     * [[EVENT_AFTER_VALIDATE]], [[EVENT_BEFORE_INSERT]], and [[EVENT_AFTER_INSERT]]
+     * will be raised by the corresponding methods.
+     *
+     * Only the [[dirtyAttributes|changed attribute values]] will be inserted into database.
+     *
+     * If the table's primary key is auto-incremental and is null during insertion,
+     * it will be populated with the actual value after insertion.
+     *
+     * For example, to insert a customer record:
+     *
+     * ```php
+     * $customer = new Customer;
+     * $customer->name = $name;
+     * $customer->email = $email;
+     * $customer->insert();
+     * ```
+     *
+     * @param boolean $runValidation whether to perform validation (calling [[validate()]])
+     * before saving the record. Defaults to `true`. If the validation fails, the record
+     * will not be saved to the database and this method will return `false`.
+     * @param array $attributes list of attributes that need to be saved. Defaults to null,
+     * meaning all attributes that are loaded from DB will be saved.
+     * @return boolean whether the attributes are valid and the record is inserted successfully.
+     * @throws \Exception in case insert failed.
      */
     public function insert($runValidation = true, $attributes = null)
     {
-        // TODO
+        if ($runValidation && !$this->validate($attributes)) {
+            Yii::info('Model not inserted due to validation error.', __METHOD__);
+            return false;
+        }
+
+        return $this->insertInternal($attributes);
     }
     
     /**
-     * Delete an object from LDAP. Optionally you can set the second argument to true which sends a control to LDAP to
-     * perform a recursive deletion. This is helpful in the case of deleting an OU with with objects underneath it. By
-     * setting the second parameter to true the OU and all objects below it would be deleted. Use with care!
-     *
-     * If recursive deletion does not work, first check that 'accidental deletion' is not enabled on the object (AD).
-     *
-     * @param LdapObject $ldapObject
-     * @param bool $recursively
-     * @return $this
+     * Inserts an ActiveRecord into LDAP without.
+     * @param array $attributes list of attributes that need to be saved. Defaults to null,
+     * meaning all attributes that are loaded will be saved.
+     * @return boolean whether the record is inserted successfully.
      */
-    public static function deleteAll($condition = null, $recursively = false)
+    protected function insertInternal($attributes = null)
     {
-        $db = static::getDb();
+        if (!$this->beforeSave(true)) {
+            return false;
+        }
         
-        $this->validateObject($ldapObject);        
-        $operation = new DeleteOperation($ldapObject->get('dn'));
-        if ($recursively) {
-            //$operation->addControl((new LdapControl(LdapControlType::SUB_TREE_DELETE))->setCriticality(true));
+        $values = $this->getDirtyAttributes($attributes);        
+        $params =[
+            $dn,
+            $values
+        ];
+        
+        if (($primaryKeys = static::getDb()->execute('ldap_add', $params)) === false) {
+            return false;
         }
-        $result = $db->execute($operation);
-        return end($result);
+        $this->setAttribute(self::primaryKey(), $dn);
+        $values[self::primaryKey()] = $dn;
+
+        $changedAttributes = array_fill_keys(array_keys($values), null);
+        $this->setOldAttributes($values);
+        $this->afterSave(true, $changedAttributes);
+
+        return true;
     }
     
     /**
-     * The DN attribute must be present to perform LDAP operations.
+     * Updates the whole table using the provided attribute values and conditions.
+     * For example, to change the status to be 1 for all customers whose status is 2:
      *
-     * @param LdapObject $ldapObject
+     * ```php
+     * Customer::updateAll(['status' => 1], 'status = 2');
+     * ```
+     *
+     * @param array $attributes attribute values (name-value pairs) to be saved into the table
+     * @param string|array $condition the conditions that will be put in the WHERE part of the UPDATE SQL.
+     * Please refer to [[Query::where()]] on how to specify this parameter.
+     * @param array $params the parameters (name => value) to be bound to the query.
+     * @return integer the number of rows updated
      */
-    protected function validateObject(LdapObject $ldapObject)
+    public static function updateAll($attributes, $condition = '', $params = [])
     {
-        if (!$ldapObject->has('dn')) {
-            throw new InvalidArgumentException('To persist/delete/move/restore a LDAP object it must have the DN attribute.');
-        }
+        $command = static::getDb()->createCommand();
+        $command->update(static::tableName(), $attributes, $condition, $params);
+
+        return $command->execute();
     }
+    
+    /**
+     * Deletes rows in the table using the provided conditions.
+     * WARNING: If you do not specify any condition, this method will delete ALL rows in the ldap directory.
+     *
+     * For example, to delete all customers whose status is 3:
+     *
+     * ```php
+     * Customer::deleteAll('status = 3');
+     * ```
+     *
+     * @param string|array $condition the conditions that will be put in the WHERE part of the DELETE SQL.
+     * Please refer to [[Query::where()]] on how to specify this parameter.
+     * @return integer the number of rows deleted
+     */
+    public static function deleteAll($condition = null)
+    {
+        $entries = (new Query())->select(self::primaryKey())->where($condition);
+        $count = 0;
+        
+        foreach ($entries as $entry) {
+            $params = [
+                $entry[self::primaryKey()]
+            ];
+            static::getDb()->execute('ldap_delete', $params);
+            $count++;
+        }
+        return $count;
+    }
+
 }
