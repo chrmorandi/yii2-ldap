@@ -11,16 +11,16 @@ trait LdapFunctionTrait
     /**
      * @var ConnectionInterface
      */
-    protected $conn;
+    protected $resource;
     
     /**
-     * Get the current connection.
+     * Get the current resource of connection.
      *
      * @return mixed
      */
-    public function getConnection()
+    public function getResource()
     {
-        return $this->conn;
+        return $this->resource;
     }
     
     /**
@@ -32,7 +32,7 @@ trait LdapFunctionTrait
      */
     public function search($dn, $filter, array $fields)
     {
-        return ldap_search($this->conn, $this->config->getBaseDn(), $filter, $fields);
+        return ldap_search($this->resource, $this->config->getBaseDn(), $filter, $fields);
     }
 
     /**
@@ -46,7 +46,7 @@ trait LdapFunctionTrait
      */
     public function read($dn, $filter, array $fields)
     {
-        return ldap_read($this->conn, $dn, $filter, $fields);
+        return ldap_read($this->resource, $dn, $filter, $fields);
     }
     
     /**
@@ -60,7 +60,7 @@ trait LdapFunctionTrait
      */
     public function listing($dn, $filter, array $attributes)
     {
-        return ldap_list($this->conn, $dn, $filter, $attributes);
+        return ldap_list($this->resource, $dn, $filter, $attributes);
     }
 
     /**
@@ -73,7 +73,7 @@ trait LdapFunctionTrait
      */
     public function sort($result, $attribute)
     {
-        return ldap_sort($this->conn, $result, $attribute);
+        return ldap_sort($this->resource, $result, $attribute);
     }   
 
     /**
@@ -86,7 +86,7 @@ trait LdapFunctionTrait
      */
     public function add($dn, array $entry)
     {
-        return ldap_add($this->conn, $dn, $entry);
+        return ldap_add($this->resource, $dn, $entry);
     }
 
     /**
@@ -98,7 +98,7 @@ trait LdapFunctionTrait
      */
     public function delete($dn)
     {
-        return ldap_delete($this->conn, $dn);
+        return ldap_delete($this->resource, $dn);
     }
 
     /**
@@ -114,7 +114,7 @@ trait LdapFunctionTrait
      */
     public function rename($dn, $newRdn, $newParent, $deleteOldRdn = false)
     {
-        return ldap_rename($this->conn, $dn, $newRdn, $newParent, $deleteOldRdn);
+        return ldap_rename($this->resource, $dn, $newRdn, $newParent, $deleteOldRdn);
     }
 
     /**
@@ -128,7 +128,7 @@ trait LdapFunctionTrait
      */
     public function modify($dn, array $entry)
     {
-        return ldap_modify($this->conn, $dn, $entry);
+        return ldap_modify($this->resource, $dn, $entry);
     }
 
     /**
@@ -142,7 +142,7 @@ trait LdapFunctionTrait
      */
     public function modifyBatch($dn, array $values)
     {
-        return ldap_modify_batch($this->conn, $dn, $values);
+        return ldap_modify_batch($this->resource, $dn, $values);
     }
 
      /**
@@ -155,7 +155,7 @@ trait LdapFunctionTrait
      */
     public function modAdd($dn, array $entry)
     {
-        return ldap_mod_add($this->conn, $dn, $entry);
+        return ldap_mod_add($this->resource, $dn, $entry);
     }
 
     /**
@@ -168,7 +168,7 @@ trait LdapFunctionTrait
      */
     public function modReplace($dn, array $entry)
     {
-        return ldap_mod_replace($this->conn, $dn, $entry);
+        return ldap_mod_replace($this->resource, $dn, $entry);
     }
 
     /**
@@ -181,7 +181,7 @@ trait LdapFunctionTrait
      */
     public function modDelete($dn, array $entry)
     {
-        return ldap_mod_del($this->conn, $dn, $entry);
+        return ldap_mod_del($this->resource, $dn, $entry);
     }
     
     /**
@@ -193,7 +193,7 @@ trait LdapFunctionTrait
      */
     public function getEntries($searchResults)
     {
-        return ldap_get_entries($this->conn, $searchResults);
+        return ldap_get_entries($this->resource, $searchResults);
     }
     
     /**
@@ -206,7 +206,7 @@ trait LdapFunctionTrait
      */
     public function countEntries($searchResults)
     {
-        return ldap_count_entries($this->conn, $searchResults);
+        return ldap_count_entries($this->resource, $searchResults);
     }
 
     /**
@@ -218,7 +218,7 @@ trait LdapFunctionTrait
      */
     public function getFirstEntry($searchResults)
     {
-        return ldap_first_entry($this->conn, $searchResults);
+        return ldap_first_entry($this->resource, $searchResults);
     }
 
     /**
@@ -230,7 +230,7 @@ trait LdapFunctionTrait
      */
     public function getNextEntry($entry)
     {
-        return ldap_next_entry($this->conn, $entry);
+        return ldap_next_entry($this->resource, $entry);
     }
 
     /**
@@ -242,7 +242,7 @@ trait LdapFunctionTrait
      */
     public function getAttributes($entry)
     {
-        return ldap_get_attributes($this->conn, $entry);
+        return ldap_get_attributes($this->resource, $entry);
     }    
 
     /**
@@ -255,7 +255,7 @@ trait LdapFunctionTrait
      */
     public function getValuesLen($entry, $attribute)
     {
-        return ldap_get_values_len($this->conn, $entry, $attribute);
+        return ldap_get_values_len($this->resource, $entry, $attribute);
     }
 
     /**
@@ -263,7 +263,7 @@ trait LdapFunctionTrait
      */
     public function setOption($option, $value)
     {
-        return ldap_set_option($this->conn, $option, $value);
+        return ldap_set_option($this->resource, $option, $value);
     }
 
     /**
@@ -276,7 +276,7 @@ trait LdapFunctionTrait
      */
     public function setRebindCallback(callable $callback)
     {
-        return ldap_set_rebind_proc($this->conn, $callback);
+        return ldap_set_rebind_proc($this->resource, $callback);
     }
     
     /**
@@ -286,7 +286,7 @@ trait LdapFunctionTrait
      */
     public function startTLS()
     {
-        return @ldap_start_tls($this->conn);
+        return @ldap_start_tls($this->resource);
     }
     
      /**
@@ -297,7 +297,7 @@ trait LdapFunctionTrait
      */
     public function getErrNo()
     {
-        return ldap_errno($this->conn);
+        return ldap_errno($this->resource);
     }
     
     /**
@@ -308,7 +308,7 @@ trait LdapFunctionTrait
      */
     public function getLastError()
     {
-        return ldap_error($this->conn);
+        return ldap_error($this->resource);
     }
 
     /**
@@ -331,7 +331,7 @@ trait LdapFunctionTrait
      */
     public function getDiagnosticMessage()
     {
-        ldap_get_option($this->conn, LDAP_OPT_ERROR_STRING, $diagnosticMessage);
+        ldap_get_option($this->resource, LDAP_OPT_ERROR_STRING, $diagnosticMessage);
 
         return $diagnosticMessage;
     }

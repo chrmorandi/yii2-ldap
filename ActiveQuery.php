@@ -4,13 +4,10 @@ namespace chrmorandi\ldap;
 
 use chrmorandi\ldap\ActiveRecord;
 use chrmorandi\ldap\Connection;
-use chrmorandi\ldap\operation\QueryOperation;
 use chrmorandi\ldap\query\QueryBuilder;
-use yii\base\Component;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveQueryTrait;
 use yii\db\ActiveRelationTrait;
-use yii\db\QueryTrait;
 
 /**
  * ActiveQuery represents a DB query associated with an Active Record class.
@@ -69,9 +66,8 @@ use yii\db\QueryTrait;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0.0
  */
-class ActiveQuery extends Component implements ActiveQueryInterface
+class ActiveQuery extends Query implements ActiveQueryInterface
 {    
-    use QueryTrait;
     use ActiveQueryTrait;
     use ActiveRelationTrait;
     
@@ -118,80 +114,8 @@ class ActiveQuery extends Component implements ActiveQueryInterface
      */
     public function all($db = null)
     {
-        /* @var $modelClass ActiveRecord */
-        $modelClass = $this->modelClass;
-        if ($db === null) {
-            $db = $modelClass::getDb();
-        }
-        $db->open();
-        
-        // Create a new QueryBuilder and colect 
-        $this->queryBuilder = new QueryBuilder($db, $this);
-        $filter = $this->queryBuilder->compileQuery();
-        $selects = $this->queryBuilder->getSelects();        
-        
-        $filter = '(cn=*)';
-        $operation = new QueryOperation($db, $filter, $selects);
-        
-        return $this->populate($operation->execute());
+        return parent::all($db);
     }
-    
-
-    /**
-     * Returns the number of records.
-     * @param string $q the COUNT expression. Defaults to '*'.
-     * Make sure you properly [quote](guide:db-dao#quoting-table-and-column-names) column names in the expression.
-     * @param Connection $db the database connection used to generate the SQL statement.
-     * If this parameter is not given (or null), the `db` application component will be used.
-     * @return integer|string number of records. The result may be a string depending on the
-     * underlying database engine and to support integer values higher than a 32bit PHP integer can handle.
-     */
-    public function count($q = '*', $db = null)
-    {
-        /* @var $modelClass ActiveRecord */
-        $modelClass = $this->modelClass;
-        if ($db === null) {
-            $db = $modelClass::getDb();
-        }
-        
-        // Create a new Builder.
-        $this->query = new QueryBuilder($db, $this);
-        
-        // TODO: limit is default 1000 entries. How change?
-        return $db->countEntries($this->query->get());
-    }
-
-    /**
-     * Returns a value indicating whether the query result contains any row of data.
-     * @param Connection $db the database connection used to generate the SQL statement.
-     * If this parameter is not given, the `db` application component will be used.
-     * @return boolean whether the query result contains any row of data.
-     */
-    public function exists($db = null)
-    {
-        // TODO
-    }
-
-    /**
-     * Executes the query and returns a single row of result.
-     * @param Connection $db the database connection used to generate the SQL statement.
-     * If this parameter is not given, the `db` application component will be used.
-     * @return array|boolean the first row (in terms of an array) of the query result. False is returned if the query
-     * results in nothing.
-     */
-    public function one($db = null)
-    {
-        /* @var $modelClass ActiveRecord */
-        $modelClass = $this->modelClass;
-        if ($db === null) {
-            $db = $modelClass::getDb();
-        }
-        
-        // Create a new Builder.
-        $this->query = new QueryBuilder($db, $this);
-
-        return $this->query->read(true)->first();
-    }    
     
     /**
      * @inheritdoc
@@ -214,6 +138,24 @@ class ActiveQuery extends Component implements ActiveQueryInterface
         }
 
         return $models;
+    }
+
+    /**
+     * Executes the query and returns a single row of result.
+     * @param Connection $db the database connection used to generate the SQL statement.
+     * If this parameter is not given, the `db` application component will be used.
+     * @return array|boolean the first row (in terms of an array) of the query result. False is returned if the query
+     * results in nothing.
+     */
+    public function one($db = null)
+    {
+        $row = parent::one($db);
+        if ($row !== false) {
+            $models = $this->populate([$row]);
+            return reset($models) ?: null;
+        } else {
+            return null;
+        }
     }
 
 }

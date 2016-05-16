@@ -82,7 +82,7 @@ interface ConnectionInterface
      *
      * @return mixed
      */
-    public function getConnection();
+    public function getResource();
     
     /**
      * Binds to the current connection using the
@@ -418,22 +418,7 @@ interface ConnectionInterface
      *
      * Closes the current LDAP connection if it exists.
      */
-    public function __destruct();
-
-    /**
-     * Returns the current configuration instance.
-     *
-     * @return Configuration
-     */
-    public function getConfiguration();
-
-
-    /**
-     * Sets the current configuration.
-     *
-     * @param Configuration|array $configuration
-     */
-    public function setConfiguration($configuration = []);
+    //public function __destruct();
 
     /**
      * Sets the current LDAP attribute schema.

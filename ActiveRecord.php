@@ -39,8 +39,8 @@ use yii\db\BaseActiveRecord;
 class ActiveRecord extends BaseActiveRecord
 {
     /**
-     * Returns the database connection used by this AR class.
-     * @return Connection the database connection used by this AR class.
+     * Returns the LDAP connection used by this AR class.
+     * @return Connection the LDAP connection used by this AR class.
      */
     public static function getDb()
     {

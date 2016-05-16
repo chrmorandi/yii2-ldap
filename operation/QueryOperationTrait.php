@@ -9,6 +9,8 @@
 
 namespace chrmorandi\ldap\operation;
 
+use chrmorandi\ldap\Collection\Collection;
+use chrmorandi\ldap\Collection\DefaultIterator;
 use chrmorandi\ldap\exceptions\ConnectionException;
 use chrmorandi\ldap\operation\OperationInterface;
 use chrmorandi\ldap\operation\QueryOperation;
@@ -49,16 +51,13 @@ trait QueryOperationTrait
         //$this->paging($this->conn->getConnection)->start($this->getPageSize(), $this->getSizeLimit());
         do {
             //$this->paging()->next();
-$teste1 = $this->getLdapFunction();
-$teste2 = $this->conn->getConnection();
-$teste3 = $this->getArguments();
            // Yii::beginProfile($token, 'chrmorandi\ldap\Connection::execute');
             $result = @call_user_func(
                 $this->getLdapFunction(),
                 $this->conn->getConnection(),
                 ...$this->getArguments()
             );
-            $allEntries = $this->processSearchResult($result, $allEntries);
+            //$allEntries = $this->processSearchResult($result, $allEntries);
 
             //$this->paging()->update($result);
         } while (false);//($this->paging()->isActive());
@@ -67,30 +66,13 @@ $teste3 = $this->getArguments();
 //            Yii::endProfile($token, 'chrmorandi\ldap\Connection::execute');
 //            //$this->resetLdapControls($operation);
 //        }
-        $entries = [];
-        if (is_array($allEntries) && array_key_exists('count', $allEntries)) {
-            for ($i = 0; $i < $allEntries['count']; $i++) {
-                $entries[] = $this->convertLdapArray($allEntries[$i]);
-            }
-        }
-
+        
+        $iterator = new DefaultIterator($this->conn, $result);
+        $entries = (new Collection($iterator))->toArray();
+        
         return $entries;
     }
-    
-    protected function convertLdapArray($resultArray)
-    {
-        $attributes = array();
-        foreach ($resultArray as $key => $value) {
-            ArrayHelper::remove($resultArray[$key], 'count');
-            
-            if (!is_String($key) || !isset($resultArray[$key]) || !is_array($resultArray[$key])) {
-                continue;
-            }
-            
-            $attributes[$key] = implode(",", $resultArray[$key]) ;
-        }
-        return $attributes;
-    }
+
 
     /**
      * Gets the base DN for a search based off of the config and then the RootDSE.

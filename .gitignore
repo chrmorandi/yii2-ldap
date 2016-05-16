@@ -42,4 +42,5 @@ phpunit.phar
 /console/config/main-local.php
 /cajui/config/main-local.php
 
-teste
+# para testes
+/basic

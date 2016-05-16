@@ -13,8 +13,9 @@ use chrmorandi\ldap\exceptions\AdldapException;
 use chrmorandi\ldap\exceptions\BindException;
 use chrmorandi\ldap\exceptions\ConnectionException;
 use chrmorandi\ldap\exceptions\InvalidArgumentException;
+use chrmorandi\ldap\exceptions\LdapException;
+use chrmorandi\ldap\interfaces\SchemaInterface;
 use chrmorandi\ldap\operation\OperationInterface;
-use Yii;
 use yii\base\Component;
 use yii\db\sqlite\Schema;
 
@@ -35,61 +36,61 @@ class Connection extends Component implements ConnectionInterface
     const EVENT_AFTER_OPEN = 'afterOpen';
 
     /**
-     * Stores the bool whether or not
-     * the current connection is bound.
-     *
-     * @var bool
+     * @var string the LDAP base dn.
      */
-    protected $bound = false;
+    public $baseDn;
 
     /**
-     * @var Configuration
+     * https://msdn.microsoft.com/en-us/library/ms677913(v=vs.85).aspx
+     *
+     * @var bool the integer to instruct the LDAP connection whether or not to follow referrals.
      */
-    protected $config;
+    public $followReferrals = false;
+
+    /**
+     * @var string The LDAP port to use when connecting to the domain controllers.
+     */
+    public $port = self::PORT;
+
+    /**
+     * @var bool Determines whether or not to use TLS with the current LDAP connection.
+     */
+    public $useTLS = false;
+
+    /**
+     * @var array the domain controllers to connect to.
+     */
+    public $dc = [];
+
+    /**
+     * @var string the LDAP account suffix.
+     */
+    protected $accountSuffix;
+
+    /**
+     * @var string the LDAP account prefix.
+     */
+    protected $accountPrefix;
     
+    /**
+     * @var string the username for establishing LDAP connection. Defaults to `null` meaning no username to use.
+     */
+    public $username;
+    
+    /**
+     * @var string the password for establishing DB connection. Defaults to `null` meaning no password to use.
+     */
+    public $password;
+    
+    /**
+     * @var bool stores the bool whether or not the current connection is bound.
+     */
+    protected $bound = false; 
     
     /**
      * @var array|object
      */
     protected $schema;
-    
-    /**
-     * @var array|null options for configuration.
-     */  
-    public $options;
-    
-    
-    public function init() {
-        $this->setConfiguration($this->options);
-        parent::init();
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function __destruct()
-    {
-        if ($this->conn instanceof ConnectionInterface && $this->isBound()) {
-            $this->close();
-        }
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function setConfiguration($configuration = [])
-    {
-        if (is_array($configuration)) {
-            // Construct a configuration instance if an array is given.
-            $configuration = new Configuration($configuration);
-        } elseif (!$configuration instanceof Configuration) {
-            $class = Configuration::class;
-
-            throw new InvalidArgumentException("Configuration must be either an array or instance of $class");
-        }
-
-        $this->config = $configuration;
-    }
     
     /**
      * {@inheritdoc}
@@ -106,14 +107,6 @@ class Connection extends Component implements ConnectionInterface
         }
 
         $this->schema = $schema;
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function getConfiguration()
-    {
-        return $this->config;
     }
 
     /**
@@ -139,14 +132,8 @@ class Connection extends Component implements ConnectionInterface
      */
     public function open($username = null, $password = null)
     {
-        // Retrieve the domain controllers.
-        $controllers = $this->config->getDomainControllers();
-
-        // Retrieve the port we'll be connecting to.
-        $port = $this->config->getPort();
-
         // Connect to the LDAP server.
-        if ($this->connect($controllers, $port)) {
+        if ($this->connect($this->dc, $this->port)) {
 
             if (is_null($username) && is_null($password)) {
                 // If both the username and password are null, we'll connect to the server
@@ -169,16 +156,14 @@ class Connection extends Component implements ConnectionInterface
      */
     public function bindAsAdministrator()
     {
-        $credentials = $this->config->getAdminCredentials();
+        //list($username, $password, $suffix
 
-        list($username, $password, $suffix) = array_pad($credentials, 3, null);
+//        if (empty($this->suffix)) {
+//            // Use the user account suffix if no administrator account suffix is given.
+//            //$suffix = $this->getAccountSuffix();
+//        }
 
-        if (empty($suffix)) {
-            // Use the user account suffix if no administrator account suffix is given.
-            $suffix = $this->config->getAccountSuffix();
-        }
-
-        $this->bind($username, $password, '', $suffix);
+        $this->bind($this->username, $this->password);
     }
     
     /**
@@ -194,25 +179,25 @@ class Connection extends Component implements ConnectionInterface
     public function bind($username, $password, $prefix = null, $suffix = null, $anonymous = false)
     {
         if ($anonymous) {
-            $this->bound = @ldap_bind($this->conn);
+            $this->bound = @ldap_bind($this->resource);
         } else {
             // If the username isn't empty, we'll append the configured
             // account prefix and suffix to bind to the LDAP server.
-            if (is_null($prefix)) {
-                $prefix = $this->config->getAccountPrefix();
-            }
+//            if (is_null($prefix)) {
+//                $prefix = $this->config->getAccountPrefix();
+//            }
 
-            if (is_null($suffix)) {
-                $suffix = $this->config->getAccountSuffix();
-            }
+//            if (is_null($suffix)) {
+//                $suffix = $this->config->getAccountSuffix();
+//            }
 
-            $username = $prefix.$username.$suffix;
-            
-            $this->bound = @ldap_bind($this->conn, $username, $password);
+            //$username = $prefix.$username.$suffix;
+            $this->bound = @ldap_bind($this->resource, $this->username, $this->password);
         }
 
         if (!$this->bound) {
-            throw new BindException(
+            throw new LdapException(
+                $this,
                 sprintf('Unable to bind to LDAP: %s', $this->lastError),
                 $this->errNo
             );
@@ -249,24 +234,24 @@ class Connection extends Component implements ConnectionInterface
         if (is_array($hostname)) {
             $hostname = $protocol.implode(' '.$protocol, $hostname);
         }
-        $this->conn = ldap_connect($hostname, $port);
+        $this->resource = ldap_connect($hostname, $port);
         
-        if(!$this->conn){            
+        if(!$this->resource){            
             return false;          
         }
         
-        $followReferrals = $this->config->getFollowReferrals();
+        $followReferrals = $this->followReferrals;
 
         // Set the LDAP options.
         $this->setOption(LDAP_OPT_PROTOCOL_VERSION, 3);
         $this->setOption(LDAP_OPT_REFERRALS, $followReferrals);
 
-        if ($this->config->getUseTls() && !$this->startTLS()) {
-            throw new ConnectionException(
-                sprintf("Failed to start TLS: %s", $this->lastError),
-                $this->getErrNo()
-            );
-        }
+//        if ($this->config->getUseTls() && !$this->startTLS()) {
+//            throw new ConnectionException(
+//                sprintf("Failed to start TLS: %s", $this->lastError),
+//                $this->getErrNo()
+//            );
+//        }
         
         return true;
     }    
@@ -276,8 +261,8 @@ class Connection extends Component implements ConnectionInterface
      */
     public function close()
     {
-        if (is_resource($this->conn)) {
-            ldap_close($this->conn);
+        if (is_resource($this->resource)) {
+            ldap_close($this->resource);
         }
         return true;
     }
@@ -288,7 +273,7 @@ class Connection extends Component implements ConnectionInterface
     public function controlPagedResult($pageSize = 1000, $isCritical = false, $cookie = '')
     {
         if ($this->isPagingSupported()) {
-            return ldap_control_paged_result($this->conn, $pageSize, $isCritical, $cookie);
+            return ldap_control_paged_result($this->resource, $pageSize, $isCritical, $cookie);
         }
 
         $message = 'LDAP Pagination is not supported on your current PHP installation.';
@@ -302,7 +287,7 @@ class Connection extends Component implements ConnectionInterface
     public function controlPagedResultResponse($result, &$cookie)
     {
         if ($this->isPagingSupported()) {
-            return ldap_control_paged_result_response($this->conn, $result, $cookie);
+            return ldap_control_paged_result_response($this->resource, $result, $cookie);
         }
 
         $message = 'LDAP Pagination is not supported on your current PHP installation.';
@@ -345,9 +330,16 @@ class Connection extends Component implements ConnectionInterface
      * @return mixed
      * @throws ConnectionException
      */
-    public function execute(OperationInterface $operation)
-    {        
+    public function execute($function, $params)
+    {
+        $this->open();
 
+        $result = call_user_func($function, $this->resource, ...$params);
+        if (!$result) {
+            throw new LdapException($this, sprintf('LDAP search failed: %s', $this->getLastError()), $this->getErrNo());
+        }
+        
+        return (new DataReader($this, $result))->toArray();
     }
     
     /**

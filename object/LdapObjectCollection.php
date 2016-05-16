@@ -10,12 +10,16 @@
 
 namespace chrmorandi\ldap\Object;
 
+use ArrayIterator;
+use Countable;
+use IteratorAggregate;
+
 /**
  * Represents a collection of LdapObject classes. Allows for iteration, filtering, etc.
  *
  * @author 
  */
-class LdapObjectCollection implements \IteratorAggregate, \Countable
+class LdapObjectCollection implements IteratorAggregate, Countable
 {
     /**
      * @var LdapObject[]
@@ -56,11 +60,11 @@ class LdapObjectCollection implements \IteratorAggregate, \Countable
     /**
      * Allows this object to be iterated over.
      *
-     * @return \ArrayIterator
+     * @return ArrayIterator
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this->objects);
+        return new ArrayIterator($this->objects);
     }
 
     /**
