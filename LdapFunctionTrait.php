@@ -246,7 +246,7 @@ trait LdapFunctionTrait
      */
     public function startTLS()
     {
-        return @ldap_start_tls($this->resource);
+        return ldap_start_tls($this->resource);
     }
     
      /**

@@ -2,9 +2,7 @@
 
 namespace chrmorandi\ldap\Schemas;
 
-use chrmorandi\ldap\interfaces\SchemaInterface;
-
-class Schema
+class Schema extends \yii\base\Component
 {
     /**
      * The current LDAP attribute schema.

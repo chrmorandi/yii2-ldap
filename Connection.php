@@ -111,63 +111,21 @@ class Connection extends Component implements ConnectionInterface
     }
     
     /**
-     * Connects and Binds to the Domain Controller.
-     *
-     * If no username or password is specified, then the
-     * configured administrator credentials are used.
-     *
-     * @param string|null $username
-     * @param string|null $password
+     * Connects and Binds to the Domain Controller with a administrator credentials.
      *
      * @throws LdapException
-     * @throws LdapException
-     *
      */
-    public function open($username = null, $password = null)
+    public function open($anonymous = false)
     {
         // Connect to the LDAP server.
         if ($this->connect($this->dc, $this->port)) {
-
-            if (is_null($username) && is_null($password)) {
-                // Bind to the server with the specified username and password.
-                $this->bind($username, $password);
+            if ($anonymous) {
+                $this->bound = ($this->resource);
+            } else {
+                $this->bound = ldap_bind($this->resource, $this->username, $this->password);
             }
         } else {
-            throw new LdapException(sprintf('Unable to connect to LDAP: %s', $this->lastError), $this->errNo);
-        }
-    }
-    
-    /**
-     * Binds to LDAP with the supplied credentials or anonymously if specified.
-     *
-     * @param string $username The username to bind with.
-     * @param string $password The password to bind with.
-     * @param string $prefix
-     * @param string $suffix
-     * @param bool $anonymous Whether this is an anonymous bind attempt.
-     * @throws LdapException
-     */
-    public function bind($username, $password, $prefix = null, $suffix = null, $anonymous = false)
-    {
-        if ($anonymous) {
-            $this->bound = ($this->resource);
-        } else {
-            // If the username isn't empty, we'll append the configured
-            // account prefix and suffix to bind to the LDAP server.
-//            if (is_null($prefix)) {
-//                $prefix = $this->config->getAccountPrefix();
-//            }
-
-//            if (is_null($suffix)) {
-//                $suffix = $this->config->getAccountSuffix();
-//            }
-
-            //$username = $prefix.$username.$suffix;
-            $this->bound = ldap_bind($this->resource, $this->username, $this->password);
-        }
-
-        if (!$this->bound) {
-            throw new LdapException(sprintf('Unable to bind to LDAP: %s', $this->lastError), $this->errNo);
+            throw new LdapException(sprintf('Unable to connect to server: %s', $this->lastError), $this->errNo);
         }
     }
 
@@ -177,18 +135,6 @@ class Connection extends Component implements ConnectionInterface
     public function isBound()
     {
         return $this->bound;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canChangePasswords()
-    {
-        if (!$this->config->isUsingTLS()) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -213,14 +159,13 @@ class Connection extends Component implements ConnectionInterface
         $this->setOption(LDAP_OPT_PROTOCOL_VERSION, 3);
         $this->setOption(LDAP_OPT_REFERRALS, $followReferrals);
 
-//        if ($this->config->getUseTls() && !$this->startTLS()) {
-//            throw new LdapException(
-//                sprintf("Failed to start TLS: %s", $this->lastError),
-//                $this->getErrNo()
-//            );
-//        }
+        if ($this->useTLS && !$this->startTLS()) {
+            throw new LdapException($this->lastError, $this->getErrNo());
+        }
         
-        return true;
+        $this->trigger(self::EVENT_AFTER_OPEN);
+        
+        return is_resource($this->resource);
     }    
 
     /**
@@ -308,7 +253,7 @@ class Connection extends Component implements ConnectionInterface
 
         $result = call_user_func($function, $this->resource, ...$params);
         if (!$result) {
-            throw new LdapException($this, sprintf('LDAP search failed: %s', $this->getLastError()), $this->getErrNo());
+            throw new LdapException($this->getLastError(), $this->getErrNo());
         }
         
         if(is_resource($result)){

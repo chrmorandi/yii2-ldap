@@ -63,14 +63,6 @@ interface ConnectionInterface
 
     /**
      * Returns true / false if the current
-     * connection is able to modify passwords.
-     *
-     * @return bool
-     */
-    public function canChangePasswords();
-
-    /**
-     * Returns true / false if the current
      * connection is bound.
      *
      * @return bool
@@ -83,30 +75,6 @@ interface ConnectionInterface
      * @return mixed
      */
     public function getResource();
-    
-    /**
-     * Binds to the current connection using the
-     * inserted credentials.
-     *
-     * @param string $username The username to bind with.
-     * @param string $password The password to bind with.
-     * @param string $prefix
-     * @param string $suffix
-     * @param bool $anonymous Whether this is an anonymous bind attempt.
-     *
-     * @returns void
-     *
-     * @throws LdapException
-     */
-    public function bind($username, $password, $prefix = null, $suffix = null, $anonymous = false);
-
-    /**
-     * Binds to the current LDAP server using the
-     * configuration administrator credentials.
-     *
-     * @throws LdapException
-     */
-    public function bindAsAdministrator();
 
     /**
      * Retrieve the entries from a search result.
@@ -403,19 +371,11 @@ interface ConnectionInterface
      */
     public function getSchema();
 
-    
     /**
-     * Connects and Binds to the Domain Controller.
-     *
-     * If no username or password is specified, then the
-     * configured administrator credentials are used.
-     *
-     * @param string|null $username
-     * @param string|null $password
-     *
+     * Connects and Binds to the Domain Controller with a administrator credentials.
+     * @param string|null $anonymous provider anonymous authentication
      * @throws LdapException
-     *
      * @return void
      */
-    public function open($username = null, $password = null);
+    public function open($anonymous = null);
 }
