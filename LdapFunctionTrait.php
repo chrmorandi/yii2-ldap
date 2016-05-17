@@ -22,46 +22,6 @@ trait LdapFunctionTrait
     {
         return $this->resource;
     }
-    
-    /**
-     * @param string $dn
-     * @param string $filter
-     * @param array  $fields
-     *
-     * @return mixed
-     */
-    public function search($dn, $filter, array $fields)
-    {
-        return ldap_search($this->resource, $this->config->getBaseDn(), $filter, $fields);
-    }
-
-    /**
-     * Reads an entry on the current connection.
-     *
-     * @param string $dn
-     * @param $filter
-     * @param array $fields
-     *
-     * @return mixed
-     */
-    public function read($dn, $filter, array $fields)
-    {
-        return ldap_read($this->resource, $dn, $filter, $fields);
-    }
-    
-    /**
-     * Performs a single level search on the current connection.
-     *
-     * @param string $dn
-     * @param string $filter
-     * @param array  $attributes
-     *
-     * @return mixed
-     */
-    public function listing($dn, $filter, array $attributes)
-    {
-        return ldap_list($this->resource, $dn, $filter, $attributes);
-    }
 
     /**
      * Sorts an AD search result by the specified attribute.

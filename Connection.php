@@ -1,21 +1,14 @@
 <?php
 /**
+ * @link      https://github.com/chrmorandi/yii2-ldap for the canonical source repository
  * @package   yii2-ldap
- * @author    @author Christopher Mota <chrmorandi@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * @author    Christopher Mota <chrmorandi@gmail.com>
+ * @license   MIT License - view the LICENSE file that was distributed with this source code.
  */
 
 namespace chrmorandi\ldap;
 
-use chrmorandi\ldap\exceptions\AdldapException;
-use chrmorandi\ldap\exceptions\BindException;
-use chrmorandi\ldap\exceptions\ConnectionException;
-use chrmorandi\ldap\exceptions\InvalidArgumentException;
-use chrmorandi\ldap\exceptions\LdapException;
-use chrmorandi\ldap\interfaces\SchemaInterface;
-use chrmorandi\ldap\operation\OperationInterface;
+use InvalidArgumentException;
 use yii\base\Component;
 use yii\db\sqlite\Schema;
 
@@ -126,8 +119,8 @@ class Connection extends Component implements ConnectionInterface
      * @param string|null $username
      * @param string|null $password
      *
-     * @throws ConnectionException
-     * @throws BindException
+     * @throws LdapException
+     * @throws LdapException
      *
      */
     public function open($username = null, $password = null)
@@ -136,34 +129,12 @@ class Connection extends Component implements ConnectionInterface
         if ($this->connect($this->dc, $this->port)) {
 
             if (is_null($username) && is_null($password)) {
-                // If both the username and password are null, we'll connect to the server
-                // using the configured administrator username and password.
-                $this->bindAsAdministrator();
-            } else {
-                // Bind to the server with the specified username and password otherwise.
+                // Bind to the server with the specified username and password.
                 $this->bind($username, $password);
             }
         } else {
-            throw new ConnectionException('Unable to connect to LDAP server.');
+            throw new LdapException(sprintf('Unable to connect to LDAP: %s', $this->lastError), $this->errNo);
         }
-    }
-
-    /**
-     * Binds to the current LDAP server using the
-     * configuration administrator credentials.
-     *
-     * @throws \Adldap\exceptions\Auth\BindException
-     */
-    public function bindAsAdministrator()
-    {
-        //list($username, $password, $suffix
-
-//        if (empty($this->suffix)) {
-//            // Use the user account suffix if no administrator account suffix is given.
-//            //$suffix = $this->getAccountSuffix();
-//        }
-
-        $this->bind($this->username, $this->password);
     }
     
     /**
@@ -174,12 +145,12 @@ class Connection extends Component implements ConnectionInterface
      * @param string $prefix
      * @param string $suffix
      * @param bool $anonymous Whether this is an anonymous bind attempt.
-     * @throws BindException
+     * @throws LdapException
      */
     public function bind($username, $password, $prefix = null, $suffix = null, $anonymous = false)
     {
         if ($anonymous) {
-            $this->bound = @ldap_bind($this->resource);
+            $this->bound = ($this->resource);
         } else {
             // If the username isn't empty, we'll append the configured
             // account prefix and suffix to bind to the LDAP server.
@@ -192,15 +163,11 @@ class Connection extends Component implements ConnectionInterface
 //            }
 
             //$username = $prefix.$username.$suffix;
-            $this->bound = @ldap_bind($this->resource, $this->username, $this->password);
+            $this->bound = ldap_bind($this->resource, $this->username, $this->password);
         }
 
         if (!$this->bound) {
-            throw new LdapException(
-                $this,
-                sprintf('Unable to bind to LDAP: %s', $this->lastError),
-                $this->errNo
-            );
+            throw new LdapException(sprintf('Unable to bind to LDAP: %s', $this->lastError), $this->errNo);
         }
     }
 
@@ -247,7 +214,7 @@ class Connection extends Component implements ConnectionInterface
         $this->setOption(LDAP_OPT_REFERRALS, $followReferrals);
 
 //        if ($this->config->getUseTls() && !$this->startTLS()) {
-//            throw new ConnectionException(
+//            throw new LdapException(
 //                sprintf("Failed to start TLS: %s", $this->lastError),
 //                $this->getErrNo()
 //            );
@@ -278,7 +245,7 @@ class Connection extends Component implements ConnectionInterface
 
         $message = 'LDAP Pagination is not supported on your current PHP installation.';
 
-        throw new AdldapException($message);
+        throw new LdapException($message);
     }
 
     /**
@@ -292,7 +259,7 @@ class Connection extends Component implements ConnectionInterface
 
         $message = 'LDAP Pagination is not supported on your current PHP installation.';
 
-        throw new AdldapException($message);
+        throw new LdapException($message);
     }
     
     /**
@@ -333,7 +300,7 @@ class Connection extends Component implements ConnectionInterface
      * @param  string $function php LDAP function
      * @param  array $params params for execute ldap function
      * @return bool|resource
-     * @throws ConnectionException
+     * @throws LdapException
      */
     public function execute($function, $params)
     {

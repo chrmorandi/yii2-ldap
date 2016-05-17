@@ -3,18 +3,21 @@
  * @link      https://github.com/chrmorandi/yii2-ldap for the canonical source repository
  * @package   yii2-ldap
  * @author    Christopher Mota <chrmorandi@gmail.com>
- * @license   Mit License - view the LICENSE file that was distributed with this source code.
+ * @license   MIT License - view the LICENSE file that was distributed with this source code.
  */
 
-namespace chrmorandi\ldap\exceptions;
+namespace chrmorandi\ldap;
 
 use chrmorandi\ldap\Connection;
-use Exception;
+use yii\base\Exception;
 
 /**
- * Class LdapException.
+ * Exception represents an exception that is caused by some ldap operations.
+ *
+ * @author Christopher Mota <chrmorandi@gmail.com>
+ * @since 1.0.0
  */
-class LdapException extends Exception implements LdapExceptionInterface
+class LdapException extends Exception
 {
     const LDAP_SUCCESS                        = 0x00;
     const LDAP_OPERATIONS_ERROR               = 0x01;
@@ -99,22 +102,13 @@ class LdapException extends Exception implements LdapExceptionInterface
     const LDAP_X_EXTENSION_NOT_LOADED = 0x7002;
 
     /**
-     * @param Ldap   $conn Connection object
-     * @param string $str  Informative exception message
-     * @param int    $code LDAP error code
+     * Constructor.
+     * @param string $message LDAP error message
+     * @param integer $code LDAP error code
+     * @param \Exception $previous The previous exception used for the exception chaining.
      */
-    public function __construct(Connection $conn = null, $str = null, $code = 0)
+    public function __construct($message, $code = 0, \Exception $previous = null)
     {
-        $errorMessages = [];
-        $message       = '';
-        if ($conn !== null) {
-            $oldCode = $code;
-            $message = $conn->getLastError($code, $errorMessages) . ': ';
-            if ($code === 0) {
-                $message = '';
-                $code    = $oldCode;
-            }
-        }
         if (empty($message)) {
             if ($code > 0) {
                 $message = '0x' . dechex($code) . ': ';
@@ -127,6 +121,14 @@ class LdapException extends Exception implements LdapExceptionInterface
             $message .= 'no exception message';
         }
 
-        parent::__construct($message, $code);
+        parent::__construct($message, $code, $previous);
+    }
+    
+    /**
+     * @return string the user-friendly name of this exception
+     */
+    public function getName()
+    {
+        return 'LDAP Exception';
     }
 }

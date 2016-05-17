@@ -96,7 +96,7 @@ interface ConnectionInterface
      *
      * @returns void
      *
-     * @throws BindException
+     * @throws LdapException
      */
     public function bind($username, $password, $prefix = null, $suffix = null, $anonymous = false);
 
@@ -104,7 +104,7 @@ interface ConnectionInterface
      * Binds to the current LDAP server using the
      * configuration administrator credentials.
      *
-     * @throws BindException
+     * @throws LdapException
      */
     public function bindAsAdministrator();
 
@@ -215,37 +215,6 @@ interface ConnectionInterface
      * @return mixed
      */
     public function close();
-
-    /**
-     * @param string $dn
-     * @param string $filter
-     * @param array  $fields
-     *
-     * @return mixed
-     */
-    public function search($dn, $filter, array $fields);
-
-    /**
-     * Reads an entry on the current connection.
-     *
-     * @param string $dn
-     * @param $filter
-     * @param array $fields
-     *
-     * @return mixed
-     */
-    public function read($dn, $filter, array $fields);
-
-    /**
-     * Performs a single level search on the current connection.
-     *
-     * @param string $dn
-     * @param string $filter
-     * @param array  $attributes
-     *
-     * @return mixed
-     */
-    public function listing($dn, $filter, array $attributes);
 
     /**
      * Sorts an AD search result by the specified attribute.
@@ -444,8 +413,7 @@ interface ConnectionInterface
      * @param string|null $username
      * @param string|null $password
      *
-     * @throws \Adldap\exceptions\ConnectionException
-     * @throws \Adldap\exceptions\Auth\BindException
+     * @throws LdapException
      *
      * @return void
      */

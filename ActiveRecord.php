@@ -1,12 +1,15 @@
 <?php
+/**
+ * @link      https://github.com/chrmorandi/yii2-ldap for the canonical source repository
+ * @package   yii2-ldap
+ * @author    Christopher Mota <chrmorandi@gmail.com>
+ * @license   MIT License - view the LICENSE file that was distributed with this source code.
+ */
 
 namespace chrmorandi\ldap;
 
 use chrmorandi\ldap\ActiveQuery;
 use chrmorandi\ldap\Connection;
-use chrmorandi\ldap\exceptions\InvalidArgumentException;
-use chrmorandi\ldap\Object\LdapObject;
-use chrmorandi\ldap\operation\DeleteOperation;
 use chrmorandi\ldap\schemas\ActiveDirectory;
 use ReflectionClass;
 use ReflectionProperty;

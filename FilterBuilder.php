@@ -1,14 +1,14 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
- * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @link      https://github.com/chrmorandi/yii2-ldap for the canonical source repository
+ * @package   yii2-ldap
+ * @author    Christopher Mota <chrmorandi@gmail.com>
+ * @license   MIT License - view the LICENSE file that was distributed with this source code.
  */
 
 namespace chrmorandi\ldap;
 
 use ArrayAccess;
-use chrmorandi\ldap\Query;
 use Traversable;
 use yii\base\InvalidParamException;
 use yii\base\Object;
@@ -102,9 +102,9 @@ class FilterBuilder extends Object
     }
 
     /**
-     * Connects two or more SQL expressions with the `AND` or `OR` operator.
+     * Connects two or more Filters expressions with the `AND`(&) or `OR`(|) operator.
      * @param string $operator the operator to use for connecting the given operands
-     * @param array $operands the SQL expressions to connect.
+     * @param array $operands the Filter expressions to connect.
      * @return string the generated 
      */
     public function buildAndCondition($operator, $operands)
@@ -160,11 +160,10 @@ class FilterBuilder extends Object
      * The second operand is an array of values that column value should be among.
      * If it is an empty array the generated expression will be a `false` value if
      * operator is `IN` and empty if operator is `NOT IN`.
-     * @param array $params the binding parameters to be populated
      * @return string the generated SQL expression
      * @throws Exception if wrong number of operands have been given.
      */
-    public function buildInCondition($operator, $operands, &$params)
+    public function buildInCondition($operator, $operands)
     {
         if (!isset($operands[0], $operands[1])) {
             throw new Exception("Operator '$operator' requires two operands.");
@@ -177,11 +176,11 @@ class FilterBuilder extends Object
         }
 
         if ($values instanceof Query) {
-            return $this->buildSubqueryInCondition($operator, $column, $values, $params);
+            return $this->buildSubqueryInCondition($operator, $column, $values);
         }
 
         if ($column instanceof Traversable || count($column) > 1) {
-            return $this->buildCompositeInCondition($operator, $column, $values, $params);
+            return $this->buildCompositeInCondition($operator, $column, $values);
         }
 
         if (is_array($column)) {
@@ -195,15 +194,8 @@ class FilterBuilder extends Object
             }
             if ($value === null) {
                 $sqlValues[$i] = 'NULL';
-            } elseif ($value instanceof Expression) {
-                $sqlValues[$i] = $value->expression;
-                foreach ($value->params as $n => $v) {
-                    $params[$n] = $v;
-                }
             } else {
-                $phName = self::PARAM_PREFIX . count($params);
-                $params[$phName] = $value;
-                $sqlValues[$i] = $phName;
+                $sqlValues[$i] = $value;
             }
         }
 
@@ -229,12 +221,11 @@ class FilterBuilder extends Object
      * @param string $operator
      * @param array $columns
      * @param Query $values
-     * @param array $params
      * @return string SQL
      */
-    protected function buildSubqueryInCondition($operator, $columns, $values, &$params)
+    protected function buildSubqueryInCondition($operator, $columns, $values)
     {
-        list($sql, $params) = $this->build($values, $params);
+        list($sql, $params) = $this->build($values);
         if (is_array($columns)) {
             foreach ($columns as $i => $col) {
                 if (strpos($col, '(') === false) {
@@ -256,10 +247,9 @@ class FilterBuilder extends Object
      * @param string $operator
      * @param array|Traversable $columns
      * @param array $values
-     * @param array $params
      * @return string SQL
      */
-    protected function buildCompositeInCondition($operator, $columns, $values, &$params)
+    protected function buildCompositeInCondition($operator, $columns, $values)
     {
         $vss = [];
         foreach ($values as $value) {

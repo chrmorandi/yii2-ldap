@@ -7,8 +7,6 @@
 
 namespace chrmorandi\ldap;
 
-use chrmorandi\ldap\Connection;
-use chrmorandi\ldap\exceptions\LdapException;
 use Countable;
 use Iterator;
 use Yii;
