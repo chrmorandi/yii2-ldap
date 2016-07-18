@@ -10,7 +10,6 @@ namespace chrmorandi\ldap;
 
 use chrmorandi\ldap\ActiveQuery;
 use chrmorandi\ldap\Connection;
-use chrmorandi\ldap\schemas\ActiveDirectory;
 use ReflectionClass;
 use ReflectionProperty;
 use Yii;
@@ -42,6 +41,17 @@ use yii\db\BaseActiveRecord;
 class ActiveRecord extends BaseActiveRecord
 {
     /**
+     * The schema class with implement SchemaInterface
+     * @var string
+     */
+    public $schemaClass;
+    
+    /**
+     * Instance of Schema class
+     */
+    private $schema;
+    
+    /**
      * Returns the LDAP connection used by this AR class.
      * @return Connection the LDAP connection used by this AR class.
      */
@@ -58,19 +68,6 @@ class ActiveRecord extends BaseActiveRecord
     {
         return Yii::createObject(ActiveQuery::class, [get_called_class()]);
     }
-    
-    /**
-     * Declares the name of the database table associated with this AR class.
-     * By default this method returns the class name as the table name by calling [[Inflector::camel2id()]]
-     * with prefix [[Connection::tablePrefix]]. For example if [[Connection::tablePrefix]] is 'tbl_',
-     * 'Customer' becomes 'tbl_customer', and 'OrderItem' becomes 'tbl_order_item'. You may override this method
-     * if the table is not named after this convention.
-     * @return string the table name
-     */
-    public static function schemaName()
-    {
-        return 'ad_user';
-    }
 
     /**
      * Returns the primary key name(s) for this AR class.
@@ -83,6 +80,28 @@ class ActiveRecord extends BaseActiveRecord
         return 'dn';
     }
     
+    /**
+     * Initializes the object.
+     * This method is called at the end of the constructor.
+     * The default implementation will trigger an [[EVENT_INIT]] event.
+     * If you override this method, make sure you call the parent implementation at the end
+     * to ensure triggering of the event.
+     */
+    public function init()
+    {
+        $this->schema = new Schema();
+        
+        if($this->schemaClass !== null){
+            if(class_exists($this->schemaClass)){
+                Schema::set(new $this->schemaClass);
+            } else {
+                throw new InvalidConfigException('"' . $this->schemaClass . '" does not exist.');
+            }
+        }
+
+        parent::init();        
+    }
+    
         
     /**
      * Returns the list of attribute names.
@@ -92,7 +111,7 @@ class ActiveRecord extends BaseActiveRecord
      */
     public function attributes()
     {
-        $class = new ReflectionClass(new ActiveDirectory);
+        $class = new ReflectionClass($this->schema->get());
         $names = [];
         foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isStatic()) {
@@ -165,13 +184,11 @@ class ActiveRecord extends BaseActiveRecord
             return false;
         }
         
-        $values = $this->getDirtyAttributes($attributes);        
-        $params =[
-            'ou=teste,DC=adteste,DC=ifnmg,DC=edu,DC=br',
-            $values
-        ];
+        $values = $this->getDirtyAttributes($attributes);
+        $dn = $values[self::primaryKey()];
+        unset($values[self::primaryKey()]);
         
-        if (($primaryKeys = static::getDb()->execute('ldap_add', $params)) === false) {
+        if (($primaryKeys = static::getDb()->execute('ldap_add', [$dn,$values])) === false) {
             return false;
         }
         $this->setAttribute(self::primaryKey(), $dn);

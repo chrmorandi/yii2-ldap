@@ -1,13 +1,21 @@
 <?php
+/**
+ * @link http://www.yiiframework.com/
+ * @copyright Copyright (c) 2008 Yii Software LLC
+ * @license http://www.yiiframework.com/license/
+ */
 
 namespace chrmorandi\ldap\schemas;
+
+use chrmorandi\ldap\SchemaInterface;
+use yii\base\Object;
 
 /**
  * Class ActiveDirectory.
  *
  * The active directory attribute schema.
  */
-class ActiveDirectory extends \yii\base\Model
+class ActiveDirectory extends Object implements SchemaInterface
 {
     /**
      * The date when the account expires. This value represents the number of 100-nanosecond
@@ -30,7 +38,7 @@ class ActiveDirectory extends \yii\base\Model
      *
      * @var string
      */
-    public $samaccountname = 'teset';
+    public $samaccountname;
 
     /**
      * This attribute contains information about every account type object.
