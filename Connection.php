@@ -10,7 +10,6 @@ namespace chrmorandi\ldap;
 
 use InvalidArgumentException;
 use yii\base\Component;
-use yii\db\sqlite\Schema;
 
 /**
  * 
@@ -18,11 +17,24 @@ use yii\db\sqlite\Schema;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0
  */
-class Connection extends Component implements ConnectionInterface
+class Connection extends Component
 {
-    use LdapFunctionSupportTrait;
     use LdapFunctionTrait;
 
+    /**
+     * LDAP protocol string.
+     *
+     * @var string
+     */
+    const PROTOCOL = 'ldap://';
+
+    /**
+     * LDAP port number.
+     *
+     * @var string
+     */
+    const PORT = '389';
+    
     /**
      * @event Event an event that is triggered after a DB connection is established
      */
@@ -78,37 +90,7 @@ class Connection extends Component implements ConnectionInterface
     /**
      * @var bool stores the bool whether or not the current connection is bound.
      */
-    protected $bound = false; 
-    
-    /**
-     * @var array|object
-     */
-    protected $schema;
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function setSchema($schema = null)
-    {
-        if (is_null($schema)) {
-            // Retrieve the default schema if one isn't given.
-            $schema = Schema::getDefault();
-        } elseif (!$schema instanceof SchemaInterface) {
-            $class = SchemaInterface::class;
-
-            throw new InvalidArgumentException("Schema must be an instance of $class");
-        }
-
-        $this->schema = $schema;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getSchema()
-    {
-        return $this->schema;
-    }
+    protected $bound = false;
     
     /**
      * Connects and Binds to the Domain Controller with a administrator credentials.
@@ -130,7 +112,10 @@ class Connection extends Component implements ConnectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Returns true / false if the current
+     * connection is bound.
+     *
+     * @return bool
      */
     public function isBound()
     {
@@ -138,7 +123,10 @@ class Connection extends Component implements ConnectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Retrieve the last error on the current
+     * connection.
+     *
+     * @return string
      */
     public function connect($hostname = [], $port = '389')
     {
@@ -169,7 +157,9 @@ class Connection extends Component implements ConnectionInterface
     }    
 
     /**
-     * {@inheritdoc}
+     * Closes the current connection.
+     *
+     * @return mixed
      */
     public function close()
     {
@@ -180,7 +170,13 @@ class Connection extends Component implements ConnectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Send LDAP pagination control.
+     *
+     * @param int    $pageSize
+     * @param bool   $isCritical
+     * @param string $cookie
+     *
+     * @return mixed
      */
     public function controlPagedResult($pageSize = 1000, $isCritical = false, $cookie = '')
     {
@@ -194,7 +190,12 @@ class Connection extends Component implements ConnectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Retrieve a paginated result response.
+     *
+     * @param $result
+     * @param string $cookie
+     *
+     * @return mixed
      */
     public function controlPagedResultResponse($result, &$cookie)
     {
@@ -205,36 +206,6 @@ class Connection extends Component implements ConnectionInterface
         $message = 'LDAP Pagination is not supported on your current PHP installation.';
 
         throw new LdapException($message);
-    }
-    
-    /**
-     * {@inheritdoc}
-     */
-    public function getExtendedError()
-    {
-        return $this->getDiagnosticMessage();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getExtendedErrorCode()
-    {
-        return $this->extractDiagnosticCode($this->getExtendedError());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function extractDiagnosticCode($message)
-    {
-        preg_match('/^([\da-fA-F]+):/', $message, $matches);
-
-        if (!isset($matches[1])) {
-            return false;
-        }
-
-        return $matches[1];
     }
     
     /**

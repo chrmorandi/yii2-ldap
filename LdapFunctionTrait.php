@@ -255,7 +255,7 @@ trait LdapFunctionTrait
         return ldap_start_tls($this->resource);
     }
     
-     /**
+    /**
      * Returns the error number of the last command
      * executed on the current connection.
      *
@@ -300,6 +300,44 @@ trait LdapFunctionTrait
         ldap_get_option($this->resource, LDAP_OPT_ERROR_STRING, $diagnosticMessage);
 
         return $diagnosticMessage;
+    }
+    
+    /**
+     * Returns the extended error string of the last command.
+     *
+     * @return mixed
+     */
+    public function getExtendedError()
+    {
+        return $this->getDiagnosticMessage();
+    }
+
+    /**
+     * Returns the extended error code of the last command.
+     *
+     * @return mixed
+     */
+    public function getExtendedErrorCode()
+    {
+        return $this->extractDiagnosticCode($this->getExtendedError());
+    }
+
+    /**
+     * Extract the diagnostic code from the message.
+     *
+     * @param string $message
+     *
+     * @return string|bool
+     */
+    public function extractDiagnosticCode($message)
+    {
+        preg_match('/^([\da-fA-F]+):/', $message, $matches);
+
+        if (!isset($matches[1])) {
+            return false;
+        }
+
+        return $matches[1];
     }
 }
 

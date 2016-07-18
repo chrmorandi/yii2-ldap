@@ -91,7 +91,7 @@ class ActiveRecord extends BaseActiveRecord
     {
         $this->schema = new Schema();
         
-        if($this->schemaClass !== null){
+        if(!is_null($this->schemaClass)){
             if(class_exists($this->schemaClass)){
                 Schema::set(new $this->schemaClass);
             } else {
