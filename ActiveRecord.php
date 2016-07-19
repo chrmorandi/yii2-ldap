@@ -202,28 +202,6 @@ class ActiveRecord extends BaseActiveRecord
     }
     
     /**
-     * Updates the whole table using the provided attribute values and conditions.
-     * For example, to change the status to be 1 for all customers whose status is 2:
-     *
-     * ```php
-     * Customer::updateAll(['status' => 1], 'status = 2');
-     * ```
-     *
-     * @param array $attributes attribute values (name-value pairs) to be saved into the table
-     * @param string|array $condition the conditions that will be put in the WHERE part of the UPDATE SQL.
-     * Please refer to [[Query::where()]] on how to specify this parameter.
-     * @param array $params the parameters (name => value) to be bound to the query.
-     * @return integer the number of rows updated
-     */
-    public static function updateAll($attributes, $condition = '', $params = [])
-    {
-        $command = static::getDb()->createCommand();
-        $command->update(static::tableName(), $attributes, $condition, $params);
-
-        return $command->execute();
-    }
-    
-    /**
      * Deletes rows in the table using the provided conditions.
      * WARNING: If you do not specify any condition, this method will delete ALL rows in the ldap directory.
      *

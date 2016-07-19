@@ -107,15 +107,6 @@ class ActiveDirectory extends Object implements SchemaInterface
     public $company;
 
     /**
-     * The object class computer string.
-     *
-     * Used when constructing new Computer models.
-     *
-     * @var string
-     */
-    public  $computer;
-
-    /**
      * DN enterprise configuration naming context.
      *
      * @link https://support.microsoft.com/en-us/kb/219005
@@ -123,15 +114,6 @@ class ActiveDirectory extends Object implements SchemaInterface
      * @var string
      */
     public $configurationnamingcontext;
-
-    /**
-     * The object class contact string.
-     *
-     * Used when constructing new User models.
-     *
-     * @var string
-     */
-    public $contact;
 
      /**
      * The entry's country attribute.
@@ -421,61 +403,6 @@ class ActiveDirectory extends Object implements SchemaInterface
     /**
      * {@inheritdoc}
      */
-    public $objectcategory;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $container;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $msexchprivatemdb;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $msExchExchangeServer;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $msExchStorageGroup;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $group;
-
-    /**
-     * {@inheritdoc}
-     */
-    //public $organizational-unit;
-
-    /**
-     * {@inheritdoc}
-     */
-    //public $print-queue;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $objectclass;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $person;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $user;
-
-    /**
-     * {@inheritdoc}
-     */
     public $printqueue;
 
     /**
@@ -507,11 +434,6 @@ class ActiveDirectory extends Object implements SchemaInterface
      * {@inheritdoc}
      */
     public $organizationalperson;
-
-    /**
-     * {@inheritdoc}
-     */
-    public $organizationalunit;
 
     /**
      * {@inheritdoc}

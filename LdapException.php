@@ -8,7 +8,6 @@
 
 namespace chrmorandi\ldap;
 
-use chrmorandi\ldap\Connection;
 use yii\base\Exception;
 
 /**

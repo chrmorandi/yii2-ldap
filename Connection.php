@@ -8,7 +8,6 @@
 
 namespace chrmorandi\ldap;
 
-use InvalidArgumentException;
 use yii\base\Component;
 
 /**
@@ -90,7 +89,22 @@ class Connection extends Component
     /**
      * @var bool stores the bool whether or not the current connection is bound.
      */
-    protected $bound = false;
+    protected $bound = false;    
+        
+    /**
+     * @var Connection
+     */
+    protected $resource;
+    
+    /**
+     * Get the current resource of connection.
+     *
+     * @return mixed
+     */
+    public function getResource()
+    {
+        return $this->resource;
+    }
     
     /**
      * Connects and Binds to the Domain Controller with a administrator credentials.
@@ -168,46 +182,7 @@ class Connection extends Component
         }
         return true;
     }
-
-    /**
-     * Send LDAP pagination control.
-     *
-     * @param int    $pageSize
-     * @param bool   $isCritical
-     * @param string $cookie
-     *
-     * @return mixed
-     */
-    public function controlPagedResult($pageSize = 1000, $isCritical = false, $cookie = '')
-    {
-        if ($this->isPagingSupported()) {
-            return ldap_control_paged_result($this->resource, $pageSize, $isCritical, $cookie);
-        }
-
-        $message = 'LDAP Pagination is not supported on your current PHP installation.';
-
-        throw new LdapException($message);
-    }
-
-    /**
-     * Retrieve a paginated result response.
-     *
-     * @param $result
-     * @param string $cookie
-     *
-     * @return mixed
-     */
-    public function controlPagedResultResponse($result, &$cookie)
-    {
-        if ($this->isPagingSupported()) {
-            return ldap_control_paged_result_response($this->resource, $result, $cookie);
-        }
-
-        $message = 'LDAP Pagination is not supported on your current PHP installation.';
-
-        throw new LdapException($message);
-    }
-    
+        
     /**
      * Execute ldap functions like.
      * 

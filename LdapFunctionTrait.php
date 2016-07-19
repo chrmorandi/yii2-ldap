@@ -13,21 +13,6 @@ namespace chrmorandi\ldap;
  */
 trait LdapFunctionTrait
 {
-    
-    /**
-     * @var ConnectionInterface
-     */
-    protected $resource;
-    
-    /**
-     * Get the current resource of connection.
-     *
-     * @return mixed
-     */
-    public function getResource()
-    {
-        return $this->resource;
-    }
 
     /**
      * Sorts an AD search result by the specified attribute.
@@ -290,55 +275,6 @@ trait LdapFunctionTrait
         return ldap_err2str($number);
     }
 
-    /**
-     * Return the diagnostic Message.
-     *
-     * @return string
-     */
-    public function getDiagnosticMessage()
-    {
-        ldap_get_option($this->resource, LDAP_OPT_ERROR_STRING, $diagnosticMessage);
-
-        return $diagnosticMessage;
-    }
-    
-    /**
-     * Returns the extended error string of the last command.
-     *
-     * @return mixed
-     */
-    public function getExtendedError()
-    {
-        return $this->getDiagnosticMessage();
-    }
-
-    /**
-     * Returns the extended error code of the last command.
-     *
-     * @return mixed
-     */
-    public function getExtendedErrorCode()
-    {
-        return $this->extractDiagnosticCode($this->getExtendedError());
-    }
-
-    /**
-     * Extract the diagnostic code from the message.
-     *
-     * @param string $message
-     *
-     * @return string|bool
-     */
-    public function extractDiagnosticCode($message)
-    {
-        preg_match('/^([\da-fA-F]+):/', $message, $matches);
-
-        if (!isset($matches[1])) {
-            return false;
-        }
-
-        return $matches[1];
-    }
 }
 
 

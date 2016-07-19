@@ -39,17 +39,12 @@ use yii\base\Object;
  * Note that since DataReader is a forward-only stream, you can only traverse it once.
  * Doing it the second time will throw an exception.
  *
- * It is possible to use a specific mode of data fetching by setting
- * [[fetchMode]]. See the [PHP manual](http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php)
- * for more details about possible fetch mode.
- *
  * @property integer $columnCount The number of columns in the result set. This property is read-only.
- * @property integer $fetchMode Fetch mode. This property is write-only.
  * @property boolean $isClosed Whether the reader is closed or not. This property is read-only.
  * @property integer $rowCount Number of rows contained in the result. This property is read-only.
  *
- * @author Qiang Xue <qiang.xue@gmail.com>
- * @since 2.0
+ * @author Christopher Mota <chrmorandi@gmail.com>
+ * @since 1.0.0
  */
 class DataReader extends Object implements Iterator, Countable
 {
@@ -57,6 +52,7 @@ class DataReader extends Object implements Iterator, Countable
      * @var array data
      */
     public  $entries;
+    
     /**
      * @var Connection
      */
