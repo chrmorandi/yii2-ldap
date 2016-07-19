@@ -115,8 +115,6 @@ class Query extends Component implements QueryInterface
             $filter,
             $select,
             0
-            //$sizelimit,
-            //$timelimit
         ];
        
         return $params;
@@ -233,7 +231,11 @@ class Query extends Component implements QueryInterface
      */
     public function one($db = null)
     {
-        return $this->createCommand($db)->queryOne();
+        $params = $this->createCommand($db);
+        
+        /** @var $result DataReader */
+        $result = $db->execute($this->scope, array_push($params,1));
+        return $result->toArray();
     }
 
     /**
