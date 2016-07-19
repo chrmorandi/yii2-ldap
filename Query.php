@@ -61,7 +61,7 @@ class Query extends Component implements QueryInterface
      * Query::SEARCH_SCOPE_ONE restricts search to one level below $baseDn.
      * Query::SEARCH_SCOPE_BASE restricts search to the $baseDn itself; this can be used to efficiently retrieve a single entry by its DN.
      */
-    public $scope = self::SEARCH_SCOPE_SUB;    
+    public $scope = self::SEARCH_SCOPE_SUB;
     
     /**
      * @var array the columns being selected. For example, `['id', 'name']`.
@@ -87,7 +87,7 @@ class Query extends Component implements QueryInterface
      * @var array how to group the query results. For example, `['company', 'department']`.
      * This is used to construct the GROUP BY clause in a SQL statement.
      */
-    public $groupBy; 
+    public $groupBy;
     
     /**
      * @var string|array the condition to be applied in the GROUP BY clause.
@@ -115,8 +115,8 @@ class Query extends Component implements QueryInterface
             $filter,
             $select,
             0
-            //$sizelimit, 
-            //$timelimit 
+            //$sizelimit,
+            //$timelimit
         ];
        
         return $params;

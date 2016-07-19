@@ -6,9 +6,13 @@
  * @license   MIT License - view the LICENSE file that was distributed with this source code.
  */
 
-namespace chrmorandi\ldap;
+namespace chrmorandi\ldap\schemas;
 
-interface SchemaInterface
+/**
+ *
+ * @since 1.0.0
+ */
+trait OpenLDAPUserTrait 
 {
     
 }

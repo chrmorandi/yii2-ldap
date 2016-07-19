@@ -10,6 +10,7 @@ namespace chrmorandi\ldap;
 
 use chrmorandi\ldap\ActiveQuery;
 use chrmorandi\ldap\Connection;
+use Exception;
 use ReflectionClass;
 use ReflectionProperty;
 use Yii;
@@ -21,45 +22,50 @@ use yii\db\BaseActiveRecord;
  * This class implements the ActiveRecord pattern for the [ldap] protocol.
  *
  * For defining a record a subclass should at least implement the [[attributes()]] method to define
- * attributes. A primary key can be defined via [[primaryKey()]] which defaults to `cn` if not specified.
+ * attributes or use some prepared traits for specific objects. A primary key can be defined via [[primaryKey()]] which defaults to `cn` if not specified.
  *
  * The following is an example model called `User`:
  *
  * ```php
- * class User extends \yii\redis\ActiveRecord
+ * class User extends \chrmorandi\ldap\ActiveRecord
  * {
  *     public function attributes()
  *     {
- *         return ['cn', 'name', 'email'];
+ *         return ['objectClass', 'cn', 'name'];
  *     }
  * }
  * ```
  *
- * @author Christopher mota
+ * Or simply
+ *
+ * ```php
+ * use \chrmorandi\ldap\schemas\ADUserTrait;
+ * ```
+ *
  * @since 1.0.0
  */
 class ActiveRecord extends BaseActiveRecord
 {
+    use \chrmorandi\ldap\schemas\ADUserTrait;
     /**
-     * The schema class with implement SchemaInterface
-     * @var string
+     * The LDAP API references an LDAP object by its distinguished name (DN).
+     * A DN is a sequence of relative distinguished names (RDN) connected by commas.
+     *
+     * @link https://msdn.microsoft.com/en-us/library/aa366101(v=vs.85).aspx
+     * @var  string
      */
-    public $schemaClass;
-    
-    /**
-     * Instance of Schema class
-     */
-    private $schema;
+    public $dn;
     
     /**
      * Returns the LDAP connection used by this AR class.
+     *
      * @return Connection the LDAP connection used by this AR class.
      */
     public static function getDb()
     {
         return Yii::$app->get('ldap');
     }
-
+    
     /**
      * @inheritdoc
      * @return ActiveQuery the newly created [[ActiveQuery]] instance.
@@ -81,39 +87,17 @@ class ActiveRecord extends BaseActiveRecord
     }
     
     /**
-     * Initializes the object.
-     * This method is called at the end of the constructor.
-     * The default implementation will trigger an [[EVENT_INIT]] event.
-     * If you override this method, make sure you call the parent implementation at the end
-     * to ensure triggering of the event.
-     */
-    public function init()
-    {
-        $this->schema = new Schema();
-        
-        if(!is_null($this->schemaClass)){
-            if(class_exists($this->schemaClass)){
-                Schema::set(new $this->schemaClass);
-            } else {
-                throw new InvalidConfigException('"' . $this->schemaClass . '" does not exist.');
-            }
-        }
-
-        parent::init();        
-    }
-    
-        
-    /**
      * Returns the list of attribute names.
-     * By default, this method returns all public non-static properties of the class.
+     * This method returns all protected non-static properties of the class.
      * You may override this method to change the default behavior.
+     *
      * @return array list of attribute names.
      */
     public function attributes()
     {
-        $class = new ReflectionClass($this->schema->get());
+        $class = new ReflectionClass($this);
         $names = [];
-        foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ($class->getProperties(ReflectionProperty::IS_PROTECTED) as $property) {
             if (!$property->isStatic()) {
                 $names[] = $property->getName();
             }
@@ -154,13 +138,13 @@ class ActiveRecord extends BaseActiveRecord
      * $customer->insert();
      * ```
      *
-     * @param boolean $runValidation whether to perform validation (calling [[validate()]])
+     * @param  boolean $runValidation whether to perform validation (calling [[validate()]])
      * before saving the record. Defaults to `true`. If the validation fails, the record
      * will not be saved to the database and this method will return `false`.
-     * @param array $attributes list of attributes that need to be saved. Defaults to null,
+     * @param  array   $attributes    list of attributes that need to be saved. Defaults to null, meaning all attributes that are loaded from DB will be saved. meaning all attributes that are loaded from DB will be saved.
      * meaning all attributes that are loaded from DB will be saved.
      * @return boolean whether the attributes are valid and the record is inserted successfully.
-     * @throws \Exception in case insert failed.
+     * @throws Exception in case insert failed.
      */
     public function insert($runValidation = true, $attributes = null)
     {
@@ -174,7 +158,8 @@ class ActiveRecord extends BaseActiveRecord
     
     /**
      * Inserts an ActiveRecord into LDAP without.
-     * @param array $attributes list of attributes that need to be saved. Defaults to null,
+     *
+     * @param  array $attributes list of attributes that need to be saved. Defaults to null,
      * meaning all attributes that are loaded will be saved.
      * @return boolean whether the record is inserted successfully.
      */
@@ -211,7 +196,7 @@ class ActiveRecord extends BaseActiveRecord
      * Customer::deleteAll('status = 3');
      * ```
      *
-     * @param string|array $condition the conditions that will be put in the WHERE part of the DELETE SQL.
+     * @param  string|array $condition the conditions that will be put in the WHERE part of the DELETE SQL.
      * Please refer to [[Query::where()]] on how to specify this parameter.
      * @return integer the number of rows deleted
      */
@@ -229,5 +214,4 @@ class ActiveRecord extends BaseActiveRecord
         }
         return $count;
     }
-
 }

@@ -11,7 +11,7 @@ namespace chrmorandi\ldap;
 use yii\base\Component;
 
 /**
- * 
+ *
  *
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0
@@ -89,7 +89,7 @@ class Connection extends Component
     /**
      * @var bool stores the bool whether or not the current connection is bound.
      */
-    protected $bound = false;    
+    protected $bound = false;
         
     /**
      * @var Connection
@@ -151,8 +151,8 @@ class Connection extends Component
         }
         $this->resource = ldap_connect($hostname, $port);
         
-        if(!$this->resource){            
-            return false;          
+        if (!$this->resource) {
+            return false;
         }
         
         $followReferrals = $this->followReferrals;
@@ -168,7 +168,7 @@ class Connection extends Component
         $this->trigger(self::EVENT_AFTER_OPEN);
         
         return is_resource($this->resource);
-    }    
+    }
 
     /**
      * Closes the current connection.
@@ -185,9 +185,9 @@ class Connection extends Component
         
     /**
      * Execute ldap functions like.
-     * 
+     *
      * http://php.net/manual/en/ref.ldap.php
-     * 
+     *
      * @param  string $function php LDAP function
      * @param  array $params params for execute ldap function
      * @return bool|resource
@@ -202,7 +202,7 @@ class Connection extends Component
             throw new LdapException($this->getLastError(), $this->getErrNo());
         }
         
-        if(is_resource($result)){
+        if (is_resource($result)) {
             return new DataReader($this, $result);
         }
 
@@ -218,5 +218,4 @@ class Connection extends Component
         $this->close();
         return array_keys((array) $this);
     }
-
 }

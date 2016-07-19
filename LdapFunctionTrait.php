@@ -25,7 +25,7 @@ trait LdapFunctionTrait
     public function sort($result, $attribute)
     {
         return ldap_sort($this->resource, $result, $attribute);
-    }   
+    }
 
     /**
      * Adds an entry to the current connection.
@@ -194,7 +194,7 @@ trait LdapFunctionTrait
     public function getAttributes($entry)
     {
         return ldap_get_attributes($this->resource, $entry);
-    }    
+    }
 
     /**
      * Get all binary values from the specified result entry.
@@ -274,7 +274,4 @@ trait LdapFunctionTrait
     {
         return ldap_err2str($number);
     }
-
 }
-
-

@@ -73,7 +73,8 @@ use yii\db\ActiveRelationTrait;
  * @since 1.0.0
  */
 class ActiveQuery extends Query implements ActiveQueryInterface
-{    
+{
+
     use ActiveQueryTrait;
     use ActiveRelationTrait;
     
@@ -163,6 +164,4 @@ class ActiveQuery extends Query implements ActiveQueryInterface
             return null;
         }
     }
-
 }
-

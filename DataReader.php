@@ -17,7 +17,7 @@ use yii\base\Object;
  * DataReader represents a forward-only stream of rows from a query result set.
  *
  * The method returns [[toArray()]] all the rows in a single array.
- * Rows of data can also be read by iterating through the reader. For example, 
+ * Rows of data can also be read by iterating through the reader. For example,
  *
  * ```php
  * $command = $connection->createCommand('SELECT * FROM post');
@@ -51,7 +51,7 @@ class DataReader extends Object implements Iterator, Countable
     /**
      * @var array data
      */
-    public  $entries;
+    public $entries;
     
     /**
      * @var Connection
@@ -116,7 +116,7 @@ class DataReader extends Object implements Iterator, Countable
      */
     public function toArray()
     {
-        if($this->_count <= 0){
+        if ($this->_count <= 0) {
             return [];
         }
         
@@ -171,11 +171,11 @@ class DataReader extends Object implements Iterator, Countable
      * @throws InvalidCallException if this method is invoked twice
      */
     public function rewind()
-    {   
+    {
         if ($this->_index < 0) {
             reset($this->entries);
             $nextEntry = current($this->entries);
-            $this->_row = $nextEntry['resource'];            
+            $this->_row = $nextEntry['resource'];
             $this->_index = 0;
         } else {
             throw new InvalidCallException('DataReader cannot rewind. It is a forward-only reader.');
@@ -198,7 +198,6 @@ class DataReader extends Object implements Iterator, Countable
         }
 
         return $currentDn;
- 
     }
 
     /**
@@ -213,9 +212,9 @@ class DataReader extends Object implements Iterator, Countable
         $resource = $this->_conn->resource;
         
         Yii::beginProfile('current:' . $this->key(), 'chrmorandi\ldap\DataReader');
-        $name = ldap_first_attribute($resource, $this->_row);        
+        $name = ldap_first_attribute($resource, $this->_row);
         
-        while ($name) {            
+        while ($name) {
             $data = ldap_get_values_len($resource, $this->_row, $name);
 
             if (!$data) {
@@ -230,7 +229,7 @@ class DataReader extends Object implements Iterator, Countable
             $entry[$attrName] = implode(",", $data);
 
             $name = ldap_next_attribute($resource, $this->_row);
-        }        
+        }
         Yii::endProfile('ldap_first_attribute', 'chrmorandi\ldap\DataReader');
         
         ksort($entry, SORT_LOCALE_STRING);

@@ -63,7 +63,7 @@ class FilterBuilder extends Object
      */
     public function build($condition)
     {
-       if (!is_array($condition)) {
+        if (!is_array($condition)) {
             return (string) $condition;
         } elseif (empty($condition)) {
             return '';
@@ -80,13 +80,13 @@ class FilterBuilder extends Object
             return $this->$method($operator, $condition);
         } else { // hash format: 'column1' => 'value1', 'column2' => 'value2', ...
             return $this->buildHashCondition($condition);
-        }  
+        }
     }
 
     /**
      * Creates a condition based on column-value pairs.
      * @param array $condition the condition specification.
-     * @return string the generated 
+     * @return string the generated
      */
     public function buildHashCondition($condition)
     {
@@ -105,18 +105,18 @@ class FilterBuilder extends Object
      * Connects two or more Filters expressions with the `AND`(&) or `OR`(|) operator.
      * @param string $operator the operator to use for connecting the given operands
      * @param array $operands the Filter expressions to connect.
-     * @return string the generated 
+     * @return string the generated
      */
     public function buildAndCondition($operator, $operands)
     {
         $parts = [];
-        foreach ($operands as $key=>$operand) {
+        foreach ($operands as $key => $operand) {
             if (is_array($operand)) {
                 $operand = $this->build($operand);
             }
             if ($operand !== '' && !is_numeric($key)) {
                 $parts[] = $key.'='.$operand;
-            }elseif($operand !== ''){
+            } elseif ($operand !== '') {
                 $other[] = $operand;
             }
         }
@@ -409,5 +409,4 @@ class FilterBuilder extends Object
         }
         return (count($values) == 1) ? $values[0] : $values;
     }
-    
 }
