@@ -86,7 +86,7 @@ class Query extends Component implements QueryInterface
                 
         $params = [
             $db->baseDn,
-            $filter,
+            $this->filter,
             $select,
             0,
             $this->limit
@@ -102,11 +102,7 @@ class Query extends Component implements QueryInterface
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      */
     public function all($db = null)
-    {
-        if ($db === null) {
-            $db = Yii::$app->get('ldap');
-        }
-        
+    {        
         /** @var $result DataReader */
         $result = $this->execute($db);        
         return $this->populate($result->toArray());
@@ -145,10 +141,6 @@ class Query extends Component implements QueryInterface
      */
     public function one($db = null)
     {
-        if ($db === null) {
-            $db = Yii::$app->get('ldap');
-        }
-
         $this->limit = 1;
         $result = $this->execute($db);
         return $result->toArray();
@@ -161,11 +153,7 @@ class Query extends Component implements QueryInterface
      * @return integer number of entries.
      */
     public function count($db = null)
-    {
-        if ($db === null) {
-            $db = Yii::$app->get('ldap');
-        }
-        
+    {        
         $result = $this->execute($db);
         return $result->count();
     }
@@ -178,13 +166,9 @@ class Query extends Component implements QueryInterface
      * @return boolean whether the query result contains any row of entries.
      */
     public function exists($db = null)
-    {
-        if ($db === null) {
-            $db = Yii::$app->get('ldap');
-        }
-        
+    {        
         $result = $this->execute($db);
-        return (boolean)$result->count();
+        return (boolean) $result->count();
     }
 
     /**

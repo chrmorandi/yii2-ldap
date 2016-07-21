@@ -79,7 +79,7 @@ class ActiveRecord extends BaseActiveRecord
      * Returns the primary key name(s) for this AR class.
      * This method should be overridden by child classes to define the primary key.
      *
-     * @return string[] the primary keys of this record.
+     * @return string the primary keys of this record.
      */
     public static function primaryKey()
     {
@@ -173,7 +173,7 @@ class ActiveRecord extends BaseActiveRecord
         $dn = $values[self::primaryKey()];
         unset($values[self::primaryKey()]);
         
-        if (($primaryKeys = static::getDb()->execute('ldap_add', [$dn,$values])) === false) {
+        if (($primaryKeys = static::getDb()->execute('ldap_add', [$dn, $values])) === false) {
             return false;
         }
         $this->setAttribute(self::primaryKey(), $dn);

@@ -99,7 +99,7 @@ class Connection extends Component
     /**
      * Get the current resource of connection.
      *
-     * @return mixed
+     * @return Connection
      */
     public function getResource()
     {
@@ -140,7 +140,7 @@ class Connection extends Component
      * Retrieve the last error on the current
      * connection.
      *
-     * @return string
+     * @return boolean
      */
     public function connect($hostname = [], $port = '389')
     {
@@ -173,7 +173,7 @@ class Connection extends Component
     /**
      * Closes the current connection.
      *
-     * @return mixed
+     * @return boolean
      */
     public function close()
     {

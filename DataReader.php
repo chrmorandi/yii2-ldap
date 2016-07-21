@@ -140,7 +140,7 @@ class DataReader extends Object implements Iterator, Countable
             Yii::endProfile('ldap_free_result', 'chrmorandi\ldap\DataReader');
 
             $this->_result = null;
-            $this->_row  = null;
+            $this->_row = null;
         }
     }
 
@@ -183,7 +183,7 @@ class DataReader extends Object implements Iterator, Countable
     /**
      * Returns the result of the current item.
      * This method is required by the interface [[\Iterator]].
-     * @return integer the index of the current row.
+     * @return string the index of the current row.
      */
     public function key()
     {
