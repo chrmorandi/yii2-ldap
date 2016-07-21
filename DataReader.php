@@ -156,9 +156,7 @@ class DataReader extends Object implements Iterator, Countable
     /**
      * Returns the number of rows in the result set.
      * This method is required by the Countable interface.
-     * Note, most DBMS may not give a meaningful count.
-     * In this case, use "SELECT COUNT(*) FROM tableName" to obtain the number of rows.
-     * @return integer number of rows contained in the result.
+     * @return integer number of entries stored in the result.
      */
     public function count()
     {

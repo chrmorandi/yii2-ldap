@@ -33,7 +33,6 @@ use yii\db\ActiveRelationTrait;
  * - [[count()]]: returns the number of records.
  * - [[min()]]: returns the min over the specified column.
  * - [[max()]]: returns the max over the specified column.
- * - [[column()]]: returns the value of the first column in the query result.
  * - [[exists()]]: returns a value indicating whether the query result has data or not.
  *
  * Because ActiveQuery extends from [[Query]], one can use query methods, such as [[where()]],

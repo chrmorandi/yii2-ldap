@@ -190,7 +190,7 @@ class Connection extends Component
      *
      * @param  string $function php LDAP function
      * @param  array $params params for execute ldap function
-     * @return bool|resource
+     * @return bool|DataReader
      * @throws LdapException
      */
     public function execute($function, $params)
