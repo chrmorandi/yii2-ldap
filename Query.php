@@ -74,7 +74,7 @@ class Query extends Component implements QueryInterface
      * If this parameter is not given, the `db` application component will be used.
      * @return DataReader
      */
-    protected function execute($db = null)
+    public function execute($db = null)
     {
         if ($db === null) {
             $db = Yii::$app->get('ldap');

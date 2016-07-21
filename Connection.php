@@ -116,7 +116,7 @@ class Connection extends Component
         // Connect to the LDAP server.
         if ($this->connect($this->dc, $this->port)) {
             if ($anonymous) {
-                $this->bound = ($this->resource);
+                //TODO
             } else {
                 $this->bound = ldap_bind($this->resource, $this->username, $this->password);
             }
