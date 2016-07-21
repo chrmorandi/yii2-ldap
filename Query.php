@@ -22,7 +22,7 @@ use yii\db\QueryTrait;
  * Query provides a set of methods to facilitate the specification of different clauses
  * in a SEARCH statement. These methods can be chained together.
  *
- * By calling [[createCommand()]], we can get a [[Command]] instance which can be further
+ * By calling [[createFilter()]], we can get a [[Command]] instance which can be further
  * used to perform/execute the LDAP query against a database directory.
  *
  * For example,
@@ -36,7 +36,7 @@ use yii\db\QueryTrait;
  * // build and execute the query
  * $rows = $query->all();
  * // alternatively, you can create LDAP command and execute it
- * $command = $query->createCommand();
+ * $command = $query->createFilter();
  * // $command->argument returns the actual LDAP arguments for the search
  * $rows = $command->queryAll();
  * ```
@@ -96,12 +96,12 @@ class Query extends Component implements QueryInterface
     public $having;
 
     /**
-     * Creates a LDAP command that can be used to execute this query.
+     * Creates a LDAP filter that can be used to execute this query.
      * @param Connection $db the database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
-     * @return Command the created DB command instance.
+     * @return Array with string base DN, string filter, An array of the required attributes and bool.
      */
-    public function createCommand($db = null)
+    public function createFilter($db = null)
     {
         if ($db === null) {
             $db = Yii::$app->get('ldap');
@@ -191,7 +191,7 @@ class Query extends Component implements QueryInterface
             $db = Yii::$app->get('ldap');
         }
         
-        $params = $this->createCommand($db);
+        $params = $this->createFilter($db);
         
         /** @var $result DataReader */
         $result = $db->execute($this->scope, $params);
@@ -231,7 +231,7 @@ class Query extends Component implements QueryInterface
      */
     public function one($db = null)
     {
-        $params = $this->createCommand($db);
+        $params = $this->createFilter($db);
         
         /** @var $result DataReader */
         $result = $db->execute($this->scope, array_push($params,1));
@@ -248,7 +248,7 @@ class Query extends Component implements QueryInterface
      */
 //    public function scalar($db = null)
 //    {
-//        return $this->createCommand($db)->queryScalar();
+//        return $this->createFilter($db)->queryScalar();
 //    }
 
     /**
@@ -260,12 +260,12 @@ class Query extends Component implements QueryInterface
 //    public function column($db = null)
 //    {
 //        if (!is_string($this->indexBy)) {
-//            return $this->createCommand($db)->queryColumn();
+//            return $this->createFilter($db)->queryColumn();
 //        }
 //        if (is_array($this->select) && count($this->select) === 1) {
 //            $this->select[] = $this->indexBy;
 //        }
-//        $rows = $this->createCommand($db)->queryAll();
+//        $rows = $this->createFilter($db)->queryAll();
 //        $results = [];
 //        foreach ($rows as $row) {
 //            if (array_key_exists($this->indexBy, $row)) {
@@ -300,7 +300,7 @@ class Query extends Component implements QueryInterface
      */
     public function exists($db = null)
     {
-        $command = $this->createCommand($db);
+        $command = $this->createFilter($db);
         $params = $command->params;
         $command->setSql($command->db->getQueryBuilder()->selectExists($command->getSql()));
         $command->bindValues($params);
@@ -323,7 +323,7 @@ class Query extends Component implements QueryInterface
 //        $this->select = [$selectExpression];
 //        $this->limit = null;
 //        $this->offset = null;
-//        $command = $this->createCommand($db);
+//        $command = $this->createFilter($db);
 //
 //        $this->select = $select;
 //        $this->limit = $limit;
@@ -334,7 +334,7 @@ class Query extends Component implements QueryInterface
 //        } else {
 //            return (new Query)->select([$selectExpression])
 //                ->from(['c' => $this])
-//                ->createCommand($command->db)
+//                ->createFilter($command->db)
 //                ->queryScalar();
 //        }
 //    }

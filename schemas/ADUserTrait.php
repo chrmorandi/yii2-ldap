@@ -289,7 +289,7 @@ trait ADUserTrait
     protected $wWWHomePage;
     
     public function rules (){
-        return [['cn'],'safe'];
+        return [['cn'],'required'];
     }
     
 }
