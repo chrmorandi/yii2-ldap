@@ -77,12 +77,16 @@ class DataReader extends Object implements Iterator, Countable
         $this->_result = $result;
         $resource      = $conn->resource;
         
-        Yii::beginProfile('ldap_count_entries', 'chrmorandi\ldap\DataReader');
-        $this->_count = ldap_count_entries($resource, $this->_result);
-        Yii::endProfile('ldap_count_entries', 'chrmorandi\ldap\DataReader');
+        Yii::beginProfile('ldap_count_entries', __METHOD__);
+        $this->_count = $this->_conn->countEntries($this->_result);
+        Yii::endProfile('ldap_count_entries', __METHOD__);
         
         if ($this->_count === false) {
-            throw new LdapException($this->_conn, sprintf('LDAP count entries failed: %s', $this->_conn->getLastError()), $this->getErrNo());
+            throw new LdapException(
+                $this->_conn, 
+                sprintf('LDAP count entries failed: %s', $this->_conn->lastError), 
+                $this->_conn->errNo
+            );
         }
 
         $identifier = ldap_first_entry(
@@ -135,9 +139,9 @@ class DataReader extends Object implements Iterator, Countable
     public function close()
     {
         if (is_resource($this->_result)) {
-            Yii::beginProfile('ldap_free_result', 'chrmorandi\ldap\DataReader');
+            Yii::beginProfile('ldap_free_result', __METHOD__);
             $this->_closed = ldap_free_result($this->_result);
-            Yii::endProfile('ldap_free_result', 'chrmorandi\ldap\DataReader');
+            Yii::endProfile('ldap_free_result', __METHOD__);
 
             $this->_result = null;
             $this->_row  = null;
@@ -189,9 +193,9 @@ class DataReader extends Object implements Iterator, Countable
      */
     public function key()
     {
-        Yii::beginProfile('ldap_get_dn', 'chrmorandi\ldap\DataReader');
+        Yii::beginProfile('ldap_get_dn', __METHOD__);
         $currentDn = ldap_get_dn($this->_conn->resource, $this->_row);
-        Yii::endProfile('ldap_get_dn', 'chrmorandi\ldap\DataReader');
+        Yii::endProfile('ldap_get_dn', __METHOD__);
 
         if ($currentDn === false) {
             throw new LdapException($this->_conn, sprintf('LDAP get dn failed: %s', $this->_conn->getLastError()), $this->getErrNo());
@@ -211,7 +215,6 @@ class DataReader extends Object implements Iterator, Countable
 
         $resource = $this->_conn->resource;
         
-        Yii::beginProfile('current:' . $this->key(), 'chrmorandi\ldap\DataReader');
         $name = ldap_first_attribute($resource, $this->_row);
         
         while ($name) {
@@ -230,7 +233,6 @@ class DataReader extends Object implements Iterator, Countable
 
             $name = ldap_next_attribute($resource, $this->_row);
         }
-        Yii::endProfile('ldap_first_attribute', 'chrmorandi\ldap\DataReader');
         
         ksort($entry, SORT_LOCALE_STRING);
         return $entry;
