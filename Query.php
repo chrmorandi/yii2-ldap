@@ -8,9 +8,10 @@
 
 namespace chrmorandi\ldap;
 
+use chrmorandi\ldap\Connection;
 use Yii;
 use yii\base\Component;
-use chrmorandi\ldap\Connection;
+use yii\base\InvalidValueException;
 use yii\db\Expression;
 use yii\db\QueryInterface;
 use yii\db\QueryTrait;
@@ -80,10 +81,14 @@ class Query extends Component implements QueryInterface
             $db = Yii::$app->get('ldap');
         }
         
-        $this->filter = (new FilterBuilder)->build($this->where);
+        $this->filter = (new FilterBuilder)->build($this->where);        
+        if(empty($this->filter)){
+            throw new InvalidValueException('You must define a filter for the search.');
+        }
+        
         $select = (is_array($this->select)) ? $this->select : [];
         $this->limit = empty($this->limit) ? 0 : $this->limit;
-                
+
         $params = [
             $db->baseDn,
             $this->filter,
