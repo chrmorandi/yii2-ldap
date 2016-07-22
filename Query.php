@@ -152,7 +152,7 @@ class Query extends Component implements QueryInterface
      * If this parameter is not given (or null), the `db` application component will be used.
      * @return integer number of entries.
      */
-    public function count($db = null)
+    public function count($q = '*', $db = NULL)
     {        
         $result = $this->execute($db);
         return $result->count();

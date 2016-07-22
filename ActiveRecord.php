@@ -200,7 +200,7 @@ class ActiveRecord extends BaseActiveRecord
      * Please refer to [[Query::where()]] on how to specify this parameter.
      * @return integer the number of rows deleted
      */
-    public static function deleteAll($condition)
+    public static function deleteAll($condition = NULL)
     {
         $entries = (new Query())->select($this->primaryKey)->where($condition)->execute()->toArray();
         $count = 0;
