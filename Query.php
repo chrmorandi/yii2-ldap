@@ -99,18 +99,6 @@ class Query extends Component implements QueryInterface
 
         return $db->execute($this->scope, $params);
     }
-    
-    /**
-     * Prepares for building SQL.
-     * This method is called by [[QueryBuilder]] when it starts to build SQL from a query object.
-     * You may override this method to do some final preparation work when converting a query into a SQL statement.
-     * @param QueryBuilder $builder
-     * @return $this a prepared query instance which will be used by [[QueryBuilder]] to build the SQL
-     */
-    public function prepare($builder)
-    {
-        return $this;
-    }
 
     /**
      * Executes the query and returns all results as an array.
@@ -165,11 +153,12 @@ class Query extends Component implements QueryInterface
 
     /**
      * Returns the number of entries in a search.
+     * @param string $q do not use
      * @param Connection $db the database connection
      * If this parameter is not given (or null), the `db` application component will be used.
      * @return integer number of entries.
      */
-    public function count($q = '*', $db = NULL)
+    public function count($q = null, $db = NULL)
     {        
         $result = $this->execute($db);
         return $result->count();

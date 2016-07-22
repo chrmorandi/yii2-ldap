@@ -95,7 +95,7 @@ class FilterBuilder extends Object
         foreach ($condition as $column => $value) {
             if (ArrayHelper::isTraversable($value) || $value instanceof Query) {
                 // IN condition
-                $parts[] = $this->buildInCondition('IN', [$column, $value], $params);
+                $parts[] = $this->buildInCondition('IN', [$column, $value]);
             } else {
                 if ($value === null) {
                     $parts[] = "$column IS NULL";
@@ -160,7 +160,7 @@ class FilterBuilder extends Object
     }
 
     /**
-     * Creates an SQL expressions with the `IN` operator.
+     * Creates an filter expressions with the `IN` operator.
      * @param string $operator the operator to use (e.g. `IN` or `NOT IN`)
      * @param array $operands the first operand is the column name. If it is an array
      * a composite IN condition will be generated.
@@ -182,21 +182,20 @@ class FilterBuilder extends Object
             return $operator === 'IN' ? '0=1' : '';
         }
 
-        if ($values instanceof Query) {
-            return $this->buildSubqueryInCondition($operator, $column, $values);
+        if (!is_array($values) && !$values instanceof \Traversable) {
+            // ensure values is an array
+            $values = (array) $values;
         }
 
-        if ($column instanceof Traversable || count($column) > 1) {
+        if ($column instanceof \Traversable || count($column) > 1) {
             return $this->buildCompositeInCondition($operator, $column, $values);
-        }
-
-        if (is_array($column)) {
+        } elseif (is_array($column)) {
             $column = reset($column);
         }
 
         $sqlValues = [];
         foreach ($values as $i => $value) {
-            if (is_array($value) || $value instanceof ArrayAccess) {
+            if (is_array($value) || $value instanceof \ArrayAccess) {
                 $value = isset($value[$column]) ? $value[$column] : null;
             }
             if ($value === null) {
@@ -210,41 +209,11 @@ class FilterBuilder extends Object
             return $operator === 'IN' ? '0=1' : '';
         }
 
-        if (strpos($column, '(') === false) {
-            $column = $this->db->quoteColumnName($column);
-        }
-
         if (count($sqlValues) > 1) {
-            return "$column $operator (" . implode(', ', $sqlValues) . ')';
+            return "&($column=" . implode(")($column=", $sqlValues) . ')';
         } else {
             $operator = $operator === 'IN' ? '=' : '<>';
             return $column . $operator . reset($sqlValues);
-        }
-    }
-
-    /**
-     * Builds SQL for IN condition
-     *
-     * @param string $operator
-     * @param array $columns
-     * @param Query $values
-     * @return string SQL
-     */
-    protected function buildSubqueryInCondition($operator, $columns, $values)
-    {
-        list($sql, $params) = $this->build($values);
-        if (is_array($columns)) {
-            foreach ($columns as $i => $col) {
-                if (strpos($col, '(') === false) {
-                    $columns[$i] = $this->db->quoteColumnName($col);
-                }
-            }
-            return '(' . implode(', ', $columns) . ") $operator ($sql)";
-        } else {
-            if (strpos($columns, '(') === false) {
-                $columns = $this->db->quoteColumnName($columns);
-            }
-            return "$columns $operator ($sql)";
         }
     }
 
@@ -263,26 +232,17 @@ class FilterBuilder extends Object
             $vs = [];
             foreach ($columns as $column) {
                 if (isset($value[$column])) {
-                    $phName = self::PARAM_PREFIX;
-                    $params[$phName] = $value[$column];
-                    $vs[] = $phName;
-                } else {
-                    $vs[] = 'NULL';
+                    $vs[] = "($column=$value[$column])";
                 }
             }
-            $vss[] = '(' . implode(', ', $vs) . ')';
+            $vss[] = implode('', $vs);
         }
 
         if (empty($vss)) {
             return $operator === 'IN' ? '0=1' : '';
-        };
-
-        $sqlColumns = [];
-        foreach ($columns as $i => $column) {
-            $sqlColumns[] = strpos($column, '(') === false ? $this->db->quoteColumnName($column) : $column;
         }
 
-        return '(' . implode(', ', $sqlColumns) . ") $operator (" . implode(', ', $vss) . ')';
+        return '(&' . implode('', $vss) . ')';
     }
 
     /**
