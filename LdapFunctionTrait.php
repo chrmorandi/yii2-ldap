@@ -17,7 +17,7 @@ trait LdapFunctionTrait
     /**
      * Sorts an AD search result by the specified attribute.
      *
-     * @param resource $result
+     * @param $result $result
      * @param string   $attribute
      *
      * @return bool

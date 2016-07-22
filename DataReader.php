@@ -144,7 +144,7 @@ class DataReader extends Object implements Iterator, Countable
             Yii::endProfile('ldap_free_result', __METHOD__);
 
             $this->_result = null;
-            $this->_row  = null;
+            $this->_row = null;
         }
     }
 
@@ -160,9 +160,7 @@ class DataReader extends Object implements Iterator, Countable
     /**
      * Returns the number of rows in the result set.
      * This method is required by the Countable interface.
-     * Note, most DBMS may not give a meaningful count.
-     * In this case, use "SELECT COUNT(*) FROM tableName" to obtain the number of rows.
-     * @return integer number of rows contained in the result.
+     * @return integer number of entries stored in the result.
      */
     public function count()
     {
@@ -189,7 +187,7 @@ class DataReader extends Object implements Iterator, Countable
     /**
      * Returns the result of the current item.
      * This method is required by the interface [[\Iterator]].
-     * @return integer the index of the current row.
+     * @return string the index of the current row.
      */
     public function key()
     {

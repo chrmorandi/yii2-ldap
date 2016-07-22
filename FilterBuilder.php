@@ -110,6 +110,7 @@ class FilterBuilder extends Object
     public function buildAndCondition($operator, $operands)
     {
         $parts = [];
+        $other = [];
         foreach ($operands as $key => $operand) {
             if (is_array($operand)) {
                 $operand = $this->build($operand);
@@ -256,7 +257,7 @@ class FilterBuilder extends Object
             $vs = [];
             foreach ($columns as $column) {
                 if (isset($value[$column])) {
-                    $phName = self::PARAM_PREFIX . count($params);
+                    $phName = self::PARAM_PREFIX;
                     $params[$phName] = $value[$column];
                     $vs[] = $phName;
                 } else {

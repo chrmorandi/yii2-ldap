@@ -45,3 +45,4 @@ Vagrantfile
 
 # para testes
 /basic
+tests/_output/*

@@ -26,7 +26,7 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms680932(v=vs.85).aspx
      * @var array 
      */
-    protected $objectClass = ['user','person','organizationalPerson', 'top'];
+    protected $objectClass = ['user', 'person', 'organizationalPerson', 'top'];
     
     /**
      * The date when the account expires. This value represents the number of 100-nanosecond
@@ -289,7 +289,7 @@ trait ADUserTrait
     protected $wWWHomePage;
     
     public function rules (){
-        return [['cn'],'required'];
+        return [['cn'], 'required'];
     }
     
 }

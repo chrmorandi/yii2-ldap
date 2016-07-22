@@ -109,7 +109,7 @@ class Connection extends Component
         // Connect to the LDAP server.
         if ($this->connect($this->dc, $this->port)) {
             if ($anonymous) {
-                $this->bound = ($this->resource);
+                //TODO
             } else {
                 $this->bound = ldap_bind($this->resource, $this->username, $this->password);
             }
@@ -162,7 +162,8 @@ class Connection extends Component
 
     /**
      * Closes the current connection.
-     * @return mixed
+     *
+     * @return boolean
      */
     public function close()
     {
@@ -178,8 +179,8 @@ class Connection extends Component
      * http://php.net/manual/en/ref.ldap.php
      *
      * @param  string $function php LDAP function
-     * @param  array $params Parameters for execute ldap function
-     * @return bool|resource
+     * @param  array $params params for execute ldap function
+     * @return bool|DataReader
      * @throws LdapException
      */
     public function execute($function, $params)

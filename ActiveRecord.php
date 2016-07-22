@@ -83,7 +83,7 @@ class ActiveRecord extends BaseActiveRecord
      */
     public static function primaryKey()
     {
-        return 'dn';
+        return ['dn'];
     }
     
     /**
@@ -170,14 +170,14 @@ class ActiveRecord extends BaseActiveRecord
         }
         
         $values = $this->getDirtyAttributes($attributes);
-        $dn = $values[self::primaryKey()];
-        unset($values[self::primaryKey()]);
+        $dn = $values[$this->primaryKey];
+        unset($values[$this->primaryKey]);
         
-        if (($primaryKeys = static::getDb()->execute('ldap_add', [$dn,$values])) === false) {
+        if (($primaryKeys = static::getDb()->execute('ldap_add', [$dn, $values])) === false) {
             return false;
         }
-        $this->setAttribute(self::primaryKey(), $dn);
-        $values[self::primaryKey()] = $dn;
+        $this->setAttribute($this->primaryKey, $dn);
+        $values[$this->primaryKey] = $dn;
 
         $changedAttributes = array_fill_keys(array_keys($values), null);
         $this->setOldAttributes($values);
@@ -200,14 +200,14 @@ class ActiveRecord extends BaseActiveRecord
      * Please refer to [[Query::where()]] on how to specify this parameter.
      * @return integer the number of rows deleted
      */
-    public static function deleteAll($condition = null)
+    public static function deleteAll($condition)
     {
-        $entries = (new Query())->select(self::primaryKey())->where($condition);
+        $entries = (new Query())->select($this->primaryKey)->where($condition)->execute()->toArray();
         $count = 0;
         
         foreach ($entries as $entry) {
             $params = [
-                $entry[self::primaryKey()]
+                $entry[$this->primaryKey]
             ];
             static::getDb()->execute('ldap_delete', $params);
             $count++;
