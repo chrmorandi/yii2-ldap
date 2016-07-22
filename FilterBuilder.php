@@ -12,6 +12,7 @@ use ArrayAccess;
 use Traversable;
 use yii\base\InvalidParamException;
 use yii\base\Object;
+use yii\helpers\ArrayHelper;
 
 /**
  * FilterBuilder builds a Filter for search in LDAP.
@@ -92,10 +93,15 @@ class FilterBuilder extends Object
     {
         $parts = [];
         foreach ($condition as $column => $value) {
-            if ($value === null) {
-                $parts[] = "$column IS NULL";
+            if (ArrayHelper::isTraversable($value) || $value instanceof Query) {
+                // IN condition
+                $parts[] = $this->buildInCondition('IN', [$column, $value], $params);
             } else {
-                $parts[] = "$column=$value";
+                if ($value === null) {
+                    $parts[] = "$column IS NULL";
+                } else {
+                    $parts[] = "$column=$value";
+                }
             }
         }
         return count($parts) === 1 ? '('.$parts[0].')' : '$(' . implode(') (', $parts) . ')';
