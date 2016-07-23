@@ -288,7 +288,7 @@ trait ADUserTrait
      */
     protected $wWWHomePage;
     
-    public function rules(){
+    public function rules() {
         return [['cn'], 'required'];
     }
     

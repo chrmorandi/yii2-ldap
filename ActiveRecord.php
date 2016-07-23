@@ -45,7 +45,7 @@ use yii\db\BaseActiveRecord;
  * @since 1.0.0
  */
 class ActiveRecord extends BaseActiveRecord
-{    
+{
     /**
      * The LDAP API references an LDAP object by its distinguished name (DN).
      * A DN is a sequence of relative distinguished names (RDN) connected by commas.

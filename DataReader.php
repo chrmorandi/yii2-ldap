@@ -189,12 +189,10 @@ class DataReader extends Object implements Iterator, Countable
      */
     public function key()
     {
-        Yii::beginProfile('ldap_get_dn', __METHOD__);
-        $currentDn = ldap_get_dn($this->_conn->resource, $this->_row);
-        Yii::endProfile('ldap_get_dn', __METHOD__);
+        $currentDn = @ldap_get_dn($this->_conn->resource, $this->_row);
 
         if ($currentDn === false) {
-            throw new LdapException($this->_conn, sprintf('LDAP get dn failed: %s', $this->_conn->getLastError()), $this->getErrNo());
+            throw new LdapException(sprintf('LDAP get dn failed: %s', $this->_conn->lastError), $this->_conn->errNo);
         }
 
         return $currentDn;

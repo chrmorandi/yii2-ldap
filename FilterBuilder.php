@@ -127,7 +127,7 @@ class FilterBuilder extends Object
             }
         }
         if (!empty($parts)) {
-            return '('.$this->operator[$operator].'(' . implode(") (", $parts) . ')'.implode($other).' )';
+            return '('.$this->operator[$operator].'('.implode(") (", $parts).')'.implode($other).' )';
         } else {
             return '';
         }
@@ -294,7 +294,7 @@ class FilterBuilder extends Object
         $parts = [];
         foreach ($values as $value) {
             $value = empty($escape) ? $value : strtr($value, $escape);
-            $parts[] = $not.'('.$column.'=*'.$value.'*)'.($not? ')':'');
+            $parts[] = $not.'('.$column.'=*'.$value.'*)'.($not? ')' : '');
         }
 
         return '('.$this->operator[trim($andor)].implode($parts).')';
