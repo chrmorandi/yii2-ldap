@@ -69,7 +69,6 @@ class DataReader extends Object implements Iterator, Countable
      * @param Connection $conn connection interact with result
      * @param resource $result result of search in ldap directory
      * @param array $config name-value pairs that will be used to initialize the object properties
-     * @return DataReader
      */
     public function __construct(Connection $conn, $result, $config = [])
     {
@@ -83,7 +82,6 @@ class DataReader extends Object implements Iterator, Countable
         
         if ($this->_count === false) {
             throw new LdapException(
-                $this->_conn, 
                 sprintf('LDAP count entries failed: %s', $this->_conn->lastError), 
                 $this->_conn->errNo
             );

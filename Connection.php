@@ -12,6 +12,7 @@ use yii\base\Component;
 
 /**
  * @property string $errNo Error number of the last command
+ * @property string $lastError Error message of the last command
  *
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0
@@ -109,7 +110,7 @@ class Connection extends Component
         // Connect to the LDAP server.
         if ($this->connect($this->dc, $this->port)) {
             if ($anonymous) {
-                //TODO
+                $this->isBound = ldap_bind($this->connection);
             } else {
                 $this->bound = ldap_bind($this->resource, $this->username, $this->password);
             }

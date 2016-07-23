@@ -222,7 +222,7 @@ class FilterBuilder extends Object
      *
      * @param string $operator
      * @param array|Traversable $columns
-     * @param array $values
+     * @param array|Traversable $values
      * @return string SQL
      */
     protected function buildCompositeInCondition($operator, $columns, $values)
