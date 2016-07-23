@@ -12,8 +12,9 @@ use yii\base\Component;
 
 /**
  * @property resource $resource
- * @property int $errNo Error number of the last command
- * @property string $lastError Error message of the last command
+ * @property boolean  $bount
+ * @property int      $errNo Error number of the last command
+ * @property string   $lastError Error message of the last command
  *
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0
@@ -86,82 +87,53 @@ class Connection extends Component
     /**
      * @var bool stores the bool whether or not the current connection is bound.
      */
-    protected $bound = false;
+    protected $_bound = false;
 
     /**
-     * @var resource
+     * @var resource|false
      */
     protected $resource;
 
     /**
-     * Get the current resource of connection.
-     * @return resource
-     */
-    public function getResource()
-    {
-        return $this->resource;
-    }
-
-    /**
      * Connects and Binds to the Domain Controller with a administrator credentials.
-     * @throws LdapException
+     * @return void
      */
-    public function open($anonymous = false)
+    protected function open($anonymous = false)
     {
         // Connect to the LDAP server.
-        if ($this->connect($this->dc, $this->port)) {
-            if ($anonymous) {
-                $this->bound = ldap_bind($this->resource);
-            } else {
-                $this->bound = ldap_bind($this->resource, $this->username, $this->password);
-            }
-        } else {
-            throw new LdapException(sprintf('Unable to connect to server: %s', $this->lastError), $this->errNo);
-        }
-    }
+        $this->connect($this->dc, $this->port);
 
-    /**
-     * Returns true/false if the current connection is bound.
-     * @return bool
-     */
-    public function isBound()
-    {
-        return $this->bound;
+        if ($anonymous) {               
+            $this->_bound = ldap_bind($this->resource);
+        } else {
+            $this->_bound = ldap_bind($this->resource, $this->username, $this->password);
+        }
     }
 
     /**
      * Connection.
-     * @param string $hostname
+     * @param string|array $hostname
      * @param type $port
-     * @return boolean
-     * @throws LdapException
+     * @return void
      */
     public function connect($hostname = [], $port = '389')
     {
-        $protocol = $this::PROTOCOL;
-
         if (is_array($hostname)) {
-            $hostname = $protocol.implode(' '.$protocol, $hostname);
+            $hostname = self::PROTOCOL.implode(' '.self::PROTOCOL, $hostname);
         }
+
         $this->resource = ldap_connect($hostname, $port);
 
-        if (!$this->resource) {
-            return false;
-        }
-
-        // Set the LDAP options.
+        // Set the LDAP options.     
         $this->setOption(LDAP_OPT_PROTOCOL_VERSION, 3);
         $this->setOption(LDAP_OPT_REFERRALS, $this->followReferrals);
-
-        if ($this->useTLS && !$this->startTLS()) {
-            throw new LdapException($this->lastError, $this->getErrNo());
+        if ($this->useTLS ) {
+            $this->startTLS();
         }
 
         $this->trigger(self::EVENT_AFTER_OPEN);
-
-        return is_resource($this->resource);
     }
-
+    
     /**
      * Closes the current connection.
      *
@@ -183,16 +155,12 @@ class Connection extends Component
      * @param  string $function php LDAP function
      * @param  array $params params for execute ldap function
      * @return bool|DataReader
-     * @throws LdapException
      */
     public function execute($function, $params)
     {
         $this->open();
 
         $result = call_user_func($function, $this->resource, ...$params);
-        if (!$result) {
-            throw new LdapException($this->getLastError(), $this->getErrNo());
-        }
 
         if (is_resource($result)) {
             return new DataReader($this, $result);
@@ -200,15 +168,23 @@ class Connection extends Component
 
         return $result;
     }
-
+    
     /**
-     * Close the connection before serializing.
-     * @return array
+     * Returns true/false if the current connection is bound.
+     * @return bool
      */
-    public function __sleep()
+    public function getBound()
     {
-        $this->close();
-        return array_keys((array) $this);
+        return $this->_bound;
+    }
+    
+    /**
+     * Get the current resource of connection.
+     * @return resource
+     */
+    public function getResource()
+    {
+        return $this->resource;
     }
     
     /**

@@ -75,17 +75,8 @@ class DataReader extends Object implements Iterator, Countable
         $this->_conn   = $conn;
         $this->_result = $result;
         $resource      = $conn->resource;
-        
-        Yii::beginProfile('ldap_count_entries', __METHOD__);
+
         $this->_count = $this->_conn->countEntries($this->_result);
-        Yii::endProfile('ldap_count_entries', __METHOD__);
-        
-        if ($this->_count === false) {
-            throw new LdapException(
-                sprintf('LDAP count entries failed: %s', $this->_conn->lastError), 
-                $this->_conn->errNo
-            );
-        }
 
         $identifier = ldap_first_entry(
             $resource,
@@ -137,9 +128,7 @@ class DataReader extends Object implements Iterator, Countable
     public function close()
     {
         if (is_resource($this->_result)) {
-            Yii::beginProfile('ldap_free_result', __METHOD__);
             $this->_closed = ldap_free_result($this->_result);
-            Yii::endProfile('ldap_free_result', __METHOD__);
 
             $this->_result = null;
             $this->_row = null;
@@ -189,13 +178,7 @@ class DataReader extends Object implements Iterator, Countable
      */
     public function key()
     {
-        $currentDn = @ldap_get_dn($this->_conn->resource, $this->_row);
-
-        if ($currentDn === false) {
-            throw new LdapException(sprintf('LDAP get dn failed: %s', $this->_conn->lastError), $this->_conn->errNo);
-        }
-
-        return $currentDn;
+        return ldap_get_dn($this->_conn->resource, $this->_row);
     }
 
     /**
@@ -212,7 +195,7 @@ class DataReader extends Object implements Iterator, Countable
         $name = ldap_first_attribute($resource, $this->_row);
         
         while ($name) {
-            $data = ldap_get_values_len($resource, $this->_row, $name);
+            $data = @ldap_get_values_len($resource, $this->_row, $name);
 
             if (!$data) {
                 $data = [];
