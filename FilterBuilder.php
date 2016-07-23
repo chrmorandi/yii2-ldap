@@ -294,7 +294,7 @@ class FilterBuilder extends Object
         $parts = [];
         foreach ($values as $value) {
             $value = empty($escape) ? $value : strtr($value, $escape);
-            $parts[] = $not.'('.$column.'=*'.$value.'*)'.($not? ')' : '');
+            $parts[] = $not.'('.$column.'=*'.$value.'*)'.($not ? ')' : '');
         }
 
         return '('.$this->operator[trim($andor)].implode($parts).')';
