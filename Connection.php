@@ -11,7 +11,8 @@ namespace chrmorandi\ldap;
 use yii\base\Component;
 
 /**
- * @property string $errNo Error number of the last command
+ * @property resource $resource
+ * @property int $errNo Error number of the last command
  * @property string $lastError Error message of the last command
  *
  * @author Christopher Mota <chrmorandi@gmail.com>
@@ -94,7 +95,7 @@ class Connection extends Component
 
     /**
      * Get the current resource of connection.
-     * @return mixed
+     * @return resource
      */
     public function getResource()
     {
@@ -110,7 +111,7 @@ class Connection extends Component
         // Connect to the LDAP server.
         if ($this->connect($this->dc, $this->port)) {
             if ($anonymous) {
-                $this->isBound = ldap_bind($this->connection);
+                $this->bound = ldap_bind($this->resource);
             } else {
                 $this->bound = ldap_bind($this->resource, $this->username, $this->password);
             }
@@ -140,7 +141,7 @@ class Connection extends Component
         $protocol = $this::PROTOCOL;
 
         if (is_array($hostname)) {
-            $hostname = $protocol . implode(' ' . $protocol, $hostname);
+            $hostname = $protocol.implode(' '.$protocol, $hostname);
         }
         $this->resource = ldap_connect($hostname, $port);
 
@@ -279,11 +280,11 @@ class Connection extends Component
         return ldap_modify_batch($this->resource, $dn, $values);
     }
 
-     /**
+    /**
      * Add attribute values to current attributes.
      * @param string $dn
      * @param array  $entry
-     * @return mixed
+     * @return boolean
      */
     public function modAdd($dn, array $entry)
     {
@@ -294,7 +295,7 @@ class Connection extends Component
      * Replaces attribute values with new ones.
      * @param string $dn
      * @param array  $entry
-     * @return mixed
+     * @return boolean
      */
     public function modReplace($dn, array $entry)
     {
@@ -305,7 +306,7 @@ class Connection extends Component
      * Delete attribute values from current attributes.
      * @param string $dn
      * @param array  $entry
-     * @return mixed
+     * @return boolean
      */
     public function modDelete($dn, array $entry)
     {
@@ -314,8 +315,8 @@ class Connection extends Component
     
     /**
      * Retrieve the entries from a search result.
-     * @param $searchResult
-     * @return mixed
+     * @param resource $searchResult
+     * @return array|boolean
      */
     public function getEntries($searchResult)
     {
@@ -324,7 +325,7 @@ class Connection extends Component
     
     /**
      * Returns the number of entries from a search result.
-     * @param $searchResult
+     * @param resource $searchResult
      * @return int
      */
     public function countEntries($searchResult)
@@ -334,8 +335,8 @@ class Connection extends Component
 
     /**
      * Retrieves the first entry from a search result.
-     * @param $searchResult
-     * @return mixed
+     * @param resource $searchResult
+     * @return resource
      */
     public function getFirstEntry($searchResult)
     {
@@ -345,7 +346,7 @@ class Connection extends Component
     /**
      * Retrieves the next entry from a search result.
      * @param $entry
-     * @return mixed
+     * @return resource
      */
     public function getNextEntry($entry)
     {
@@ -366,7 +367,7 @@ class Connection extends Component
      * Sets an option on the current connection.
      * @param int   $option
      * @param mixed $value
-     * @return mixed
+     * @return boolean
      */
     public function setOption($option, $value)
     {
@@ -393,7 +394,7 @@ class Connection extends Component
     
     /**
      * Returns the number of the last error on the current connection.
-     * @return mixed
+     * @return int
      */
     public function getErrNo()
     {

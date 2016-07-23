@@ -82,7 +82,7 @@ class Query extends Component implements QueryInterface
         }
         
         $this->filter = (new FilterBuilder)->build($this->where);        
-        if(empty($this->filter)){
+        if (empty($this->filter)){
             throw new InvalidValueException('You must define a filter for the search.');
         }
         

@@ -8,7 +8,6 @@
 
 namespace chrmorandi\ldap;
 
-use ArrayAccess;
 use Traversable;
 use yii\base\InvalidParamException;
 use yii\base\Object;
@@ -104,7 +103,7 @@ class FilterBuilder extends Object
                 }
             }
         }
-        return count($parts) === 1 ? '('.$parts[0].')' : '$(' . implode(') (', $parts) . ')';
+        return count($parts) === 1 ? '('.$parts[0].')' : '$('.implode(') (', $parts).')';
     }
 
     /**
@@ -156,7 +155,7 @@ class FilterBuilder extends Object
             return '';
         }
 
-        return '('.$this->operator['NOT'].'('.key($operands) .'='.$operand.'))';
+        return '('.$this->operator['NOT'].'('.key($operands).'='.$operand.'))';
     }
 
     /**
@@ -210,10 +209,10 @@ class FilterBuilder extends Object
         }
 
         if (count($sqlValues) > 1) {
-            return "&($column=" . implode(")($column=", $sqlValues) . ')';
+            return "&($column=".implode(")($column=", $sqlValues).')';
         } else {
             $operator = $operator === 'IN' ? '=' : '<>';
-            return $column . $operator . reset($sqlValues);
+            return $column.$operator.reset($sqlValues);
         }
     }
 
@@ -242,7 +241,7 @@ class FilterBuilder extends Object
             return $operator === 'IN' ? '0=1' : '';
         }
 
-        return '(&' . implode('', $vss) . ')';
+        return '(&'.implode('', $vss).')';
     }
 
     /**
@@ -290,15 +289,15 @@ class FilterBuilder extends Object
             return $not ? '' : '0=1';
         }
         
-        $not = ($operator == 'NOT LIKE') ? '(' . $this->operator['NOT'] : false;
+        $not = ($operator == 'NOT LIKE') ? '('.$this->operator['NOT'] : false;
 
         $parts = [];
         foreach ($values as $value) {
             $value = empty($escape) ? $value : strtr($value, $escape);
-            $parts[] = $not . '(' . $column .'=*'.$value . '*)' . ($not? ')':'');
+            $parts[] = $not.'('.$column.'=*'.$value.'*)'.($not? ')':'');
         }
 
-        return '('.$this->operator[trim($andor)] . implode($parts). ')';
+        return '('.$this->operator[trim($andor)].implode($parts).')';
     }
 
     /**

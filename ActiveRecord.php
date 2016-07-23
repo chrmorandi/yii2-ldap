@@ -199,14 +199,14 @@ class ActiveRecord extends BaseActiveRecord
      * Please refer to [[Query::where()]] on how to specify this parameter.
      * @return integer the number of rows deleted
      */
-    public static function deleteAll($condition = NULL)
+    public static function deleteAll($condition = '')
     {
-        $entries = (new Query())->select($this->primaryKey)->where($condition)->execute()->toArray();
+        $entries = (new Query())->select(self::primaryKey())->where($condition)->execute()->toArray();
         $count = 0;
         
         foreach ($entries as $entry) {
             $params = [
-                $entry[$this->primaryKey]
+                $entry[self::primaryKey()]
             ];
             static::getDb()->execute('ldap_delete', $params);
             $count++;

@@ -19,6 +19,12 @@
         "codeception/codeception": "*",
         "yiisoft/yii2-coding-standards": "*"
     },
+    "extra": {
+        "asset-vcs-driver-options": {
+            "github-no-api": true
+        },
+        "asset-pattern-skip-version": "(-build|-patch)"
+    },
     "autoload": {
         "psr-4": {
             "chrmorandi\\ldap\\": ""
