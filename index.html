@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Yii2-ldap by chrmorandi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Yii2-ldap</h1>
+      <h2 class="project-tagline">Yii2 LDAP extension with ActiveRecord</h2>
+      <a href="https://github.com/chrmorandi/yii2-ldap" class="btn">View on GitHub</a>
+      <a href="https://github.com/chrmorandi/yii2-ldap/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/chrmorandi/yii2-ldap/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="ldap-database-and-activerecord-for-yii-2" class="anchor" href="#ldap-database-and-activerecord-for-yii-2" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Ldap database and ActiveRecord for Yii 2</h1>
+
+<p>This extension provides the LDAP integration for the Yii framework 2.0. 
+It includes basic querying/search support and also implements the ActiveRecord 
+pattern that allows you to store active records in Active Directory or OpenLDAP.</p>
+
+<p><a href="https://scrutinizer-ci.com/g/chrmorandi/yii2-ldap/?branch=master"><img src="https://scrutinizer-ci.com/g/chrmorandi/yii2-ldap/badges/quality-score.png?b=master" alt="Scrutinizer Code Quality"></a></p>
+
+<h2>
+<a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Requirements</h2>
+
+<p>To use yii2-ldap, your sever must support:</p>
+
+<p>PHP LDAP Extension</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>The preferred way to install this extension is through <a href="http://getcomposer.org/download/">composer</a>.</p>
+
+<p>Either run</p>
+
+<pre><code>php composer.phar require --prefer-dist chrmorandi/yii2-ldap
+</code></pre>
+
+<p>or add</p>
+
+<div class="highlight highlight-source-json"><pre><span class="pl-s"><span class="pl-pds">"</span>chrmorandi/yii2-ldap<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>*<span class="pl-pds">"</span></span></pre></div>
+
+<p>to the require section of your composer.json.</p>
+
+<h2>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration</h2>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">return</span> [</span>
+<span class="pl-s1">    <span class="pl-c">//....</span></span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>components<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>ldap<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>class<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>chrmorandi\ldap\Connection<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">            <span class="pl-c">// Mandatory Configuration Options</span></span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>dc<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>192.168.1.1<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>ad.com<span class="pl-pds">'</span></span></span>
+<span class="pl-s1">            ],</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>baseDn<span class="pl-pds">'</span></span>          <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>dc=ad,dc=com<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>username<span class="pl-pds">'</span></span>        <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>administrator@ad.com<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>password<span class="pl-pds">'</span></span>        <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>password<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">            <span class="pl-c">// Optional Configuration Options</span></span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>port<span class="pl-pds">'</span></span>            <span class="pl-k">=&gt;</span> <span class="pl-c1">389</span>,</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>followReferrals<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">false</span>,</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>useTLS<span class="pl-pds">'</span></span>          <span class="pl-k">=&gt;</span> <span class="pl-c1">true</span>,</span>
+<span class="pl-s1">        ],</span>
+<span class="pl-s1">    ]</span>
+<span class="pl-s1">];</span></pre></div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/chrmorandi/yii2-ldap">Yii2-ldap</a> is maintained by <a href="https://github.com/chrmorandi">chrmorandi</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
