@@ -51,8 +51,7 @@ class DataReader extends Object implements Iterator, Countable
     /**
      * @var array data
      */
-    public $entries;
-    
+    private $entries = [];   
     /**
      * @var Connection
      */
@@ -60,28 +59,52 @@ class DataReader extends Object implements Iterator, Countable
     private $_closed = false;
     private $_row;
     private $_index = -1;
-    private $_count = -1;
-    private $_result;
+    private $_count = 0;
+    private $_results;
 
 
     /**
      * Constructor.
      * @param Connection $conn connection interact with result
-     * @param resource $result result of search in ldap directory
+     * @param resource[]|resource $results result array of search in ldap directory
      * @param array $config name-value pairs that will be used to initialize the object properties
      */
-    public function __construct(Connection $conn, $result, $config = [])
+    public function __construct(Connection $conn, $results, $config = [])
     {
         $this->_conn   = $conn;
-        $this->_result = $result;
-        $resource      = $conn->resource;
+        $this->_results = $results;
 
-        $this->_count = $this->_conn->countEntries($this->_result);
+        if(is_array($this->_results)){
+            foreach ($this->_results as $result) {
+                $this->_count += $this->_conn->countEntries($result);
+                $this->setEntries($result);
+            }
+        } else {
+            $this->_count += $this->_conn->countEntries($this->_results);
+            $this->setEntries($this->_results);
+        }
+        
 
+        parent::__construct($config);
+    }
+    
+    public function __destruct()
+    {
+        $this->close();
+    }
+    
+    /**
+     * 
+     * @param resource $result
+     * @return void
+     */
+    protected function setEntries($result){
         $identifier = ldap_first_entry(
-            $resource,
-            $this->_result
+            $this->_conn->resource,
+            $result
         );
+        
+        $entries = [];
 
         while (false !== $identifier) {
             $this->entries[] = [
@@ -90,17 +113,10 @@ class DataReader extends Object implements Iterator, Countable
             ];
 
             $identifier = ldap_next_entry(
-                $resource,
+                $this->_conn->resource,
                 $identifier
             );
         }
-
-        parent::__construct($config);
-    }
-    
-    public function __destruct()
-    {
-        $this->close();
     }
 
     /**
@@ -127,10 +143,10 @@ class DataReader extends Object implements Iterator, Countable
      */
     public function close()
     {
-        if (is_resource($this->_result)) {
-            $this->_closed = ldap_free_result($this->_result);
+        if (is_resource($this->_results)) {
+            $this->_closed = ldap_free_result($this->_results);
 
-            $this->_result = null;
+            $this->_results = null;
             $this->_row = null;
         }
     }

@@ -63,6 +63,50 @@ class Connection extends Component
      * @var array the domain controllers to connect to.
      */
     public $dc = [];
+    
+    /**
+     * @var string the username for establishing LDAP connection. Defaults to `null` meaning no username to use.
+     */
+    public $username;
+
+    /**
+     * @var string the password for establishing DB connection. Defaults to `null` meaning no password to use.
+     */
+    public $password;
+    
+    /**
+     * @var int The page size for the paging operation.
+     */
+    public $pageSize = -1;
+    
+    /**
+     * @var integer zero-based offset from where the records are to be returned. If not set or
+     * less than 1, it means not filter values.
+     */
+    public $offset = -1;
+    
+    /**
+     * @var boolean whether to enable caching.
+     * Note that in order to enable truly caching, a valid cache component as specified
+     * by [[cache]] must be enabled and [[enableCache]] must be set true.
+     * @see cacheDuration
+     * @see cache
+     */
+    public $enableCache = false;
+    
+    /**
+     * @var integer number of seconds that table metadata can remain valid in cache.
+     * Use 0 to indicate that the cached data will never expire.
+     * @see enableCache
+     */
+    public $cacheDuration = 3600;
+
+    /**
+     * @var Cache|string the cache object or the ID of the cache application component that
+     * is used to cache result query.
+     * @see enableCache
+     */
+    public $cache = 'cache';
 
     /**
      * @var string the LDAP account suffix.
@@ -75,16 +119,6 @@ class Connection extends Component
     protected $accountPrefix;
 
     /**
-     * @var string the username for establishing LDAP connection. Defaults to `null` meaning no username to use.
-     */
-    public $username;
-
-    /**
-     * @var string the password for establishing DB connection. Defaults to `null` meaning no password to use.
-     */
-    public $password;
-
-    /**
      * @var bool stores the bool whether or not the current connection is bound.
      */
     protected $_bound = false;
@@ -93,6 +127,7 @@ class Connection extends Component
      * @var resource|false
      */
     protected $resource;
+    
 
     /**
      * Connects and Binds to the Domain Controller with a administrator credentials.
@@ -156,15 +191,42 @@ class Connection extends Component
      * @param  array $params params for execute ldap function
      * @return bool|DataReader
      */
+    public function executeQuery($function, $params)
+    {
+        $this->open();
+        $results = [];
+        $cookie = '';
+        
+        do {
+            $this->setControlPagedResult($cookie);
+
+            $result = call_user_func($function, $this->resource, ...$params);
+
+            $this->setControlPagedResultResponse($result, $cookie);
+            $results[] = $result;            
+        } while ($cookie !== null && $cookie != '');        
+
+        if($this->offset > 0){
+            $results = $results[intval($this->offset/$this->pageSize -1)];
+        }
+        
+        return new DataReader($this, $results);
+    }
+    
+    /**
+     * Execute ldap functions like.
+     *
+     * http://php.net/manual/en/ref.ldap.php
+     *
+     * @param  string $function php LDAP function
+     * @param  array $params params for execute ldap function
+     * @return bool|DataReader
+     */
     public function execute($function, $params)
     {
         $this->open();
 
         $result = call_user_func($function, $this->resource, ...$params);
-
-        if (is_resource($result)) {
-            return new DataReader($this, $result);
-        }
 
         return $result;
     }
@@ -357,6 +419,32 @@ class Connection extends Component
     public function startTLS()
     {
         return ldap_start_tls($this->resource);
+    }
+    
+    /**
+     * Send LDAP pagination control.
+     *
+     * @param int    $pageSize
+     * @param bool   $isCritical
+     * @param string $cookie
+     * @return bool
+     */
+    public function setControlPagedResult($cookie)
+    {
+        return ldap_control_paged_result($this->resource, $this->pageSize, false, $cookie);
+
+    }
+
+    /**
+     * Retrieve a paginated result response.
+     *
+     * @param resource $result
+     * @param string $cookie
+     * @return bool
+     */
+    public function setControlPagedResultResponse($result, &$cookie)
+    {
+        return @ldap_control_paged_result_response($this->resource, $result, $cookie);
     }
        
     /**

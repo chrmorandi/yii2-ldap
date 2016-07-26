@@ -87,17 +87,18 @@ class Query extends Component implements QueryInterface
         }
         
         $select = (is_array($this->select)) ? $this->select : [];
-        $this->limit = empty($this->limit) ? 0 : $this->limit;
+        
+        if(ctype_digit((string) $this->limit)){
+            $db->pageSize = $this->limit;            
+        }
+        
+        if(ctype_digit((string) $this->offset)){
+            $db->offset = $this->offset == 0 ? 1 : $this->offset;
+        }
 
-        $params = [
-            $db->baseDn,
-            $this->filter,
-            $select,
-            0,
-            $this->limit
-        ];
+        $params = [$db->baseDn, $this->filter, $select, 0, $this->limit];
 
-        return $db->execute($this->scope, $params);
+        return $db->executeQuery($this->scope, $params);
     }
 
     /**
@@ -275,4 +276,5 @@ class Query extends Component implements QueryInterface
             'select' => $from->select,
         ]);
     }
+
 }
