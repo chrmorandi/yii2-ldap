@@ -172,7 +172,7 @@ class ActiveRecord extends BaseActiveRecord
         $dn = $values[$this->primaryKey];
         unset($values[$this->primaryKey]);
         
-        if (($primaryKeys = static::getDb()->execute('ldap_add', [$dn, $values])) === false) {
+        if (static::getDb()->add($dn, $values) === false) {
             return false;
         }
         $this->setAttribute($this->primaryKey, $dn);
@@ -183,6 +183,32 @@ class ActiveRecord extends BaseActiveRecord
         $this->afterSave(true, $changedAttributes);
 
         return true;
+    }
+    
+    /**
+     * Updates the whole table using the provided attribute values and conditions.
+     * For example, to change the status to be 1 for all customers whose status is 2:
+     *
+     * ```php
+     * Customer::updateAll(['status' => 1], 'status = 2');
+     * ```
+     *
+     * @param array $attributes attribute values (name-value pairs) to be saved into the table
+     * @param string|array $condition the conditions that will be put in the WHERE part of the UPDATE SQL.
+     * Please refer to [[Query::where()]] on how to specify this parameter.
+     * @return integer the number of rows updated
+     */
+    public static function updateAll($attributes, $condition = '')
+    {
+        if(is_array($condition)){
+            $dn = $condition['dn'];
+        }
+        
+        if($this->gertOldPrimaryKey() !== $this->getPrimaryKey()) {
+            static::getDb()->rename($condition, $newRdn, $newParent, true);
+        }
+        
+        static::getDb()->modify($condition, $attributes);
     }
     
     /**

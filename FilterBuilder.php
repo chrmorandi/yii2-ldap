@@ -98,6 +98,8 @@ class FilterBuilder extends Object
             } else {
                 if ($value === null) {
                     $parts[] = "$column IS NULL";
+                } else if ($column === 'dn') {
+                    $parts[] = LdapUtils::getRdnFromDn($value);
                 } else {
                     $parts[] = "$column=$value";
                 }
@@ -127,8 +129,10 @@ class FilterBuilder extends Object
             }
         }
         if (!empty($parts)) {
-            return '('.$this->operator[$operator].'('.implode(") (", $parts).')'.implode($other).' )';
-        } else {
+            return '('.$this->operator[$operator].'('.implode(") (", $parts).')'.implode($other).')';
+        } else if (!empty($other)) {
+            return '('.$this->operator[$operator].implode($other).')';
+        }else {
             return '';
         }
     }

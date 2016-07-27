@@ -296,60 +296,28 @@ class Connection extends Component
     }
 
     /**
-     * Modifies an existing entry on the
-     * current connection.
-     * @param string $dn
-     * @param array  $entry
-     * @return bool
-     */
-    public function modify($dn, array $entry)
-    {
-        return ldap_modify($this->resource, $dn, $entry);
-    }
-
-    /**
      * Batch modifies an existing entry on the current connection.
+     * The types of modifications:
+     *      LDAP_MODIFY_BATCH_ADD - Each value specified through values is added.
+     *      LDAP_MODIFY_BATCH_REMOVE - Each value specified through values is removed. 
+     *          Any value of the attribute not contained in the values array will remain untouched.
+     *      LDAP_MODIFY_BATCH_REMOVE_ALL - All values are removed from the attribute named by attrib.
+     *      LDAP_MODIFY_BATCH_REPLACE - All current values are replaced by new one.
      * @param string $dn
-     * @param array  $values
+     * @param array  $values array associative with three keys: "attrib", "modtype" and "values".
+     * ```php
+     * [
+     *     "attrib"  => "attribute",
+     *     "modtype" => LDAP_MODIFY_BATCH_ADD,
+     *     "values"  => ["attribute value one"],
+     * ],
+     * ```
      * @return mixed
      */
-    public function modifyBatch($dn, array $values)
+    public function modify($dn, array $values)
     {
         return ldap_modify_batch($this->resource, $dn, $values);
-    }
-
-    /**
-     * Add attribute values to current attributes.
-     * @param string $dn
-     * @param array  $entry
-     * @return boolean
-     */
-    public function modAdd($dn, array $entry)
-    {
-        return ldap_mod_add($this->resource, $dn, $entry);
-    }
-
-    /**
-     * Replaces attribute values with new ones.
-     * @param string $dn
-     * @param array  $entry
-     * @return boolean
-     */
-    public function modReplace($dn, array $entry)
-    {
-        return ldap_mod_replace($this->resource, $dn, $entry);
-    }
-
-    /**
-     * Delete attribute values from current attributes.
-     * @param string $dn
-     * @param array  $entry
-     * @return boolean
-     */
-    public function modDelete($dn, array $entry)
-    {
-        return ldap_mod_del($this->resource, $dn, $entry);
-    }
+    }    
     
     /**
      * Retrieve the entries from a search result.
@@ -444,7 +412,7 @@ class Connection extends Component
      */
     public function setControlPagedResultResponse($result, &$cookie)
     {
-        return @ldap_control_paged_result_response($this->resource, $result, $cookie);
+        return ldap_control_paged_result_response($this->resource, $result, $cookie);
     }
        
     /**

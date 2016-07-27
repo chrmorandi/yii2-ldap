@@ -103,8 +103,6 @@ class DataReader extends Object implements Iterator, Countable
             $this->_conn->resource,
             $result
         );
-        
-        $entries = [];
 
         while (false !== $identifier) {
             $this->entries[] = [

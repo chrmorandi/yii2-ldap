@@ -157,7 +157,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     {
         $row = parent::one($db);
         if ($row !== false) {
-            $models = $this->populate([$row]);
+            $models = $this->populate($row);
             return reset($models) ?: null;
         } else {
             return null;
