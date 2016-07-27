@@ -11,8 +11,6 @@ namespace chrmorandi\ldap;
 use chrmorandi\ldap\ActiveQuery;
 use chrmorandi\ldap\Connection;
 use Exception;
-use ReflectionClass;
-use ReflectionProperty;
 use Yii;
 use yii\db\BaseActiveRecord;
 
@@ -45,16 +43,7 @@ use yii\db\BaseActiveRecord;
  * @since 1.0.0
  */
 class ActiveRecord extends BaseActiveRecord
-{
-    /**
-     * The LDAP API references an LDAP object by its distinguished name (DN).
-     * A DN is a sequence of relative distinguished names (RDN) connected by commas.
-     *
-     * @link https://msdn.microsoft.com/en-us/library/aa366101(v=vs.85).aspx
-     * @var  string
-     */
-    public $dn;
-    
+{    
     /**
      * Returns the LDAP connection used by this AR class.
      *
@@ -87,22 +76,12 @@ class ActiveRecord extends BaseActiveRecord
     
     /**
      * Returns the list of attribute names.
-     * This method returns all protected non-static properties of the class.
-     * You may override this method to change the default behavior.
-     *
+     * You must override this method to define avaliable attributes.
      * @return array list of attribute names.
      */
     public function attributes()
     {
-        $class = new ReflectionClass($this);
-        $names = [];
-        foreach ($class->getProperties(ReflectionProperty::IS_PROTECTED) as $property) {
-            if (!$property->isStatic()) {
-                $names[] = $property->getName();
-            }
-        }
-
-        return $names;
+        throw new InvalidConfigException('The attributes() method of ldap ActiveRecord has to be implemented by child classes.');
     }
     
     /**
@@ -186,6 +165,63 @@ class ActiveRecord extends BaseActiveRecord
     }
     
     /**
+     * @see update()
+     * @param array $attributes attributes to update
+     * @return integer number of rows updated
+     * @throws StaleObjectException
+     */
+    protected function updateInternal($attributes = null)
+    {
+        if (!$this->beforeSave(false)) {
+            return false;
+        }
+        $values = $this->getDirtyAttributes($attributes);
+        if (empty($values)) {
+            $this->afterSave(false, $values);
+            return 0;
+        }
+
+        if(($condition = $this->getOldPrimaryKey(true)) !== $this->getPrimaryKey(true)) {
+            // TODO Change DN
+            static::getDb()->rename($condition, $newRdn, $newParent, true);
+            if (!$this->refresh()){
+                Yii::info('Model not refresh.', __METHOD__);
+                return false;
+            }
+        }
+        
+        foreach ($values as $key => $value) {
+            if(empty ($this->getOldAttribute($key)) && $value === ''){
+                unset($values[$key]);
+            } else if($value === ''){
+                $attributes[] = ['attrib'  => $key, 'modtype' => LDAP_MODIFY_BATCH_REMOVE];
+            } else if (empty ($this->getOldAttribute($key))) {
+                $attributes[] = ['attrib'  => $key, 'modtype' => LDAP_MODIFY_BATCH_ADD, 'values' => [$value]];
+            } else {
+                $attributes[] = ['attrib'  => $key, 'modtype' => LDAP_MODIFY_BATCH_REPLACE, 'values' => [$value]];
+            }
+        }
+        
+        if (empty($attributes)) {
+            $this->afterSave(false, $attributes);
+            return 0;
+        }
+
+        // We do not check the return value of updateAll() because it's possible
+        // that the UPDATE statement doesn't change anything and thus returns 0.
+        $rows = static::updateAll($attributes, $condition);
+
+//        $changedAttributes = [];
+//        foreach ($values as $name => $value) {
+//            $changedAttributes[$name] = empty($this->getOldAttributes($name)) ? $this->getOldAttributes($name) : null;
+//            $this->setOldAttributes([$name->$value]);
+//        }
+//        $this->afterSave(false, $changedAttributes);
+
+        return $rows;
+    }
+    
+    /**
      * Updates the whole table using the provided attribute values and conditions.
      * For example, to change the status to be 1 for all customers whose status is 2:
      *
@@ -201,12 +237,8 @@ class ActiveRecord extends BaseActiveRecord
     public static function updateAll($attributes, $condition = '')
     {
         if(is_array($condition)){
-            $dn = $condition['dn'];
-        }
-        
-        if($this->gertOldPrimaryKey() !== $this->getPrimaryKey()) {
-            static::getDb()->rename($condition, $newRdn, $newParent, true);
-        }
+            $condition = $condition['dn'];
+        }        
         
         static::getDb()->modify($condition, $attributes);
     }

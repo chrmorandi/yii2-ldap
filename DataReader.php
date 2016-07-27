@@ -99,10 +99,7 @@ class DataReader extends Object implements Iterator, Countable
      * @return void
      */
     protected function setEntries($result){
-        $identifier = ldap_first_entry(
-            $this->_conn->resource,
-            $result
-        );
+        $identifier = $this->_conn->getFirstEntry($result);
 
         while (false !== $identifier) {
             $this->entries[] = [
@@ -110,10 +107,7 @@ class DataReader extends Object implements Iterator, Countable
                 'sortValue' => '',
             ];
 
-            $identifier = ldap_next_entry(
-                $this->_conn->resource,
-                $identifier
-            );
+            $identifier = $this->_conn->getNextEntry($identifier);
         }
     }
 
@@ -141,12 +135,18 @@ class DataReader extends Object implements Iterator, Countable
      */
     public function close()
     {
-        if (is_resource($this->_results)) {
-            $this->_closed = ldap_free_result($this->_results);
-
-            $this->_results = null;
-            $this->_row = null;
+        if(is_array($this->_results)){
+            foreach ($this->_results as $result) {
+                $this->_conn->freeResult($result);
+            }
+        } else {
+            $this->_conn->freeResult($this->_results);
         }
+        
+        $this->_closed = true;
+        $this->_results = null;
+        $this->_row = null;
+        
     }
 
     /**
@@ -192,7 +192,7 @@ class DataReader extends Object implements Iterator, Countable
      */
     public function key()
     {
-        return ldap_get_dn($this->_conn->resource, $this->_row);
+        return $this->_conn->getDn($this->_row);
     }
 
     /**
@@ -203,13 +203,11 @@ class DataReader extends Object implements Iterator, Countable
     public function current()
     {
         $entry = ['dn' => $this->key()];
-
-        $resource = $this->_conn->resource;
         
-        $name = ldap_first_attribute($resource, $this->_row);
+        $name = $this->_conn->getFirstAttribute($this->_row);
         
         while ($name) {
-            $data = @ldap_get_values_len($resource, $this->_row, $name);
+            $data = $this->_conn->getValuesLen($this->_row, $name);
 
             if (!$data) {
                 $data = [];
@@ -222,7 +220,7 @@ class DataReader extends Object implements Iterator, Countable
             $attrName = $name;
             $entry[$attrName] = implode(",", $data);
 
-            $name = ldap_next_attribute($resource, $this->_row);
+            $name = $this->_conn->getNextAttribute($this->_row);
         }
         
         ksort($entry, SORT_LOCALE_STRING);

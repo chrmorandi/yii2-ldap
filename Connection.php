@@ -214,24 +214,6 @@ class Connection extends Component
     }
     
     /**
-     * Execute ldap functions like.
-     *
-     * http://php.net/manual/en/ref.ldap.php
-     *
-     * @param  string $function php LDAP function
-     * @param  array $params params for execute ldap function
-     * @return bool|DataReader
-     */
-    public function execute($function, $params)
-    {
-        $this->open();
-
-        $result = call_user_func($function, $this->resource, ...$params);
-
-        return $result;
-    }
-    
-    /**
      * Returns true/false if the current connection is bound.
      * @return bool
      */
@@ -330,7 +312,7 @@ class Connection extends Component
     }
     
     /**
-     * Returns the number of entries from a search result.
+     * Retrieves the number of entries from a search result.
      * @param resource $searchResult
      * @return int
      */
@@ -342,7 +324,7 @@ class Connection extends Component
     /**
      * Retrieves the first entry from a search result.
      * @param resource $searchResult
-     * @return resource
+     * @return resource link identifier
      */
     public function getFirstEntry($searchResult)
     {
@@ -351,22 +333,73 @@ class Connection extends Component
 
     /**
      * Retrieves the next entry from a search result.
-     * @param $entry
+     * @param resource $entry link identifier
      * @return resource
      */
     public function getNextEntry($entry)
     {
         return ldap_next_entry($this->resource, $entry);
     }
+    
+    /**
+     * Retrieves the ldap first entry attribute.
+     * @param resource $entry
+     * @return string
+     */
+    public function getFirstAttribute($entry)
+    {
+        return ldap_first_attribute($this->resource, $entry);
+    }
+    
+    /**
+     * Retrieves the ldap next entry attribute.
+     * @param resource $entry
+     * @return string
+     */
+    public function getNextAttribute($entry)
+    {
+        return ldap_next_attribute($this->resource, $entry);
+    }
 
     /**
      * Retrieves the ldap entry's attributes.
-     * @param $entry
-     * @return mixed
+     * @param resource $entry
+     * @return array
      */
     public function getAttributes($entry)
     {
         return ldap_get_attributes($this->resource, $entry);
+    }
+    
+    /**
+     * Retrieves all binary values from a result entry.
+     * @param resource $entry link identifier
+     * @param string $attribute name of attribute
+     * @return array
+     */
+    public function getValuesLen($entry, $attribute)
+    {
+        return ldap_get_values_len($this->resource, $entry, $attribute);
+    }
+    
+    /**
+     * Retrieves the DN of a result entry.
+     * @param resource $entry
+     * @return string
+     */
+    public function getDn($entry)
+    {
+        return ldap_get_dn($this->resource, $entry);
+    }
+
+    /**
+     * Free result memory.
+     * @param resource $searchResult
+     * @return bool
+     */
+    public function freeResult($searchResult)
+    {
+        return ldap_free_result($searchResult);
     }
 
     /**
@@ -379,7 +412,7 @@ class Connection extends Component
     {
         return ldap_set_option($this->resource, $option, $value);
     }
-    
+
     /**
      * Starts a connection using TLS.
      * @return bool
@@ -391,7 +424,6 @@ class Connection extends Component
     
     /**
      * Send LDAP pagination control.
-     *
      * @param int    $pageSize
      * @param bool   $isCritical
      * @param string $cookie
@@ -400,12 +432,10 @@ class Connection extends Component
     public function setControlPagedResult($cookie)
     {
         return ldap_control_paged_result($this->resource, $this->pageSize, false, $cookie);
-
     }
 
     /**
      * Retrieve a paginated result response.
-     *
      * @param resource $result
      * @param string $cookie
      * @return bool

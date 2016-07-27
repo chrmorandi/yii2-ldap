@@ -8,12 +8,25 @@
 
 namespace chrmorandi\ldap\schemas;
 
+use DateTime;
+use ReflectionClass;
+use ReflectionProperty;
+
 /**
  *
  * @since 1.0.0
  */
-trait ADUserTrait 
+class ADUser
 {
+    
+    /**
+     * The LDAP API references an LDAP object by its distinguished name (DN).
+     * A DN is a sequence of relative distinguished names (RDN) connected by commas.
+     *
+     * @link https://msdn.microsoft.com/en-us/library/aa366101(v=vs.85).aspx
+     * @var  string
+     */
+    public $dn;
 
     /**
      * Contain the object class for make user in AD
@@ -26,16 +39,16 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms680932(v=vs.85).aspx
      * @var array 
      */
-    protected $objectClass = ['user', 'person', 'organizationalPerson', 'top'];
+    public $objectClass = ['user', 'person', 'organizationalPerson', 'top'];
     
     /**
      * The date when the account expires. This value represents the number of 100-nanosecond
      * intervals since January 1, 1601 (UTC). A value of 0 or 0x7FFFFFFFFFFFFFFF
      * (9223372036854775807) indicates that the account never expires.
      * @link https://msdn.microsoft.com/en-us/library/ms675098(v=vs.85).aspx
-     * @var \DateTime|false
+     * @var DateTime|false
      */
-    protected $accountExpires = 9223372036854775807;
+    public $accountExpires = 9223372036854775807;
     
     /**
      * The number of times the user tried to log on to the account using
@@ -44,35 +57,35 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms675244(v=vs.85).aspx
      * @var int
      */
-    protected $badPwdCount;
+    public $badPwdCount;
     
     /**
      * The user's company name.
      * @link https://msdn.microsoft.com/en-us/library/ms675457(v=vs.85).aspx
      * @var string
      */
-    protected $company;
+    public $company;
     
     /**
      * The entry's country attribute.
      * @link https://msdn.microsoft.com/en-us/library/ms675432(v=vs.85).aspx
      * @var string
      */
-    protected $c;
+    public $c;
     
     /**
      * The name that represents an object. Used to perform searches.
      * @link https://msdn.microsoft.com/en-us/library/ms675449(v=vs.85).aspx
      * @var string
      */
-    protected $cn;
+    public $cn;
     
     /**
      * Contains the name for the department in which the user works.
      * @link https://msdn.microsoft.com/en-us/library/ms675490(v=vs.85).aspx
      * @var string
      */
-    protected $department;
+    public $department;
     
     /**
      * Contains the description to display for an object. This value is restricted
@@ -81,7 +94,7 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms675492(v=vs.85).aspx
      * @var string
      */
-    protected $description;
+    public $description;
     
     /**
      * The display name for an object. This is usually the combination
@@ -89,42 +102,42 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms675514(v=vs.85).aspx
      * @var string
      */
-    protected $displayName;
+    public $displayName;
     
     /**
      * The user's division.
      * @link https://msdn.microsoft.com/en-us/library/ms675518(v=vs.85).aspx
      * @var string 
      */
-    protected $division;
+    public $division;
     
     /**
      * The ID of an employee.
      * @link https://msdn.microsoft.com/en-us/library/ms675662(v=vs.85).aspx
      * @var string 
      */
-    protected $employeeID;
+    public $employeeID;
     
     /**
      * The number assigned to an employee other than the ID.
      * @link https://msdn.microsoft.com/en-us/library/ms675663(v=vs.85).aspx
      * @var string 
      */
-    protected $employeeNumber;
+    public $employeeNumber;
     
     /**
      * Contains the given name (first name) of the user.
      * @link https://msdn.microsoft.com/en-us/library/ms675719(v=vs.85).aspx
      * @var string
      */
-    protected $givenName;
+    public $givenName;
     
     /**
      * The user's main home phone number.
      * @link https://msdn.microsoft.com/en-us/library/ms676192(v=vs.85).aspx
      * @var string
      */
-    protected $homePhone;
+    public $homePhone;
     
     /**
      * Contains the initials for parts of the user's full name. This may be used as 
@@ -132,14 +145,14 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms676202(v=vs.85).aspx
      * @var string
      */
-    protected $initials;
+    public $initials;
     
     /**
      * The TCP/IP address for the phone. Used by Telephony.
      * @link https://msdn.microsoft.com/en-us/library/ms676213(v=vs.85).aspx
      * @var string
      */
-    protected $ipPhone;
+    public $ipPhone;
     
     /**
      * The date and time (UTC) that this account was locked out. This value is stored 
@@ -147,16 +160,16 @@ trait ADUserTrait
      * January 1, 1601 (UTC). A value of zero means that the account is not currently 
      * locked out.
      * @link https://msdn.microsoft.com/en-us/library/ms676843(v=vs.85).aspx
-     * @var \DateTime|false
+     * @var DateTime|false
      */
-    protected $lockoutTime;
+    public $lockoutTime;
     
     /**
      * The list of email addresses for a contact.
      * @link https://msdn.microsoft.com/en-us/library/ms676855(v=vs.85).aspx
      * @var string
      */
-    protected $mail;
+    public $mail;
     
     /**
      * Contains the distinguished name of the user who is the user's manager. 
@@ -166,35 +179,35 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms676859(v=vs.85).aspx
      * @var string
      */
-    protected $manager;
+    public $manager;
     
     /**
      * The distinguished name of the groups to which this object belongs.
      * @link https://msdn.microsoft.com/en-us/library/ms677099(v=vs.85).aspx
      * @var array 
      */
-    protected $memberOf;
+    public $memberOf;
     
     /**
      * The primary mobile phone number.
      * @link https://msdn.microsoft.com/en-us/library/ms677119(v=vs.85).aspx
      * @var string
      */
-    protected $mobile;
+    public $mobile;
     
     /**
      * The name of the company or organization.
      * @link https://msdn.microsoft.com/en-us/library/ms679009(v=vs.85).aspx
      * @var string
      */
-    protected $o;
+    public $o;
     
     /**
      * The unique identifier for an object.
      * @link https://msdn.microsoft.com/en-us/library/ms679021(v=vs.85).aspx
      * @var type 
      */
-    protected $objectGuid;    
+    public $objectGuid;    
     
     /**
      * A binary value that specifies the security identifier (SID) of the user. The SID is a unique value used to
@@ -202,7 +215,7 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms679024(v=vs.85).aspx
      * @var string
      */
-    protected $objectSid;
+    public $objectSid;
     
     /**
      * The date and time that the password for this account was last changed. This value is stored as a large
@@ -212,7 +225,7 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms679430(v=vs.85).aspx
      * @var type 
      */
-    protected $pwdLastSet;
+    public $pwdLastSet;
     
     /**
      * The logon name used to support clients and servers running earlier versions of the operating system, such
@@ -220,35 +233,35 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms679635(v=vs.85).aspx
      * @var type 
      */
-    protected $sAMAccountName;
+    public $sAMAccountName;
     
     /**
      * The name of a user's state or province.
      * @link https://msdn.microsoft.com/en-us/library/ms679880(v=vs.85).aspx
      * @var string
      */
-    protected $st;
+    public $st;
     
     /**
      * The street address.
      * @link https://msdn.microsoft.com/en-us/library/ms679882(v=vs.85).aspx
      * @var string
      */
-    protected $streetAddress;
+    public $streetAddress;
 
     /**
      * This attribute contains the family or last name for a user.
      * @link https://msdn.microsoft.com/en-us/library/ms679872(v=vs.85).aspx
      * @var string
      */
-    protected $sn;
+    public $sn;
     
     /**
      * The primary telephone number.
      * @link https://msdn.microsoft.com/en-us/library/ms680027(v=vs.85).aspx
      * @return string
      */
-    protected $telephoneNumber;
+    public $telephoneNumber;
     
     /**
      * Contains the user's job title. This property is commonly used to indicate the formal job title, such as Senior
@@ -257,14 +270,14 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms680037(v=vs.85).aspx
      * @var type 
      */
-    protected $title;
+    public $title;
 
     /**
      * Flags that control the behavior of the user account.
      * @link https://msdn.microsoft.com/en-us/library/ms680832(v=vs.85).aspx
      * @return string
      */
-    protected $userAccountControl;
+    public $userAccountControl;
     
     /**
      * his attribute contains the UPN that is an Internet-style login name for
@@ -272,24 +285,36 @@ trait ADUserTrait
      * @link https://msdn.microsoft.com/en-us/library/ms680857(v=vs.85).aspx
      * @return string
      */
-    protected $userPrincipalName;
+    public $userPrincipalName;
     
     /**
      * The entry's created at attribute.
      * @link https://msdn.microsoft.com/en-us/library/ms680924(v=vs.85).aspx
-     * @var \DateTime
+     * @var DateTime
      */
-    protected $whenCreated;
+    public $whenCreated;
     
     /**
      * A web page that is the primary landing page of a website.
      * @link https://msdn.microsoft.com/en-us/library/ms680927(v=vs.85).aspx
      * @var string 
      */
-    protected $wWWHomePage;
+    public $wWWHomePage;
     
-    public function rules() {
-        return [['cn'], 'required'];
+    /**
+     * 
+     * @return array of attributes
+     */
+    public function getAttributes() {
+        $class = new ReflectionClass(self::class);
+        $names = [];
+        foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic()) {
+                $names[] = $property->getName();
+            }
+        }
+
+        return $names;
     }
     
 }
