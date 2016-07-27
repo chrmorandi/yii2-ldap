@@ -126,6 +126,13 @@ class ADUser
     public $employeeNumber;
     
     /**
+     * The job category for an employee.
+     * @link https://msdn.microsoft.com/en-us/library/ms675664(v=vs.85).aspx
+     * @var string 
+     */
+    public $employeeType;
+    
+    /**
      * Contains the given name (first name) of the user.
      * @link https://msdn.microsoft.com/en-us/library/ms675719(v=vs.85).aspx
      * @var string
