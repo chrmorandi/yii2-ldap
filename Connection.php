@@ -57,7 +57,7 @@ class Connection extends Component
     /**
      * @var bool Determines whether or not to use TLS with the current LDAP connection.
      */
-    public $useTLS = false;
+    public $useTLS = true;
 
     /**
      * @var array the domain controllers to connect to.
@@ -107,6 +107,11 @@ class Connection extends Component
      * @see enableCache
      */
     public $cache = 'cache';
+    
+    /**
+     * @var string the attribute for authentication
+     */    
+    public $loginAttribute = "sAMAccountName";
 
     /**
      * @var string the LDAP account suffix.
@@ -128,6 +133,13 @@ class Connection extends Component
      */
     protected $resource;
     
+    
+    # Create AD password (Microsoft Active Directory password format)
+    protected static function makeAdPassword($password) {
+        $password = "\"" . $password . "\"";
+        $adpassword = mb_convert_encoding($password, "UTF-16LE", "UTF-8");
+        return $adpassword;
+    }
 
     /**
      * Connects and Binds to the Domain Controller with a administrator credentials.
@@ -156,7 +168,8 @@ class Connection extends Component
         if (is_array($hostname)) {
             $hostname = self::PROTOCOL.implode(' '.self::PROTOCOL, $hostname);
         }
-
+        
+        $this->close();
         $this->resource = ldap_connect($hostname, $port);
 
         // Set the LDAP options.     
@@ -167,6 +180,29 @@ class Connection extends Component
         }
 
         $this->trigger(self::EVENT_AFTER_OPEN);
+    }
+    
+    /**
+     * Authenticate user
+     * @param string $username
+     * @param string $password
+     * @return int indicate occurrence of error. 
+     */
+    public function auth($username, $password)
+    {
+        // Open connection with manager
+        $this->open();
+        # Search for user and get user DN
+        $searchResult = ldap_search($this->resource, $this->baseDn, "(&(objectClass=person)($this->loginAttribute=$username))", [$this->loginAttribute]);
+        $entry = $this->getFirstEntry($searchResult);
+        $userdn = $this->getDn($entry);        
+        
+        // Connect to the LDAP server.
+        $this->connect($this->dc, $this->port);
+        // Authenticate user
+        $result = ldap_bind($this->resource, $userdn, $password);
+        
+        return $result;
     }
     
     /**
