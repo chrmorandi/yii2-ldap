@@ -58,3 +58,21 @@ return [
     ]
 ];
 ```
+
+## Authenticating Users
+
+To authenticate users using your AD server, call the `Yii::$app->ldap->auth()`
+method on your provider:
+
+```php
+try {
+    if (Yii::$app->ldap->auth($this->username, $password)) {
+        // Credentials were correct.
+    } else {
+        // Credentials were incorrect.
+    }
+    } catch (Exception $e) {            
+        // error
+    }
+}
+```
