@@ -114,15 +114,10 @@ class Connection extends Component
     public $loginAttribute = "sAMAccountName";
 
     /**
-     * @var string the LDAP account suffix.
+     * @var string the attribute for password default is unicodePwd (AD passoword)
      */
-    protected $accountSuffix;
-
-    /**
-     * @var string the LDAP account prefix.
-     */
-    protected $accountPrefix;
-
+    public $unicodePassword = 'unicodePwd';
+    
     /**
      * @var bool stores the bool whether or not the current connection is bound.
      */
@@ -133,6 +128,11 @@ class Connection extends Component
      */
     protected $resource;
     
+    /**
+     *
+     * @var string 
+     */
+    protected $userDn;
     
     # Create AD password (Microsoft Active Directory password format)
     protected static function makeAdPassword($password) {
@@ -196,22 +196,55 @@ class Connection extends Component
     {
         // Open connection with manager
         $this->open();
-        # Search for user and get user DN
+        
+         # Search for user and get user DN
         $searchResult = ldap_search($this->resource, $this->baseDn, "(&(objectClass=person)($this->loginAttribute=$username))", [$this->loginAttribute]);
         $entry = $this->getFirstEntry($searchResult);
-        
         if($entry) {
-            $userdn = $this->getDn($entry);        
+            $this->userDn = $this->getDn($entry);        
         } else {
-            $userdn = null;
-        }  
+            $this->userDn = null;
+        }
         
         // Connect to the LDAP server.
         $this->connect($this->dc, $this->port);
         // Authenticate user
-        $bound = ldap_bind($this->resource, $userdn, $password);
+        $bound = ldap_bind($this->resource, $this->userDn, $password);
         
         return $bound;
+    }
+    
+    /**
+     * Change the password of the current user. This must be performed over TLS.
+     * @param string $username User for change password
+     * @param string $oldPassword The old password
+     * @param string $newPassword The new password
+     * @return mixed return true if change password is success
+     * @throws \Exception
+     */
+    public function changePassword($username, $oldPassword, $newPassword) {
+        // Open connection with user
+        $this->auth($username, $oldPassword);
+
+        if (!$this->useTLS) {
+            $message = 'TLS must be configured on your web server and enabled to change passwords.';
+            throw new \Exception($message);
+        }
+        
+        $modifications = [
+            [ // Create batch modification for removing the old password.
+                "attrib" => $this->unicodePassword,
+                "modtype" => LDAP_MODIFY_BATCH_REMOVE,
+                "values" => [self::encodePassword($oldPassword)],
+            ],
+            [ // Create batch modification for adding the new password.
+                "attrib" => $this->unicodePassword,
+                "modtype" => LDAP_MODIFY_BATCH_ADD,
+                "values" => [self::encodePassword($oldPassword)],
+            ],                
+        ];
+        
+        return $this->modify($this->userDn, $modifications);
     }
     
     /**
