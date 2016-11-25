@@ -199,7 +199,12 @@ class Connection extends Component
         # Search for user and get user DN
         $searchResult = ldap_search($this->resource, $this->baseDn, "(&(objectClass=person)($this->loginAttribute=$username))", [$this->loginAttribute]);
         $entry = $this->getFirstEntry($searchResult);
-        $userdn = $this->getDn($entry);        
+        
+        if($entry) {
+            $userdn = $this->getDn($entry);        
+        } else {
+            $userdn = null;
+        }  
         
         // Connect to the LDAP server.
         $this->connect($this->dc, $this->port);
