@@ -240,10 +240,11 @@ class Connection extends Component
             [ // Create batch modification for adding the new password.
                 "attrib" => $this->unicodePassword,
                 "modtype" => LDAP_MODIFY_BATCH_ADD,
-                "values" => [self::encodePassword($oldPassword)],
+                "values" => [self::encodePassword($newPassword)],
             ],                
         ];
         
+        $this->open();
         return $this->modify($this->userDn, $modifications);
     }
     
