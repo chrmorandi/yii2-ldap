@@ -150,10 +150,14 @@ class Connection extends Component
         // Connect to the LDAP server.
         $this->connect($this->dc, $this->port);
 
-        if ($anonymous) {               
-            $this->_bound = ldap_bind($this->resource);
-        } else {
-            $this->_bound = ldap_bind($this->resource, $this->username, $this->password);
+        try {
+            if ($anonymous) {
+                $this->_bound = ldap_bind($this->resource);
+            } else {
+                $this->_bound = ldap_bind($this->resource, $this->username, $this->password);
+            }
+        } catch (\Exception $e) {
+            throw new \Exception('Invalid credential for user manager in ldap.', 0);
         }
     }
 
@@ -200,9 +204,9 @@ class Connection extends Component
         // Connect to the LDAP server.
         $this->connect($this->dc, $this->port);
         // Authenticate user
-        $result = ldap_bind($this->resource, $userdn, $password);
+        $bound = ldap_bind($this->resource, $userdn, $password);
         
-        return $result;
+        return $bound;
     }
     
     /**
