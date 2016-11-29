@@ -197,7 +197,7 @@ class Connection extends Component
         // Open connection with manager
         $this->open();
         
-         # Search for user and get user DN
+        # Search for user and get user DN
         $searchResult = ldap_search($this->resource, $this->baseDn, "(&(objectClass=person)($this->loginAttribute=$username))", [$this->loginAttribute]);
         $entry = $this->getFirstEntry($searchResult);
         if($entry) {
@@ -205,13 +205,12 @@ class Connection extends Component
         } else {
             $this->userDn = null;
         }
-        
+
         // Connect to the LDAP server.
         $this->connect($this->dc, $this->port);
+
         // Authenticate user
-        $bound = ldap_bind($this->resource, $this->userDn, $password);
-        
-        return $bound;
+        return ldap_bind($this->resource, $this->userDn, $password);
     }
     
     /**
@@ -219,33 +218,27 @@ class Connection extends Component
      * @param string $username User for change password
      * @param string $oldPassword The old password
      * @param string $newPassword The new password
-     * @return mixed return true if change password is success
+     * @return bool return true if change password is success
      * @throws \Exception
      */
-    public function changePassword($username, $oldPassword, $newPassword) {
-        // Open connection with user
-        $this->auth($username, $oldPassword);
-
+    public function changePassword($username, $oldPassword, $newPassword)
+    {        
         if (!$this->useTLS) {
             $message = 'TLS must be configured on your web server and enabled to change passwords.';
             throw new \Exception($message);
         }
+
+        // Open connection with user
+        if(!$this->auth($username, $oldPassword)){
+            return false;
+        }
         
-        $modifications = [
-            [ // Create batch modification for removing the old password.
-                "attrib" => $this->unicodePassword,
-                "modtype" => LDAP_MODIFY_BATCH_REMOVE,
-                "values" => [self::encodePassword($oldPassword)],
-            ],
-            [ // Create batch modification for adding the new password.
-                "attrib" => $this->unicodePassword,
-                "modtype" => LDAP_MODIFY_BATCH_ADD,
-                "values" => [self::encodePassword($newPassword)],
-            ],                
-        ];
-        
+        // Open connection with manager
         $this->open();
-        return $this->modify($this->userDn, $modifications);
+        
+        // Replace passowrd
+        $modifications[$this->unicodePassword] = self::encodePassword($newPassword);
+        return ldap_mod_replace($this->resource, $this->userDn, $modifications);
     }
     
     /**
