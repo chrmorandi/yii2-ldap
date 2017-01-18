@@ -12,6 +12,8 @@ use Iterator;
 use Yii;
 use yii\base\InvalidCallException;
 use yii\base\Object;
+use yii\caching\Cache;
+use yii\caching\TagDependency;
 
 /**
  * DataReader represents a forward-only stream of rows from a query result set.
@@ -48,6 +50,7 @@ use yii\base\Object;
  */
 class DataReader extends Object implements Iterator, Countable
 {
+    const CACHE_TAG = 'ldap.data';
     /**
      * @var array data
      */
@@ -77,11 +80,11 @@ class DataReader extends Object implements Iterator, Countable
         if(is_array($this->_results)){
             foreach ($this->_results as $result) {
                 $this->_count += $this->_conn->countEntries($result);
-                $this->setEntries($result);
+                //$this->setEntries($result);
             }
         } else {
             $this->_count += $this->_conn->countEntries($this->_results);
-            $this->setEntries($this->_results);
+            //$this->setEntries($this->_results);
         }
         
 
@@ -121,10 +124,23 @@ class DataReader extends Object implements Iterator, Countable
             return [];
         }
         
+        $token = 'Get entries with limit pagination ' . $this->_conn->pageSize;
+        Yii::beginProfile($token, __METHOD__);
+        if($this->_conn->offset > 0){
+            $this->setEntries($this->_results[intval($this->_conn->offset/$this->_conn->pageSize -1)]);
+        } else {
+            $this->setEntries($this->_results);
+        }
+        Yii::endProfile($token, __METHOD__);
+        
+        $token = 'Get Attributes of entries with limit pagination in ' . $this->_conn->pageSize;
+        Yii::beginProfile($token, __METHOD__);
         $data = [];
         foreach ($this as $item) {
             $data[] = $item;
         }
+        Yii::endProfile($token, __METHOD__);
+
         return $data;
     }
 
@@ -203,8 +219,21 @@ class DataReader extends Object implements Iterator, Countable
     public function current()
     {
         $entry = ['dn' => $this->key()];
+        $teste = $this->key();
         
-        $name = $this->_conn->getFirstAttribute($this->_row);
+        $info = $this->_conn->getCacheInfo(3600, new TagDependency(['tags' => self::CACHE_TAG]));
+        if (is_array($info)) {
+            /* @var $cache Cache */
+            $cache = $info[0];
+            $cacheKey = [__CLASS__, $entry['dn']];
+            $result = $cache->get($cacheKey);
+            if (is_array($result) && isset($result[0])) {
+                Yii::trace('Query result served from cache', __METHOD__);
+                return $result[0];
+            }
+        }
+        
+        $name = $this->_conn->getFirstAttribute($this->_row);    
         
         while ($name) {
             $data = $this->_conn->getValuesLen($this->_row, $name);
@@ -224,6 +253,12 @@ class DataReader extends Object implements Iterator, Countable
         }
         
         ksort($entry, SORT_LOCALE_STRING);
+        
+        if (isset($cache, $cacheKey, $info)) {
+            $cache->set($cacheKey, [$entry], $info[1], $info[2]);
+            Yii::trace('Saved query result in cache', __METHOD__);
+        }
+        
         return $entry;
     }
 

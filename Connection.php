@@ -8,7 +8,9 @@
 
 namespace chrmorandi\ldap;
 
+use Yii;
 use yii\base\Component;
+use yii\caching\Cache;
 
 /**
  * @property resource $resource
@@ -87,12 +89,13 @@ class Connection extends Component
     
     /**
      * @var boolean whether to enable caching.
-     * Note that in order to enable truly caching, a valid cache component as specified
+     * Note that in order to enable query caching, a valid cache component as specified
      * by [[cache]] must be enabled and [[enableCache]] must be set true.
+     * Also, only the results of the queries enclosed within [[cache()]] will be cached.
      * @see cacheDuration
      * @see cache
      */
-    public $enableCache = false;
+    public $enableCache = true;
     
     /**
      * @var integer number of seconds that table metadata can remain valid in cache.
@@ -142,13 +145,54 @@ class Connection extends Component
     }
 
     /**
+     * Returns the current query cache information.
+     * This method is used internally by [[Command]].
+     * @param integer $duration the preferred caching duration. If null, it will be ignored.
+     * @param \yii\caching\Dependency $dependency the preferred caching dependency. If null, it will be ignored.
+     * @return array the current query cache information, or null if query cache is not enabled.
+     * @internal
+     */
+    public function getCacheInfo($duration = 3600, $dependency = null)
+    {
+        if (!$this->enableCache) {
+            return null;
+        }
+
+        if ($duration === 0 || $duration > 0) {
+            if (is_string($this->cache) && Yii::$app) {
+                $cache = Yii::$app->get($this->cache, false);
+            } else {
+                $cache = $this->cache;
+            }
+            if ($cache instanceof Cache) {
+                return [$cache, $duration, $dependency];
+            }
+        }
+
+        return null;
+    }
+    
+    /**
+     * Invalidates the cached data that are associated with any of the specified [[tags]] in this connection.
+     * @param string|array $tags
+     */
+    public function clearCache($tags)
+    {
+        \yii\caching\TagDependency::invalidate($this->cache, $tags);
+    }
+
+    /**
      * Connects and Binds to the Domain Controller with a administrator credentials.
      * @return void
      */
     protected function open($anonymous = false)
     {
+        $token = 'Opening LDAP connection: ' . LdapUtils::recursive_implode($this->dc, ' or ');
+        Yii::info($token, __METHOD__);
+        Yii::beginProfile($token, __METHOD__);
         // Connect to the LDAP server.
         $this->connect($this->dc, $this->port);
+        Yii::endProfile($token, __METHOD__);
 
         try {
             if ($anonymous) {
@@ -267,21 +311,29 @@ class Connection extends Component
     {
         $this->open();
         $results = [];
-        $cookie = '';
-        
+        $cookie = '';        
+        $token = $function . ' - params: ' . LdapUtils::recursive_implode($params, ';');
+
+        Yii::info($token , 'chrmorandi\ldap\Connection::query');
+       
+        Yii::beginProfile($token, 'chrmorandi\ldap\Connection::query');
         do {
-            $this->setControlPagedResult($cookie);
-
+            if($this->pageSize > 0) {
+                $this->setControlPagedResult($cookie);
+            }
+            
+            // Run the search.
             $result = call_user_func($function, $this->resource, ...$params);
-
-            $this->setControlPagedResultResponse($result, $cookie);
+            
+            if($this->pageSize > 0) {
+                $this->setControlPagedResultResponse($result, $cookie);
+            }
+            
+            //Collect each resource result
             $results[] = $result;            
-        } while ($cookie !== null && $cookie != '');        
+        } while (!is_null($cookie) && !empty($cookie));
+        Yii::endProfile($token, 'chrmorandi\ldap\Connection::query');
 
-        if($this->offset > 0){
-            $results = $results[intval($this->offset/$this->pageSize -1)];
-        }
-        
         return new DataReader($this, $results);
     }
     
@@ -389,6 +441,11 @@ class Connection extends Component
      * @return int
      */
     public function countEntries($searchResult)
+    {
+        return ldap_count_entries($this->resource, $searchResult);
+    }
+    
+    public function countEntriesBySearch($db)
     {
         return ldap_count_entries($this->resource, $searchResult);
     }

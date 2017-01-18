@@ -68,6 +68,14 @@ class Query extends Component implements QueryInterface
      * @see http://www.faqs.org/rfcs/rfc4515.html
      */
     public $filter;
+    
+    /**
+     * The distinguished name to perform searches upon.
+     * @var string|null
+     */
+    protected $dn;
+    
+    protected $dataReader;
 
     /**
      * Creates a LDAP command that can be used to execute this query.
@@ -80,6 +88,7 @@ class Query extends Component implements QueryInterface
         if ($db === null) {
             $db = Yii::$app->get('ldap');
         }
+        $this->dn = isset($this->dn) ? $this->dn : $db->baseDn;
         
         $this->filter = (new FilterBuilder)->build($this->where);        
         if (empty($this->filter)) {
@@ -90,13 +99,12 @@ class Query extends Component implements QueryInterface
         
         if(ctype_digit((string) $this->limit)){
             $db->pageSize = $this->limit;            
-        }
-        
+        }        
         if(ctype_digit((string) $this->offset)){
             $db->offset = $this->offset == 0 ? 1 : $this->offset;
         }
 
-        $params = [$db->baseDn, $this->filter, $select, 0, $this->limit];
+        $params = [$this->dn, $this->filter, $select, 0, $this->limit, 0];
 
         return $db->executeQuery($this->scope, $params);
     }
@@ -108,10 +116,26 @@ class Query extends Component implements QueryInterface
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      */
     public function all($db = null)
-    {        
-        /** @var $result DataReader */
-        $result = $this->execute($db);        
-        return $this->populate($result->toArray());
+    {    
+        if(!($this->dataReader instanceof DataReader)) {            
+            /** @var $result DataReader */
+            $this->dataReader = $this->execute($db);
+        } else {
+            if ($db === null) {
+                $db = Yii::$app->get('ldap');
+            }
+            
+            if(ctype_digit((string) $this->limit)){
+                $db->pageSize = $this->limit;            
+            }        
+            if(ctype_digit((string) $this->offset)){
+                $db->offset = $this->offset == 0 ? 1 : $this->offset;
+            }
+        }
+        
+        
+                
+        return $this->populate($this->dataReader->toArray());
     }
 
     /**
@@ -160,9 +184,10 @@ class Query extends Component implements QueryInterface
      * @return integer number of entries.
      */
     public function count($q = null, $db = NULL)
-    {        
-        $result = $this->execute($db);
-        return $result->count();
+    {
+        $this->limit = 20;
+        $this->dataReader = $this->execute($db);
+        return $this->dataReader->count();
     }
     
 

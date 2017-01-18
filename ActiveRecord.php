@@ -33,11 +33,12 @@ use yii\db\BaseActiveRecord;
  *     }
  * }
  * ```
- *
- * Or simply
+ * Or
  *
  * ```php
- * use \chrmorandi\ldap\schemas\ADUserTrait;
+ * public function attributes() {
+ *     return \chrmorandi\ldap\schemas\ADUser::getAttributes();
+ * }
  * ```
  *
  * @since 1.0.0
