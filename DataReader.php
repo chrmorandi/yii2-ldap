@@ -98,10 +98,10 @@ class DataReader extends Object implements Iterator, Countable
     
     /**
      * 
-     * @param resource $result
+     * @param resource|array $result
      * @return void
      */
-    protected function setEntries($result){
+    protected function setEntries($result){        
         $identifier = $this->_conn->getFirstEntry($result);
 
         while (false !== $identifier) {
@@ -127,9 +127,15 @@ class DataReader extends Object implements Iterator, Countable
         $token = 'Get entries with limit pagination ' . $this->_conn->pageSize;
         Yii::beginProfile($token, __METHOD__);
         if($this->_conn->offset > 0){
-            $this->setEntries($this->_results[intval($this->_conn->offset/$this->_conn->pageSize -1)]);
+            $this->setEntries($this->_results[intval($this->_conn->offset/$this->_conn->pageSize)]);
         } else {
-            $this->setEntries($this->_results);
+            if(is_array($this->_results)){
+                foreach ($this->_results as $result) {                
+                    $this->setEntries($result);
+                }
+            } else {
+                $this->setEntries($this->_results);
+            }
         }
         Yii::endProfile($token, __METHOD__);
         

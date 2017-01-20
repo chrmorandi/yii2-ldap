@@ -178,14 +178,15 @@ class Connection extends Component
      */
     public function clearCache($tags)
     {
-        \yii\caching\TagDependency::invalidate($this->cache, $tags);
+        $cache = Yii::$app->get($this->cache, false);
+        \yii\caching\TagDependency::invalidate($cache, $tags);
     }
 
     /**
      * Connects and Binds to the Domain Controller with a administrator credentials.
      * @return void
      */
-    protected function open($anonymous = false)
+    public function open($anonymous = false)
     {
         $token = 'Opening LDAP connection: ' . LdapUtils::recursive_implode($this->dc, ' or ');
         Yii::info($token, __METHOD__);
@@ -211,7 +212,7 @@ class Connection extends Component
      * @param type $port
      * @return void
      */
-    public function connect($hostname = [], $port = '389')
+    protected function connect($hostname = [], $port = '389')
     {
         if (is_array($hostname)) {
             $hostname = self::PROTOCOL.implode(' '.self::PROTOCOL, $hostname);
@@ -422,6 +423,7 @@ class Connection extends Component
      */
     public function modify($dn, array $values)
     {
+        $this->clearCache(DataReader::CACHE_TAG);
         return ldap_modify_batch($this->resource, $dn, $values);
     }    
     

@@ -148,19 +148,24 @@ class ActiveRecord extends BaseActiveRecord
             return false;
         }
         
+        $primaryKey = static::primaryKey();
         $values = $this->getDirtyAttributes($attributes);
-        $dn = $values[$this->primaryKey];
-        unset($values[$this->primaryKey]);
+        $dn = $values[$primaryKey[0]];
+        unset($values[$primaryKey[0]]);
         
+        static::getDb()->open();
+
         if (static::getDb()->add($dn, $values) === false) {
             return false;
         }
-        $this->setAttribute($this->primaryKey, $dn);
-        $values[$this->primaryKey] = $dn;
+        $this->setAttribute($primaryKey[0], $dn);
+        $values[$primaryKey[0]] = $dn;
 
         $changedAttributes = array_fill_keys(array_keys($values), null);
         $this->setOldAttributes($values);
         $this->afterSave(true, $changedAttributes);
+        
+        static::getDb()->close();
 
         return true;
     }
@@ -184,14 +189,17 @@ class ActiveRecord extends BaseActiveRecord
 
         if(($condition = $this->getOldPrimaryKey(true)) !== $this->getPrimaryKey(true)) {
             // TODO Change DN
-            static::getDb()->rename($condition, $newRdn, $newParent, true);
-            if (!$this->refresh()){
-                Yii::info('Model not refresh.', __METHOD__);
-                return false;
-            }
+//            static::getDb()->rename($condition, $newRdn, $newParent, true);
+//            if (!$this->refresh()){
+//                Yii::info('Model not refresh.', __METHOD__);
+//                return false;
+//            }
         }
         
         foreach ($values as $key => $value) {
+            if($key == 'dn'){
+                continue;
+            }
             if(empty ($this->getOldAttribute($key)) && $value === ''){
                 unset($values[$key]);
             } else if($value === ''){
@@ -213,9 +221,9 @@ class ActiveRecord extends BaseActiveRecord
         $rows = static::updateAll($attributes, $condition);
 
 //        $changedAttributes = [];
-//        foreach ($values as $name => $value) {
-//            $changedAttributes[$name] = empty($this->getOldAttributes($name)) ? $this->getOldAttributes($name) : null;
-//            $this->setOldAttributes([$name->$value]);
+//        foreach ($values as $key => $value) {
+//            $changedAttributes[$key] = empty($this->getOldAttributes($key)) ? $this->getOldAttributes($key) : null;
+//            $this->setOldAttributes([$key=>$value]);
 //        }
 //        $this->afterSave(false, $changedAttributes);
 
@@ -241,7 +249,11 @@ class ActiveRecord extends BaseActiveRecord
             $condition = $condition['dn'];
         }        
         
-        static::getDb()->modify($condition, $attributes);
+        static::getDb()->open();
+        $teste = static::getDb()->modify($condition, $attributes);
+        static::getDb()->close();
+        
+        return count($attributes);
     }
     
     /**
