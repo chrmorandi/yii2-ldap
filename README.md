@@ -66,7 +66,7 @@ method on your provider:
 
 ```php
 try {
-    if (Yii::$app->ldap->auth($this->username, $password)) {
+    if (@\Yii::$app->ldap->auth($this->username, $password)) {
         // Credentials were correct.
     } else {
         // Credentials were incorrect.
