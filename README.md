@@ -54,6 +54,10 @@ return [
             'port'            => 389,
             'followReferrals' => false,
             'useTLS'          => true,
+            // Change pageSize (e.g. to 1000) if you are getting the following message
+            // with large result sets:
+            // ldap_search(): Partial search results returned: Sizelimit exceeded
+            'pageSize'        => -1,
         ],
     ]
 ];
