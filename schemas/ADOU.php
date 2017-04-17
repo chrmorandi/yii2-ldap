@@ -38,6 +38,22 @@ class ADOU implements SchemaInterface {
     public $ou;
     
     /**
+     * Contains the description to display for an object. This value is restricted
+     * as single-valued for backward compatibility in some cases but
+     * is allowed to be multi-valued in others.
+     * @link https://msdn.microsoft.com/en-us/library/ms675492(v=vs.85).aspx
+     * @var string
+     */
+    public $description;
+    
+    /**
+     * If TRUE, the object hosting this attribute must be replicated during installation of a new replica.
+     * @link https://msdn.microsoft.com/en-us/library/ms676798(v=vs.85).aspx
+     * @var Boolean 
+     */
+    public $isCriticalSystemObject;
+            
+    /**
      * The unique identifier for an object.
      * @link https://msdn.microsoft.com/en-us/library/ms679021(v=vs.85).aspx
      * @var type 
