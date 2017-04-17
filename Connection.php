@@ -300,7 +300,7 @@ class Connection extends Component
     }
 
     /**
-     * Execute ldap functions like.
+     * Execute ldap search like.
      *
      * http://php.net/manual/en/ref.ldap.php
      *

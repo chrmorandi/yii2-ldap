@@ -250,7 +250,7 @@ class ActiveRecord extends BaseActiveRecord
         }        
         
         static::getDb()->open();
-        $teste = static::getDb()->modify($condition, $attributes);
+        static::getDb()->modify($condition, $attributes);
         static::getDb()->close();
         
         return count($attributes);
@@ -276,10 +276,8 @@ class ActiveRecord extends BaseActiveRecord
         $count = 0;
         
         foreach ($entries as $entry) {
-            $params = [
-                $entry[self::primaryKey()]
-            ];
-            static::getDb()->execute('ldap_delete', $params);
+            $dn = [$entry[self::primaryKey()[0]]];
+            static::getDb()->delete($dn);
             $count++;
         }
         return $count;
