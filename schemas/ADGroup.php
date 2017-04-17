@@ -9,11 +9,11 @@
 namespace chrmorandi\ldap\schemas;
 
 /**
- * Description of ADOUTrait
+ * Description of ADGroupTrait
  *
  * @since 1.0.0
  */
-trait ADOUTrait
+class ADGroup implements SchemaInterface
 {
-    //put your code here
+    use SchemaTrait;    
 }

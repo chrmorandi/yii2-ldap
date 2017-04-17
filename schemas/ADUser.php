@@ -9,24 +9,14 @@
 namespace chrmorandi\ldap\schemas;
 
 use DateTime;
-use ReflectionClass;
-use ReflectionProperty;
 
 /**
  *
  * @since 1.0.0
  */
-class ADUser
+class ADUser implements SchemaInterface
 {
-    
-    /**
-     * The LDAP API references an LDAP object by its distinguished name (DN).
-     * A DN is a sequence of relative distinguished names (RDN) connected by commas.
-     *
-     * @link https://msdn.microsoft.com/en-us/library/aa366101(v=vs.85).aspx
-     * @var  string
-     */
-    public $dn;
+    use SchemaTrait;
 
     /**
      * Contain the object class for make user in AD
@@ -307,21 +297,5 @@ class ADUser
      * @var string 
      */
     public $wWWHomePage;
-    
-    /**
-     * 
-     * @return array of attributes
-     */
-    public function getAttributes() {
-        $class = new ReflectionClass(self::class);
-        $names = [];
-        foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            if (!$property->isStatic()) {
-                $names[] = $property->getName();
-            }
-        }
-
-        return $names;
-    }
     
 }

@@ -9,11 +9,14 @@
 namespace chrmorandi\ldap\schemas;
 
 /**
- * Description of ADGroupTrait
  *
  * @since 1.0.0
  */
-trait ADGroupTrait
-{
-    //put your code here
+interface SchemaInterface {
+    
+    /**
+     * Get Array Attributes
+     * @return array of attributes
+     */
+    public function getAttributes();
 }

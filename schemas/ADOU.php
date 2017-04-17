@@ -9,10 +9,10 @@
 namespace chrmorandi\ldap\schemas;
 
 /**
+ * Description of ADOUTrait
  *
  * @since 1.0.0
  */
-trait OpenLDAPUserTrait 
-{
-    
+class ADOU implements SchemaInterface {
+    use SchemaTrait;
 }
