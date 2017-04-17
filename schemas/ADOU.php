@@ -14,5 +14,54 @@ namespace chrmorandi\ldap\schemas;
  * @since 1.0.0
  */
 class ADOU implements SchemaInterface {
+    
     use SchemaTrait;
+    
+    /**
+     * Contain the object class for make user in AD
+     * User: This class is used to store information about an employee or contractor who works for an organization. 
+     * It is also possible to apply this class to long term visitors.
+     * Person: Contains personal information about a user.
+     * OrganizationalPerson: This class is used for objects that contain organizational information about a user, such 
+     * as the employee number, department, manager, title, office address, and so on.
+     * Top: The top level class from which all classes are derived.
+     * @link https://msdn.microsoft.com/en-us/library/ms680932(v=vs.85).aspx
+     * @var array 
+     */
+    public static $objectClass = ['organizationalUnit', 'top'];
+ 
+    /**
+     * The name of the organizational unit.
+     * @link https://msdn.microsoft.com/en-us/library/ms679096(v=vs.85).aspx
+     * @var type 
+     */
+    public $ou;
+    
+    /**
+     * The unique identifier for an object.
+     * @link https://msdn.microsoft.com/en-us/library/ms679021(v=vs.85).aspx
+     * @var type 
+     */
+    public $objectGuid;
+    
+    /**
+     * The entry's created at attribute.
+     * @link https://msdn.microsoft.com/en-us/library/ms680924(v=vs.85).aspx
+     * @var DateTime
+     */
+    public $whenCreated;
+    
+    /**
+     * The date when this object was last changed.
+     * @link https://msdn.microsoft.com/en-us/library/ms680921(v=vs.85).aspx
+     * @var DateTime
+     */
+    public $whenChanged;
+    
+    /**
+     * The distinguished name of the user that is assigned to manage this object.
+     * @link https://msdn.microsoft.com/en-us/library/ms676857(v=vs.85).aspx
+     * @var Object(DS-DN)
+     */
+    public $managedBy;
 }

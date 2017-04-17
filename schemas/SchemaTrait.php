@@ -26,19 +26,18 @@ trait SchemaTrait {
      */
     public $dn;
     
-    /**
-     * 
-     * @return array of attributes
+     /**
+     * Returns the list of attribute names.
+     * By default, this method returns all public properties of the class.
+     * @return array list of attribute names.
      */
     public function getAttributes() {
         $class = new ReflectionClass(self::class);
         $names = [];
         foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            if (!$property->isStatic()) {
-                $names[] = $property->getName();
-            }
+            $names[] = $property->getName();
         }
-
+        
         return $names;
     }
 }

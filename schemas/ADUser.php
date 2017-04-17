@@ -29,7 +29,7 @@ class ADUser implements SchemaInterface
      * @link https://msdn.microsoft.com/en-us/library/ms680932(v=vs.85).aspx
      * @var array 
      */
-    public $objectClass = ['user', 'person', 'organizationalPerson', 'top'];
+    public static $objectClass = ['user', 'person', 'organizationalPerson', 'top'];
     
     /**
      * The date when the account expires. This value represents the number of 100-nanosecond
@@ -290,6 +290,13 @@ class ADUser implements SchemaInterface
      * @var DateTime
      */
     public $whenCreated;
+    
+    /**
+     * The date when this object was last changed.
+     * @link https://msdn.microsoft.com/en-us/library/ms680921(v=vs.85).aspx
+     * @var DateTime
+     */
+    public $whenChanged;
     
     /**
      * A web page that is the primary landing page of a website.

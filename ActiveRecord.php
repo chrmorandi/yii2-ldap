@@ -276,7 +276,7 @@ class ActiveRecord extends BaseActiveRecord
         $count = 0;
         
         foreach ($entries as $entry) {
-            $dn = [$entry[self::primaryKey()[0]]];
+            $dn = $entry[self::primaryKey()[0]];
             static::getDb()->delete($dn);
             $count++;
         }
