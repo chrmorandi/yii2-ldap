@@ -205,9 +205,9 @@ class ActiveRecord extends BaseActiveRecord
             } else if($value === ''){
                 $attributes[] = ['attrib'  => $key, 'modtype' => LDAP_MODIFY_BATCH_REMOVE];
             } else if (empty ($this->getOldAttribute($key))) {
-                $attributes[] = ['attrib'  => $key, 'modtype' => LDAP_MODIFY_BATCH_ADD, 'values' => [$value]];
+                $attributes[] = ['attrib'  => $key, 'modtype' => LDAP_MODIFY_BATCH_ADD, 'values' => is_array($value) ? $value : [$value]];
             } else {
-                $attributes[] = ['attrib'  => $key, 'modtype' => LDAP_MODIFY_BATCH_REPLACE, 'values' => [$value]];
+                $attributes[] = ['attrib'  => $key, 'modtype' => LDAP_MODIFY_BATCH_REPLACE, 'values' => is_array($value) ? $value : [$value]];
             }
         }
         
