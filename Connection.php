@@ -446,11 +446,6 @@ class Connection extends Component
     {
         return ldap_count_entries($this->resource, $searchResult);
     }
-    
-    public function countEntriesBySearch($db)
-    {
-        return ldap_count_entries($this->resource, $searchResult);
-    }
 
     /**
      * Retrieves the first entry from a search result.
