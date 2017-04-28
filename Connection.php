@@ -115,11 +115,6 @@ class Connection extends Component
      * @var string the attribute for authentication
      */    
     public $loginAttribute = "sAMAccountName";
-
-    /**
-     * @var string the attribute for password default is unicodePwd (AD passoword)
-     */
-    public $unicodePassword = 'unicodePwd';
     
     /**
      * @var bool stores the bool whether or not the current connection is bound.
@@ -135,10 +130,10 @@ class Connection extends Component
      *
      * @var string 
      */
-    protected $userDn;
+    protected $userDN;
     
     # Create AD password (Microsoft Active Directory password format)
-    protected static function makeAdPassword($password) {
+    protected static function encodePassword($password) {
         $password = "\"" . $password . "\"";
         $adpassword = mb_convert_encoding($password, "UTF-16LE", "UTF-8");
         return $adpassword;
@@ -246,16 +241,16 @@ class Connection extends Component
         $searchResult = ldap_search($this->resource, $this->baseDn, "(&(objectClass=person)($this->loginAttribute=$username))", [$this->loginAttribute]);
         $entry = $this->getFirstEntry($searchResult);
         if($entry) {
-            $this->userDn = $this->getDn($entry);        
+            $this->userDN = $this->getDn($entry);        
         } else {
-            $this->userDn = null;
+            $this->userDN = null;
         }
 
         // Connect to the LDAP server.
         $this->connect($this->dc, $this->port);
 
         // Authenticate user
-        return ldap_bind($this->resource, $this->userDn, $password);
+        return ldap_bind($this->resource, $this->userDN, $password);
     }
     
     /**
@@ -266,7 +261,7 @@ class Connection extends Component
      * @return bool return true if change password is success
      * @throws \Exception
      */
-    public function changePassword($username, $oldPassword, $newPassword)
+    public function changePasswordAsUser($username, $oldPassword, $newPassword)
     {        
         if (!$this->useTLS) {
             $message = 'TLS must be configured on your web server and enabled to change passwords.';
@@ -278,12 +273,30 @@ class Connection extends Component
             return false;
         }
         
+        return $this->changePasswordAsManager($this->userDN, $newPassword);
+    }
+    
+    /**
+     * Change the password of the user as manager. This must be performed over TLS.
+     * @param string $userDN User Distinguished Names (DN) for change password. Ex.: cn=admin,dc=example,dc=com
+     * @param string $newPassword The new password
+     * @return bool return true if change password is success
+     * @throws \Exception
+     */
+    public function changePasswordAsManager($userDN, $newPassword)
+    {        
+        if (!$this->useTLS) {
+            $message = 'TLS must be configured on your web server and enabled to change passwords.';
+            throw new \Exception($message);
+        }
+        
         // Open connection with manager
         $this->open();
         
-        // Replace passowrd
-        $modifications[$this->unicodePassword] = self::encodePassword($newPassword);
-        return ldap_mod_replace($this->resource, $this->userDn, $modifications);
+        // Replace passowrd attribute for AD
+        // The AD password change procedure is modifying the attribute unicodePwd
+        $modifications['unicodePwd'] = self::encodePassword($newPassword);
+        return ldap_mod_replace($this->resource, $userDN, $modifications);
     }
     
     /**
