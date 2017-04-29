@@ -219,6 +219,8 @@ class Connection extends Component
         // Set the LDAP options.     
         $this->setOption(LDAP_OPT_PROTOCOL_VERSION, 3);
         $this->setOption(LDAP_OPT_REFERRALS, $this->followReferrals);
+        $this->setOption(LDAP_OPT_NETWORK_TIMEOUT, 2);
+
         if ($this->useTLS) {
             $this->startTLS();
         }
