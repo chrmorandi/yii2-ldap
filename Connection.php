@@ -82,6 +82,14 @@ class Connection extends Component
     public $pageSize = -1;
     
     /**
+     * @var boolean Disable pagination control
+     * Disable this setting if you get the following error: 
+     * ldap_control_paged_result_response(): No server controls in result
+     * @link http://php.net/manual/en/function.ldap-control-paged-result.php
+     */
+    public $enablePaginationControl = true;
+    
+    /**
      * @var integer zero-based offset from where the records are to be returned. If not set or
      * less than 1, it means not filter values.
      */
@@ -334,14 +342,14 @@ class Connection extends Component
        
         Yii::beginProfile($token, 'chrmorandi\ldap\Connection::query');
         do {
-            if($this->pageSize > 0) {
+            if($this->pageSize > 0 && true === $this->enablePaginationControl) {
                 $this->setControlPagedResult($cookie);
             }
             
             // Run the search.
             $result = call_user_func($function, $this->resource, ...$params);
             
-            if($this->pageSize > 0) {
+            if($this->pageSize > 0 && true === $this->enablePaginationControl) {
                 $this->setControlPagedResultResponse($result, $cookie);
             }
             
