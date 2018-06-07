@@ -1,5 +1,5 @@
 {
-    "name": "chrmorandi/yii2-ldap",
+    "name": "futuretek/yii2-ldap",
     "description": "Ldap",
     "type": "library",
     "keywords": ["yii2", "extension", "ldap", "Active Directory", "OpenLDAP"],
