@@ -11,7 +11,7 @@ use Countable;
 use Iterator;
 use Yii;
 use yii\base\InvalidCallException;
-use yii\base\Object;
+use yii\base\BaseObject;
 use yii\caching\Cache;
 use yii\caching\TagDependency;
 
@@ -48,7 +48,7 @@ use yii\caching\TagDependency;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0.0
  */
-class DataReader extends Object implements Iterator, Countable
+class DataReader extends BaseObject implements Iterator, Countable
 {
     const CACHE_TAG = 'ldap.data';
     /**
