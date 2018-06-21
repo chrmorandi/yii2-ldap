@@ -10,7 +10,7 @@ namespace chrmorandi\ldap;
 
 use Traversable;
 use yii\base\InvalidParamException;
-use yii\base\Object;
+use yii\base\BaseObject;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -21,7 +21,7 @@ use yii\helpers\ArrayHelper;
  * @author Christopher Mota <chrmorandi@gmail.com>
  * @since 1.0.0
  */
-class FilterBuilder extends Object
+class FilterBuilder extends BaseObject
 {
     /**
      * @var string the separator between different fragments of a SQL statement.
