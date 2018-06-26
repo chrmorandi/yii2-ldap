@@ -190,7 +190,7 @@ class FilterBuilder extends BaseObject
             $values = (array) $values;
         }
 
-        if ($column instanceof \Traversable || count($column) > 1) {
+        if ($column instanceof \Traversable || (is_array($column) && count($column) > 1)) {
             return $this->buildCompositeInCondition($operator, $column, $values);
         } elseif (is_array($column)) {
             $column = reset($column);
