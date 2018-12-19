@@ -75,8 +75,9 @@ try {
     } else {
         // Credentials were incorrect.
     }
-    } catch (Exception $e) {            
-        // error
-    }
+} catch (Exception $e) {            
+    // error
 }
+
+
 ```
