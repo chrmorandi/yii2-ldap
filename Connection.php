@@ -245,14 +245,15 @@ class Connection extends Component
         if($entry) {
             $this->userDN = $this->getDn($entry);        
         } else {
-            $this->userDN = null;
+            // User not found.
+            return false;
         }
 
         // Connect to the LDAP server.
         $this->connect($this->dc, $this->port);
 
-        // Authenticate user
-        return ldap_bind($this->resource, $this->userDN, $password);
+        // Try to authenticate user, but ignore any PHP warnings.
+        return @ldap_bind($this->resource, $this->userDN, $password);
     }
     
     /**
