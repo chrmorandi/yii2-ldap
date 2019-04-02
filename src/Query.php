@@ -164,7 +164,7 @@ class Query extends Component implements QueryInterface
      * Executes the query and returns a single row of result.
      * @param Connection $db the database connection.
      * If this parameter is not given, the `db` application component will be used.
-     * @return array|boolean the first row (in terms of an array) of the query result. False is returned if the query
+     * @return array|bool the first row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
      */
     public function one($db = null)
@@ -192,12 +192,12 @@ class Query extends Component implements QueryInterface
      * Returns a value indicating whether the query result contains any row of data.
      * @param Connection $db the database connection.
      * If this parameter is not given, the `db` application component will be used.
-     * @return boolean whether the query result contains any row of entries.
+     * @return bool whether the query result contains any row of entries.
      */
     public function exists($db = null)
     {
         $result = $this->execute($db);
-        return (boolean) $result->count();
+        return (bool) $result->count();
     }
 
     /**

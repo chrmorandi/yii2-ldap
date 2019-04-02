@@ -12,6 +12,7 @@ use chrmorandi\ldap\ActiveQuery;
 use chrmorandi\ldap\Connection;
 use Exception;
 use Yii;
+use yii\base\InvalidConfigException;
 use yii\db\BaseActiveRecord;
 
 /**
@@ -117,13 +118,13 @@ class ActiveRecord extends BaseActiveRecord
      * $customer->insert();
      * ```
      *
-     * @param  boolean $runValidation whether to perform validation (calling [[validate()]])
+     * @param bool $runValidation whether to perform validation (calling [[validate()]])
      * before saving the record. Defaults to `true`. If the validation fails, the record
      * will not be saved to the database and this method will return `false`.
-     * @param  string[]|null $attributes    list of attributes that need to be saved. Defaults to null, meaning all attributes that are loaded from DB will be saved. meaning all attributes that are loaded from DB will be saved.
+     * @param string[]|null $attributes    list of attributes that need to be saved.
+     * Defaults to null, meaning all attributes that are loaded from DB will be saved. meaning all attributes that are loaded from DB will be saved.
      * meaning all attributes that are loaded from DB will be saved.
-     * @return boolean whether the attributes are valid and the record is inserted successfully.
-     * @throws Exception in case insert failed.
+     * @return bool whether the attributes are valid and the record is inserted successfully.
      */
     public function insert($runValidation = true, $attributes = null)
     {
@@ -140,7 +141,7 @@ class ActiveRecord extends BaseActiveRecord
      *
      * @param  string[]|null $attributes list of attributes that need to be saved. Defaults to null,
      * meaning all attributes that are loaded will be saved.
-     * @return boolean whether the record is inserted successfully.
+     * @return bool whether the record is inserted successfully.
      */
     protected function insertInternal($attributes = null)
     {

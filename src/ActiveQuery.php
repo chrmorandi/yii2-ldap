@@ -150,7 +150,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      * Executes the query and returns a single row of result.
      * @param Connection $db the database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
-     * @return array|boolean the first row (in terms of an array) of the query result. False is returned if the query
+     * @return array|bool the first row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
      */
     public function one($db = null)

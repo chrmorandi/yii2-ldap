@@ -44,7 +44,7 @@ use yii\caching\TagDependency;
  * Doing it the second time will throw an exception.
  *
  * @property integer $columnCount The number of columns in the result set. This property is read-only.
- * @property boolean $isClosed Whether the reader is closed or not. This property is read-only.
+ * @property bool $isClosed Whether the reader is closed or not. This property is read-only.
  * @property integer $rowCount Number of rows contained in the result. This property is read-only.
  *
  * @author Christopher Mota <chrmorandi@gmail.com>
@@ -176,7 +176,7 @@ class DataReader extends BaseObject implements Iterator, Countable
 
     /**
      * whether the reader is closed or not.
-     * @return boolean whether the reader is closed or not.
+     * @return bool whether the reader is closed or not.
      */
     public function getIsClosed()
     {
@@ -281,7 +281,7 @@ class DataReader extends BaseObject implements Iterator, Countable
     /**
      * Returns whether there is a row of resource at current position.
      * This method is required by the interface [[\Iterator]].
-     * @return boolean whether there is a row of data at current position.
+     * @return bool whether there is a row of data at current position.
      */
     public function valid()
     {

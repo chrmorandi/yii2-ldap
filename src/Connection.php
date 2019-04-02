@@ -15,12 +15,12 @@ use yii\caching\Cache;
 
 /**
  * @property resource $resource
- * @property boolean  $bount
+ * @property bool  $bount
  * @property int      $errNo Error number of the last command
  * @property string   $lastError Error message of the last command
  *
  * @author Christopher Mota <chrmorandi@gmail.com>
- * @since 1.0
+ * @since  1.0
  */
 class Connection extends Component
 {
@@ -89,7 +89,7 @@ class Connection extends Component
     public $offset = -1;
 
     /**
-     * @var boolean whether to enable caching.
+     * @var bool whether to enable caching.
      * Note that in order to enable query caching, a valid cache component as specified
      * by [[cache]] must be enabled and [[enableCache]] must be set true.
      * Also, only the results of the queries enclosed within [[cache()]] will be cached.
@@ -307,7 +307,7 @@ class Connection extends Component
     /**
      * Closes the current connection.
      *
-     * @return boolean
+     * @return bool
      */
     public function close()
     {
@@ -447,7 +447,7 @@ class Connection extends Component
     /**
      * Retrieve the entries from a search result.
      * @param resource $searchResult
-     * @return array|boolean
+     * @return array|bool
      */
     public function getEntries($searchResult)
     {
