@@ -233,7 +233,7 @@ class Connection extends Component
      * Authenticate user
      * @param string $username
      * @param string $password
-     * @return int indicate occurrence of error.
+     * @return bool indicate occurrence of error.
      */
     public function auth($username, $password)
     {
@@ -515,14 +515,16 @@ class Connection extends Component
     }
 
     /**
-     * Retrieves all binary values from a result entry.
-     * @param resource $entry link identifier
-     * @param string $attribute name of attribute
-     * @return array
+     * Retrieves all binary values from a result entry. Individual values are accessed by integer index in the array.
+     * The first index is 0. The number of values can be found by indexing "count" in the resultant array.
+     * @param resource $entry Link identifier
+     * @param string $attribute Name of attribute
+     * @return array Returns an array of values for the attribute on success and empty array on error.
      */
     public function getValuesLen($entry, $attribute)
     {
-        return ldap_get_values_len($this->resource, $entry, $attribute);
+        $result = ldap_get_values_len($this->resource, $entry, $attribute);
+        return is_array($result) ? $result : [];
     }
 
     /**

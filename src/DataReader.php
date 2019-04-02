@@ -246,10 +246,6 @@ class DataReader extends BaseObject implements Iterator, Countable
         while ($name) {
             $data = $this->_conn->getValuesLen($this->_row, $name);
 
-            if (!$data) {
-                $data = [];
-            }
-
             if (isset($data['count'])) {
                 unset($data['count']);
             }
