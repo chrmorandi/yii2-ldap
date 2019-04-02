@@ -1,11 +1,10 @@
 <?php
 /**
- * This file is part of the LdapTools package.
- *
- * (c) Chad Sikorra <Chad.Sikorra@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * @link      https://github.com/chrmorandi/yii2-ldap for the source repository
+ * @package   yii2-ldap
+ * @author    Christopher Mota <chrmorandi@gmail.com>
+ * @license   MIT License - view the LICENSE file that was distributed with this source code.
+ * @since     1.0.0
  */
 
 namespace chrmorandi\ldap;
@@ -13,12 +12,10 @@ namespace chrmorandi\ldap;
 
 /**
  * Some common helper LDAP functions.
- *
- * @author Chad Sikorra <Chad.Sikorra@gmail.com>
  */
 class LdapUtils
 {
-    
+
     /**
      * Converts a string distinguished name into its separate pieces.
      *
@@ -70,19 +67,19 @@ class LdapUtils
 
         return $rdn[0].'='.$rdn[1];
     }
-    
+
     /**
      * Recursively implodes an array with optional key inclusion
-     * 
+     *
      * Example of $include_keys output: key, value, key, value, key, value
-     * 
+     *
      * @access  public
      * @param   array   $array         multi-dimensional array to recursively implode
-     * @param   string  $glue          value that glues elements together	
+     * @param   string  $glue          value that glues elements together
      * @param   bool    $include_keys  include keys before their values
      * @param   bool    $trim_all      trim ALL whitespace from string
      * @return  string  imploded array
-     */ 
+     */
     public static function recursive_implode(array $array, $glue = ',', $include_keys = false, $trim_all = true)
     {
             $glued_string = '';

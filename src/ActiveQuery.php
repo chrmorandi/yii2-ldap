@@ -1,9 +1,10 @@
 <?php
 /**
- * @link      https://github.com/chrmorandi/yii2-ldap for the canonical source repository
+ * @link      https://github.com/chrmorandi/yii2-ldap for the source repository
  * @package   yii2-ldap
  * @author    Christopher Mota <chrmorandi@gmail.com>
  * @license   MIT License - view the LICENSE file that was distributed with this source code.
+ * @since     1.0.0
  */
 
 namespace chrmorandi\ldap;
@@ -76,19 +77,19 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     use ActiveQueryTrait;
     use ActiveRelationTrait;
-    
+
     /**
      * @event Event an event that is triggered when the query is initialized via [[init()]].
      */
     const EVENT_INIT = 'init';
-    
+
     /**
      * Stores the current query builder instance.
      *
      * @var QueryBuilder
      */
     protected $queryBuilder;
-    
+
     /**
      * Constructor.
      * @param string $modelClass the model class associated with this query
@@ -122,7 +123,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     {
         return parent::all($db);
     }
-    
+
     /**
      * @inheritdoc
      */

@@ -1,8 +1,10 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
- * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @link      https://github.com/chrmorandi/yii2-ldap for the source repository
+ * @package   yii2-ldap
+ * @author    Christopher Mota <chrmorandi@gmail.com>
+ * @license   MIT License - view the LICENSE file that was distributed with this source code.
+ * @since     1.0.0
  */
 
 namespace chrmorandi\ldap;
@@ -54,7 +56,7 @@ class DataReader extends BaseObject implements Iterator, Countable
     /**
      * @var array data
      */
-    private $entries = [];   
+    private $entries = [];
     /**
      * @var Connection
      */
@@ -86,22 +88,22 @@ class DataReader extends BaseObject implements Iterator, Countable
             $this->_count += $this->_conn->countEntries($this->_results);
             //$this->setEntries($this->_results);
         }
-        
+
 
         parent::__construct($config);
     }
-    
+
     public function __destruct()
     {
         $this->close();
     }
-    
+
     /**
-     * 
+     *
      * @param resource|array $result
      * @return void
      */
-    protected function setEntries($result){        
+    protected function setEntries($result){
         $identifier = $this->_conn->getFirstEntry($result);
 
         while (false !== $identifier) {
@@ -123,14 +125,14 @@ class DataReader extends BaseObject implements Iterator, Countable
         if ($this->_count <= 0) {
             return [];
         }
-        
+
         $token = 'Get entries with limit pagination ' . $this->_conn->pageSize;
         Yii::beginProfile($token, __METHOD__);
         if($this->_conn->offset > 0){
             $this->setEntries($this->_results[intval($this->_conn->offset/$this->_conn->pageSize)]);
         } else {
             if(is_array($this->_results)){
-                foreach ($this->_results as $result) {                
+                foreach ($this->_results as $result) {
                     $this->setEntries($result);
                 }
             } else {
@@ -138,7 +140,7 @@ class DataReader extends BaseObject implements Iterator, Countable
             }
         }
         Yii::endProfile($token, __METHOD__);
-        
+
         $token = 'Get Attributes of entries with limit pagination in ' . $this->_conn->pageSize;
         Yii::beginProfile($token, __METHOD__);
         $data = [];
@@ -164,11 +166,11 @@ class DataReader extends BaseObject implements Iterator, Countable
         } else {
             $this->_conn->freeResult($this->_results);
         }
-        
+
         $this->_closed = true;
         $this->_results = null;
         $this->_row = null;
-        
+
     }
 
     /**
@@ -226,7 +228,7 @@ class DataReader extends BaseObject implements Iterator, Countable
     {
         $entry = ['dn' => $this->key()];
         $teste = $this->key();
-        
+
         $info = $this->_conn->getCacheInfo(3600, new TagDependency(['tags' => self::CACHE_TAG]));
         if (is_array($info)) {
             /* @var $cache Cache */
@@ -238,9 +240,9 @@ class DataReader extends BaseObject implements Iterator, Countable
                 return $result[0];
             }
         }
-        
-        $name = $this->_conn->getFirstAttribute($this->_row);    
-        
+
+        $name = $this->_conn->getFirstAttribute($this->_row);
+
         while ($name) {
             $data = $this->_conn->getValuesLen($this->_row, $name);
 
@@ -257,14 +259,14 @@ class DataReader extends BaseObject implements Iterator, Countable
 
             $name = $this->_conn->getNextAttribute($this->_row);
         }
-        
+
         ksort($entry, SORT_LOCALE_STRING);
-        
+
         if (isset($cache, $cacheKey, $info)) {
             $cache->set($cacheKey, [$entry], $info[1], $info[2]);
             Yii::trace('Saved query result in cache', __METHOD__);
         }
-        
+
         return $entry;
     }
 
