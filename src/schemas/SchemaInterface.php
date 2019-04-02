@@ -12,8 +12,8 @@ namespace chrmorandi\ldap\schemas;
  *
  * @since 1.0.0
  */
-interface SchemaInterface {
-    
+interface SchemaInterface
+{
     /**
      * Get Array Attributes
      * @return array of attributes

@@ -15,5 +15,5 @@ namespace chrmorandi\ldap\schemas;
  */
 class ADGroup implements SchemaInterface
 {
-    use SchemaTrait;    
+    use SchemaTrait;
 }

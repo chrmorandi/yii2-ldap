@@ -14,6 +14,5 @@ namespace chrmorandi\ldap\schemas;
  */
 class OpenLDAPUserTrait implements SchemaInterface
 {
-    use SchemaTrait;   
-    
+    use SchemaTrait;
 }

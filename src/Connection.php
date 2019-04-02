@@ -133,7 +133,11 @@ class Connection extends Component
      */
     protected $userDN;
 
-    # Create AD password (Microsoft Active Directory password format)
+    /**
+     * Create AD password (Microsoft Active Directory password format)
+     * @param string $password
+     * @return string
+     */
     protected static function encodePassword($password)
     {
         $password   = "\"" . $password . "\"";

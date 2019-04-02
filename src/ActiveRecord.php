@@ -240,7 +240,7 @@ class ActiveRecord extends BaseActiveRecord
      * Customer::updateAll(['status' => 1], 'status = 2');
      * ```
      *
-     * @param array $attributes attribute values (name-value pairs) to be saved into the table
+     * @param string[] $attributes attribute values (name-value pairs) to be saved into the table
      * @param string|array $condition the conditions that will be put in the WHERE part of the UPDATE SQL.
      * Please refer to [[Query::where()]] on how to specify this parameter.
      * @return integer the number of rows updated

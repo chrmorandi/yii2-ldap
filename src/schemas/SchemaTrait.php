@@ -15,8 +15,8 @@ use ReflectionProperty;
  *
  * @since 1.0.0
  */
-trait SchemaTrait {
-    
+trait SchemaTrait
+{
     /**
      * The LDAP API references an LDAP object by its distinguished name (DN).
      * A DN is a sequence of relative distinguished names (RDN) connected by commas.
@@ -25,19 +25,21 @@ trait SchemaTrait {
      * @var  string
      */
     public $dn;
-    
-     /**
+
+    /**
      * Returns the list of attribute names.
      * By default, this method returns all public properties of the class.
      * @return array list of attribute names.
      */
-    public function getAttributes() {
+    public function getAttributes()
+    {
         $class = new ReflectionClass(self::class);
         $names = [];
         foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             $names[] = $property->getName();
         }
-        
+
         return $names;
     }
+
 }
