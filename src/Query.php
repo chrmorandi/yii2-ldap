@@ -131,8 +131,6 @@ class Query extends Component implements QueryInterface
             }
         }
 
-
-
         return $this->populate($this->dataReader->toArray());
     }
 

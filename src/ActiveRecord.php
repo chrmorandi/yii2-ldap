@@ -175,7 +175,7 @@ class ActiveRecord extends BaseActiveRecord
 
     /**
      * @see update()
-     * @param array $attributes attributes to update
+     * @param string[]|null $attributes the names of the attributes to update.
      * @return integer number of rows updated
      */
     protected function updateInternal($attributes = null)

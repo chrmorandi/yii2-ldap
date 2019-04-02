@@ -106,7 +106,7 @@ class Connection extends Component
     public $cacheDuration = 3600;
 
     /**
-     * @var Cache|string the cache object or the ID of the cache application component that
+     * @var string the cache the ID of the cache application component that
      * is used to cache result query.
      * @see enableCache
      */
@@ -156,10 +156,8 @@ class Connection extends Component
         }
 
         if ($duration === 0 || $duration > 0) {
-            if (is_string($this->cache) && Yii::$app) {
+            if (Yii::$app) {
                 $cache = Yii::$app->get($this->cache, false);
-            } else {
-                $cache = $this->cache;
             }
             if ($cache instanceof Cache) {
                 return [$cache, $duration, $dependency];
