@@ -10,7 +10,6 @@ namespace chrmorandi\ldap;
 
 use chrmorandi\ldap\ActiveQuery;
 use chrmorandi\ldap\Connection;
-use Exception;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\db\BaseActiveRecord;
@@ -69,6 +68,8 @@ class ActiveRecord extends BaseActiveRecord
      * Returns the primary key name(s) for this AR class.
      * This method should be overridden by child classes to define the primary key.
      *
+     * Note that an array should be returned.
+     *
      * @return string[] the primary keys of this record.
      */
     public static function primaryKey()
@@ -87,7 +88,7 @@ class ActiveRecord extends BaseActiveRecord
     }
 
     /**
-     * Inserts a row into the associated database table using the attribute values of this record.
+     * Inserts a record in the ldap using the attribute values.
      *
      * This method performs the following steps in order:
      *
@@ -97,7 +98,7 @@ class ActiveRecord extends BaseActiveRecord
      *    failed, the rest of the steps will be skipped;
      * 3. call [[beforeSave()]]. If [[beforeSave()]] returns `false`,
      *    the rest of the steps will be skipped;
-     * 4. insert the record into database. If this fails, it will skip the rest of the steps;
+     * 4. insert the record into LDAP. If this fails, it will skip the rest of the steps;
      * 5. call [[afterSave()]];
      *
      * In the above step 1, 2, 3 and 5, events [[EVENT_BEFORE_VALIDATE]],
@@ -120,9 +121,9 @@ class ActiveRecord extends BaseActiveRecord
      *
      * @param bool $runValidation whether to perform validation (calling [[validate()]])
      * before saving the record. Defaults to `true`. If the validation fails, the record
-     * will not be saved to the database and this method will return `false`.
-     * @param string[]|null $attributes    list of attributes that need to be saved.
-     * Defaults to null, meaning all attributes that are loaded from DB will be saved. meaning all attributes that are loaded from DB will be saved.
+     * will not be saved to the LDAP and this method will return `false`.
+     * @param string[]|null $attributes list of attributes that need to be saved.
+     * Defaults to null, meaning all attributes that are loaded from LDAP will be saved.
      * meaning all attributes that are loaded from DB will be saved.
      * @return bool whether the attributes are valid and the record is inserted successfully.
      */
@@ -152,6 +153,7 @@ class ActiveRecord extends BaseActiveRecord
         $primaryKey = static::primaryKey();
         $values     = $this->getDirtyAttributes($attributes);
         $dn         = $values[$primaryKey[0]];
+        //$dn         = $this->getPrimaryKey();
         unset($values[$primaryKey[0]]);
 
         static::getDb()->open();
@@ -175,7 +177,6 @@ class ActiveRecord extends BaseActiveRecord
      * @see update()
      * @param array $attributes attributes to update
      * @return integer number of rows updated
-     * @throws StaleObjectException
      */
     protected function updateInternal($attributes = null)
     {
