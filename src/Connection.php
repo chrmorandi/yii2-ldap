@@ -155,10 +155,8 @@ class Connection extends Component
             return null;
         }
 
-        if ($duration === 0 || $duration > 0) {
-            if (Yii::$app) {
-                $cache = Yii::$app->get($this->cache, false);
-            }
+        if (($duration === 0 || $duration > 0) && Yii::$app) {
+            $cache = Yii::$app->get($this->cache, false);
             if ($cache instanceof Cache) {
                 return [$cache, $duration, $dependency];
             }
