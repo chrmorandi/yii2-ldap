@@ -319,7 +319,7 @@ class Connection extends Component
     /**
      * Execute ldap search like.
      *
-     * http://php.net/manual/en/ref.ldap.php
+     * @link http://php.net/manual/en/ref.ldap.php
      *
      * @param  string $function php LDAP function
      * @param  array $params params for execute ldap function
@@ -440,7 +440,6 @@ class Connection extends Component
      */
     public function modify($dn, array $values)
     {
-        $this->clearCache(DataReader::CACHE_TAG);
         return ldap_modify_batch($this->resource, $dn, $values);
     }
 
@@ -517,6 +516,9 @@ class Connection extends Component
     /**
      * Retrieves all binary values from a result entry. Individual values are accessed by integer index in the array.
      * The first index is 0. The number of values can be found by indexing "count" in the resultant array.
+     *
+     * @link https://www.php.net/manual/en/function.ldap-get-values-len.php
+     *
      * @param resource $entry Link identifier
      * @param string $attribute Name of attribute
      * @return array Returns an array of values for the attribute on success and empty array on error.
@@ -529,6 +531,9 @@ class Connection extends Component
 
     /**
      * Retrieves the DN of a result entry.
+     *
+     * @link https://www.php.net/manual/en/function.ldap-get-dn.php
+     *
      * @param resource $entry
      * @return string
      */
@@ -539,8 +544,11 @@ class Connection extends Component
 
     /**
      * Free result memory.
+     *
+     * @link https://www.php.net/manual/en/function.ldap-free-result.php
+     *
      * @param resource $searchResult
-     * @return bool
+     * @return bool Returns TRUE on success or FALSE on failure.
      */
     public function freeResult($searchResult)
     {
@@ -549,9 +557,12 @@ class Connection extends Component
 
     /**
      * Sets an option on the current connection.
-     * @param int   $option
-     * @param mixed $value
-     * @return boolean
+     *
+     * @link https://www.php.net/manual/en/function.ldap-set-option.php
+     *
+     * @param int   $option The parameter.
+     * @param mixed $value The new value for the specified option.
+     * @return bool Returns TRUE on success or FALSE on failure.
      */
     public function setOption($option, $value)
     {
@@ -560,6 +571,9 @@ class Connection extends Component
 
     /**
      * Starts a connection using TLS.
+     *
+     * @link https://www.php.net/manual/en/function.ldap-start-tls.php
+     *
      * @return bool
      */
     public function startTLS()
@@ -569,21 +583,26 @@ class Connection extends Component
 
     /**
      * Send LDAP pagination control.
-     * @param int    $pageSize
-     * @param bool   $isCritical
-     * @param string $cookie
-     * @return bool
+     *
+     * @link http://php.net/manual/en/function.ldap-control-paged-result.php
+     *
+     * @param string $cookie An opaque structure sent by the server
+     * @param bool   $isCritical Indicates whether the pagination is critical or not. If true and if the server doesn't support pagination, the search will return no result.
+     * @return bool Returns TRUE on success or FALSE on failure.
      */
-    public function setControlPagedResult($cookie)
+    public function setControlPagedResult($cookie = '', $isCritical = false)
     {
-        return ldap_control_paged_result($this->resource, $this->pageSize, false, $cookie);
+        return ldap_control_paged_result($this->resource, $this->pageSize, $isCritical, $cookie);
     }
 
     /**
      * Retrieve a paginated result response.
+     *
+     * @link https://www.php.net/manual/en/function.ldap-control-paged-result-response.php
+     *
      * @param resource $result
-     * @param string $cookie
-     * @return bool
+     * @param string $cookie An opaque structure sent by the server
+     * @return bool Returns TRUE on success or FALSE on failure.
      */
     public function setControlPagedResultResponse($result, &$cookie)
     {
@@ -591,8 +610,11 @@ class Connection extends Component
     }
 
     /**
-     * Retrieve the last error on the current connection.
-     * @return string
+     * Return the LDAP error message of the last LDAP command.
+     *
+     * @link https://www.php.net/manual/en/function.ldap-error.php
+     *
+     * @return string Error message.
      */
     public function getLastError()
     {
@@ -601,7 +623,10 @@ class Connection extends Component
 
     /**
      * Returns the number of the last error on the current connection.
-     * @return int
+     *
+     * @link https://www.php.net/manual/en/function.ldap-errno.php
+     *
+     * @return int Error number
      */
     public function getErrNo()
     {
@@ -610,8 +635,11 @@ class Connection extends Component
 
     /**
      * Returns the error string of the specified error number.
-     * @param int $number
-     * @return string
+     *
+     * @link https://www.php.net/manual/en/function.ldap-err2str.php
+     *
+     * @param int $number The error number.
+     * @return string  Error message.
      */
     public function err2Str($number)
     {
