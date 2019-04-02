@@ -35,14 +35,14 @@ class FilterBuilder extends BaseObject
      * These methods are used by [[buildCondition]] to build SQL conditions from array syntax.
      */
     protected $conditionBuilders = [
-        'NOT' => 'buildNotCondition',
-        'AND' => 'buildAndCondition',
-        'OR' => 'buildAndCondition',
-        'IN' => 'buildInCondition',
-        'NOT IN' => 'buildInCondition',
-        'LIKE' => 'buildLikeCondition',
-        'NOT LIKE' => 'buildLikeCondition',
-        'OR LIKE' => 'buildLikeCondition',
+        'NOT'         => 'buildNotCondition',
+        'AND'         => 'buildAndCondition',
+        'OR'          => 'buildAndCondition',
+        'IN'          => 'buildInCondition',
+        'NOT IN'      => 'buildInCondition',
+        'LIKE'        => 'buildLikeCondition',
+        'NOT LIKE'    => 'buildLikeCondition',
+        'OR LIKE'     => 'buildLikeCondition',
         'OR NOT LIKE' => 'buildLikeCondition',
     ];
 
@@ -50,9 +50,9 @@ class FilterBuilder extends BaseObject
      * @var array map of operator for builder methods.
      */
     protected $operator = [
-        'NOT' => '!',
-        'AND' => '&',
-        'OR' => '|',
+        'NOT'  => '!',
+        'AND'  => '&',
+        'OR'   => '|',
         'LIKE' => '~=',
     ];
 
@@ -100,13 +100,13 @@ class FilterBuilder extends BaseObject
                 if ($value === null) {
                     $parts[] = "$column IS NULL";
                 } else if ($column === 'dn') {
-                    $parts[] = LdapUtils::getRdnFromDn($value);
+                    $parts[] = LdapHelper::getRdnFromDn($value);
                 } else {
                     $parts[] = "$column=$value";
                 }
             }
         }
-        return count($parts) === 1 ? '('.$parts[0].')' : '$('.implode(') (', $parts).')';
+        return count($parts) === 1 ? '(' . $parts[0] . ')' : '$(' . implode(') (', $parts) . ')';
     }
 
     /**
@@ -124,16 +124,16 @@ class FilterBuilder extends BaseObject
                 $operand = $this->build($operand);
             }
             if ($operand !== '' && !is_numeric($key)) {
-                $parts[] = $key.'='.$operand;
+                $parts[] = $key . '=' . $operand;
             } elseif ($operand !== '') {
                 $other[] = $operand;
             }
         }
         if (!empty($parts)) {
-            return '('.$this->operator[$operator].'('.implode(") (", $parts).')'.implode($other).')';
+            return '(' . $this->operator[$operator] . '(' . implode(") (", $parts) . ')' . implode($other) . ')';
         } else if (!empty($other)) {
-            return '('.$this->operator[$operator].implode($other).')';
-        }else {
+            return '(' . $this->operator[$operator] . implode($other) . ')';
+        } else {
             return '';
         }
     }
@@ -160,7 +160,7 @@ class FilterBuilder extends BaseObject
             return '';
         }
 
-        return '('.$this->operator['NOT'].'('.key($operands).'='.$operand.'))';
+        return '(' . $this->operator['NOT'] . '(' . key($operands) . '=' . $operand . '))';
     }
 
     /**
@@ -214,10 +214,10 @@ class FilterBuilder extends BaseObject
         }
 
         if (count($sqlValues) > 1) {
-            return "&($column=".implode(")($column=", $sqlValues).')';
+            return "&($column=" . implode(")($column=", $sqlValues) . ')';
         } else {
             $operator = $operator === 'IN' ? '=' : '<>';
-            return $column.$operator.reset($sqlValues);
+            return $column . $operator . reset($sqlValues);
         }
     }
 
@@ -246,7 +246,7 @@ class FilterBuilder extends BaseObject
             return $operator === 'IN' ? '0=1' : '';
         }
 
-        return '(&'.implode('', $vss).')';
+        return '(&' . implode('', $vss) . ')';
     }
 
     /**
@@ -280,8 +280,8 @@ class FilterBuilder extends BaseObject
         if (!preg_match('/^(AND |OR |)(((NOT |))I?LIKE)/', $operator, $matches)) {
             throw new InvalidParamException("Invalid operator '$operator'.");
         }
-        $andor = (!empty($matches[1]) ? $matches[1] : 'AND ');
-        $not = !empty($matches[3]);
+        $andor    = (!empty($matches[1]) ? $matches[1] : 'AND ');
+        $not      = !empty($matches[3]);
         $operator = $matches[2];
 
         list($column, $values) = $operands;
@@ -294,15 +294,15 @@ class FilterBuilder extends BaseObject
             return $not ? '' : '0=1';
         }
 
-        $not = ($operator == 'NOT LIKE') ? '('.$this->operator['NOT'] : false;
+        $not = ($operator == 'NOT LIKE') ? '(' . $this->operator['NOT'] : false;
 
         $parts = [];
         foreach ($values as $value) {
-            $value = empty($escape) ? $value : strtr($value, $escape);
-            $parts[] = $not.'('.$column.'=*'.$value.'*)'.($not ? ')' : '');
+            $value   = empty($escape) ? $value : strtr($value, $escape);
+            $parts[] = $not . '(' . $column . '=*' . $value . '*)' . ($not ? ')' : '');
         }
 
-        return '('.$this->operator[trim($andor)].implode($parts).')';
+        return '(' . $this->operator[trim($andor)] . implode($parts) . ')';
     }
 
     /**

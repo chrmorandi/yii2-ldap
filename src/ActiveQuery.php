@@ -77,7 +77,6 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     use ActiveQueryTrait;
     use ActiveRelationTrait;
-
     /**
      * @event Event an event that is triggered when the query is initialized via [[init()]].
      */
@@ -164,4 +163,5 @@ class ActiveQuery extends Query implements ActiveQueryInterface
             return null;
         }
     }
+
 }

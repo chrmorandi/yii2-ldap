@@ -9,13 +9,11 @@
 
 namespace chrmorandi\ldap;
 
-
 /**
  * Some common helper LDAP functions.
  */
-class LdapUtils
+class LdapHelper
 {
-
     /**
      * Converts a string distinguished name into its separate pieces.
      *
@@ -48,7 +46,7 @@ class LdapUtils
             if (count($values) === 1) {
                 throw new InvalidArgumentException(sprintf('Unable to parse DN piece "%s".', $values[0]));
             }
-            $dn[$index] = $values[0].'='.$values[1];
+            $dn[$index] = $values[0] . '=' . $values[1];
         }
 
         return implode(',', $dn);
@@ -65,7 +63,7 @@ class LdapUtils
         $rdn = self::explodeDn($dn, 0)[0];
         $rdn = explode('=', $rdn, 2);
 
-        return $rdn[0].'='.$rdn[1];
+        return $rdn[0] . '=' . $rdn[1];
     }
 
     /**
@@ -82,22 +80,21 @@ class LdapUtils
      */
     public static function recursive_implode(array $array, $glue = ',', $include_keys = false, $trim_all = true)
     {
-            $glued_string = '';
+        $glued_string = '';
 
-            // Recursively iterates array and adds key/value to glued string
-            array_walk_recursive($array, function($value, $key) use ($glue, $include_keys, &$glued_string)
-            {
-                    $include_keys and $glued_string .= $key.$glue;
-                    $glued_string .= $value.$glue;
-            });
+        // Recursively iterates array and adds key/value to glued string
+        array_walk_recursive($array, function($value, $key) use ($glue, $include_keys, &$glued_string) {
+            $include_keys and $glued_string .= $key . $glue;
+            $glued_string .= $value . $glue;
+        });
 
-            // Removes last $glue from string
-            strlen($glue) > 0 and $glued_string = substr($glued_string, 0, -strlen($glue));
+        // Removes last $glue from string
+        strlen($glue) > 0 and $glued_string = substr($glued_string, 0, -strlen($glue));
 
-            // Trim ALL whitespace
-            $trim_all and $glued_string = preg_replace("/(\s)/ixsm", '', $glued_string);
+        // Trim ALL whitespace
+        $trim_all and $glued_string = preg_replace("/(\s)/ixsm", '', $glued_string);
 
-            return (string) $glued_string;
+        return (string) $glued_string;
     }
 
 }

@@ -40,8 +40,8 @@ use yii\db\QueryTrait;
  */
 class Query extends Component implements QueryInterface
 {
-    use QueryTrait;
 
+    use QueryTrait;
     const SEARCH_SCOPE_SUB  = 'ldap_search';
     const SEARCH_SCOPE_ONE  = 'ldap_list';
     const SEARCH_SCOPE_BASE = 'ldap_read';
@@ -73,7 +73,6 @@ class Query extends Component implements QueryInterface
      * @var string|null
      */
     protected $dn;
-
     protected $dataReader;
 
     /**
@@ -96,10 +95,10 @@ class Query extends Component implements QueryInterface
 
         $select = (is_array($this->select)) ? $this->select : [];
 
-        if(ctype_digit((string) $this->limit)){
+        if (ctype_digit((string) $this->limit)) {
             $db->pageSize = $this->limit;
         }
-        if(ctype_digit((string) $this->offset)){
+        if (ctype_digit((string) $this->offset)) {
             $db->offset = $this->offset == 0 ? 1 : $this->offset;
         }
 
@@ -116,7 +115,7 @@ class Query extends Component implements QueryInterface
      */
     public function all($db = null)
     {
-        if(!($this->dataReader instanceof DataReader)) {
+        if (!($this->dataReader instanceof DataReader)) {
             /** @var $result DataReader */
             $this->dataReader = $this->execute($db);
         } else {
@@ -124,10 +123,10 @@ class Query extends Component implements QueryInterface
                 $db = Yii::$app->get('ldap');
             }
 
-            if(ctype_digit((string) $this->limit)){
+            if (ctype_digit((string) $this->limit)) {
                 $db->pageSize = $this->limit;
             }
-            if(ctype_digit((string) $this->offset)){
+            if (ctype_digit((string) $this->offset)) {
                 $db->offset = $this->offset == 0 ? 1 : $this->offset;
             }
         }
@@ -171,7 +170,7 @@ class Query extends Component implements QueryInterface
     public function one($db = null)
     {
         $this->limit = 1;
-        $result = $this->execute($db);
+        $result      = $this->execute($db);
         return $result->toArray();
     }
 
@@ -184,11 +183,10 @@ class Query extends Component implements QueryInterface
      */
     public function count($q = null, $db = NULL)
     {
-        $this->limit = 20;
+        $this->limit      = 20;
         $this->dataReader = $this->execute($db);
         return $this->dataReader->count();
     }
-
 
     /**
      * Returns a value indicating whether the query result contains any row of data.
@@ -276,7 +274,7 @@ class Query extends Component implements QueryInterface
     {
         if (preg_match("/^(~=|>=|>|<=|<|=)/", $value, $matches)) {
             $operator = $matches[1];
-            $value = substr($value, strlen($operator));
+            $value    = substr($value, strlen($operator));
         } else {
             $operator = $defaultOperator;
         }
@@ -292,12 +290,12 @@ class Query extends Component implements QueryInterface
     public static function create(Query $from)
     {
         return new self([
-            'where' => $from->where,
-            'limit' => $from->limit,
-            'offset' => $from->offset,
+            'where'   => $from->where,
+            'limit'   => $from->limit,
+            'offset'  => $from->offset,
             'orderBy' => $from->orderBy,
             'indexBy' => $from->indexBy,
-            'select' => $from->select,
+            'select'  => $from->select,
         ]);
     }
 

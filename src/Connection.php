@@ -134,8 +134,9 @@ class Connection extends Component
     protected $userDN;
 
     # Create AD password (Microsoft Active Directory password format)
-    protected static function encodePassword($password) {
-        $password = "\"" . $password . "\"";
+    protected static function encodePassword($password)
+    {
+        $password   = "\"" . $password . "\"";
         $adpassword = mb_convert_encoding($password, "UTF-16LE", "UTF-8");
         return $adpassword;
     }
@@ -184,7 +185,7 @@ class Connection extends Component
      */
     public function open($anonymous = false)
     {
-        $token = 'Opening LDAP connection: ' . LdapUtils::recursive_implode($this->dc, ' or ');
+        $token = 'Opening LDAP connection: ' . LdapHelper::recursive_implode($this->dc, ' or ');
         Yii::info($token, __METHOD__);
         Yii::beginProfile($token, __METHOD__);
         // Connect to the LDAP server.
@@ -211,7 +212,7 @@ class Connection extends Component
     protected function connect($hostname = [], $port = '389')
     {
         if (is_array($hostname)) {
-            $hostname = self::PROTOCOL.implode(' '.self::PROTOCOL, $hostname);
+            $hostname = self::PROTOCOL . implode(' ' . self::PROTOCOL, $hostname);
         }
 
         $this->close();
@@ -242,8 +243,8 @@ class Connection extends Component
 
         # Search for user and get user DN
         $searchResult = ldap_search($this->resource, $this->baseDn, "(&(objectClass=person)($this->loginAttribute=$username))", [$this->loginAttribute]);
-        $entry = $this->getFirstEntry($searchResult);
-        if($entry) {
+        $entry        = $this->getFirstEntry($searchResult);
+        if ($entry) {
             $this->userDN = $this->getDn($entry);
         } else {
             // User not found.
@@ -273,7 +274,7 @@ class Connection extends Component
         }
 
         // Open connection with user
-        if(!$this->auth($username, $oldPassword)){
+        if (!$this->auth($username, $oldPassword)) {
             return false;
         }
 
@@ -329,21 +330,21 @@ class Connection extends Component
     {
         $this->open();
         $results = [];
-        $cookie = '';
-        $token = $function . ' - params: ' . LdapUtils::recursive_implode($params, ';');
+        $cookie  = '';
+        $token   = $function . ' - params: ' . LdapHelper::recursive_implode($params, ';');
 
-        Yii::info($token , 'chrmorandi\ldap\Connection::query');
+        Yii::info($token, 'chrmorandi\ldap\Connection::query');
 
         Yii::beginProfile($token, 'chrmorandi\ldap\Connection::query');
         do {
-            if($this->pageSize > 0) {
+            if ($this->pageSize > 0) {
                 $this->setControlPagedResult($cookie);
             }
 
             // Run the search.
             $result = call_user_func($function, $this->resource, ...$params);
 
-            if($this->pageSize > 0) {
+            if ($this->pageSize > 0) {
                 $this->setControlPagedResultResponse($result, $cookie);
             }
 
@@ -645,4 +646,5 @@ class Connection extends Component
     {
         return ldap_err2str($number);
     }
+
 }
