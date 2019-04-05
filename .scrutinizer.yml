@@ -1,19 +1,11 @@
-imports:
-    - php
-
-checks:
-    php:
-        code_rating: true
-        duplication: true
+build:
+  nodes:
+    analysis:
+      tests:
+        override:
+          - php-scrutinizer-run
 
 filter:
-    excluded_paths:
-        - tests/*
-
-tools:
-    #external_code_coverage:
-    #    timeout: 2100 # Timeout in seconds.
-    # disable copy paste detector and similarity analyzer as they have no real value
-    # and a huge bunch of false-positives
-    php_sim: false
-    php_cpd: false
+  excluded_paths:
+    - tests/*
+    - src/schemas/*

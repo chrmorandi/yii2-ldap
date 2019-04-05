@@ -56,7 +56,7 @@ class LdapHelper
      * Given a full escaped DN return the RDN in escaped form.
      *
      * @param string $dn
-     * @return string
+     * @return string Return string like "attribute = value"
      */
     public static function getRdnFromDn($dn)
     {

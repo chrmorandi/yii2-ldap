@@ -35,7 +35,7 @@ class FilterBuilder extends BaseObject
      * These methods are used by [[buildCondition]] to build SQL conditions from array syntax.
      */
     protected $conditionBuilders = [
-        'NOT'         => 'buildNotCondition',
+        'NOT'         => 'buildAndCondition',
         'AND'         => 'buildAndCondition',
         'OR'          => 'buildAndCondition',
         'IN'          => 'buildInCondition',
@@ -53,7 +53,6 @@ class FilterBuilder extends BaseObject
         'NOT'  => '!',
         'AND'  => '&',
         'OR'   => '|',
-        'LIKE' => '~=',
     ];
 
     /**
@@ -92,75 +91,39 @@ class FilterBuilder extends BaseObject
     public function buildHashCondition($condition)
     {
         $parts = [];
-        foreach ($condition as $column => $value) {
-            if (ArrayHelper::isTraversable($value) || $value instanceof Query) {
+        foreach ($condition as $attribute => $value) {
+            if (ArrayHelper::isTraversable($value)) {
                 // IN condition
-                $parts[] = $this->buildInCondition('IN', [$column, $value]);
+                $parts[] = $this->buildInCondition('IN', [$attribute, $value]);
+            } elseif ($value === null) {
+                $parts[] = "!$attribute=*";
+            } elseif ($attribute === 'dn') {
+                $parts[] = LdapHelper::getRdnFromDn($value);
             } else {
-                if ($value === null) {
-                    $parts[] = "$column IS NULL";
-                } else if ($column === 'dn') {
-                    $parts[] = LdapHelper::getRdnFromDn($value);
-                } else {
-                    $parts[] = "$column=$value";
-                }
+                $parts[] = "$attribute=$value";
             }
         }
-        return count($parts) === 1 ? '(' . $parts[0] . ')' : '$(' . implode(') (', $parts) . ')';
+        return count($parts) === 1 ? '(' . $parts[0] . ')' : '&(' . implode(') (', $parts) . ')';
     }
 
     /**
-     * Connects two or more Filters expressions with the `AND`(&) or `OR`(|) operator.
-     * @param string $operator the operator to use for connecting the given operands
-     * @param array $operands the Filter expressions to connect.
-     * @return string the generated
+     * Connects two or more filters expressions with the `AND`(&) or `OR`(|) operator.
+     * @param string $operator The operator to use for connecting the given operands
+     * @param array $operands The filter expressions to connect.
+     * @return string The generated filter
      */
     public function buildAndCondition($operator, $operands)
     {
         $parts = [];
-        $other = [];
-        foreach ($operands as $key => $operand) {
+        foreach ($operands as $operand) {
             if (is_array($operand)) {
-                $operand = $this->build($operand);
-            }
-            if ($operand !== '' && !is_numeric($key)) {
-                $parts[] = $key . '=' . $operand;
+                $parts[] = $this->build($operand);
             } elseif ($operand !== '') {
-                $other[] = $operand;
+                $parts[] = $operand;
             }
         }
-        if (!empty($parts)) {
-            return '(' . $this->operator[$operator] . '(' . implode(") (", $parts) . ')' . implode($other) . ')';
-        } else if (!empty($other)) {
-            return '(' . $this->operator[$operator] . implode($other) . ')';
-        } else {
-            return '';
-        }
-    }
 
-    /**
-     * Returns a query string for does not equal.
-     * Produces: (!(field=value))
-     * @param string $operator the operator to use for connecting the given operands
-     * @param array $operands the filter expressions to connect.
-     * @return string the generated filter expression
-     * @throws InvalidParamException if wrong number of operands have been given.
-     */
-    public function buildNotCondition($operator, $operands)
-    {
-        if (count($operands) !== 1) {
-            throw new InvalidParamException("Operator '$operator' requires exactly one operand.");
-        }
-
-        $operand = reset($operands);
-        if (is_array($operand)) {
-            $operand = $this->build($operand);
-        }
-        if ($operand === '') {
-            return '';
-        }
-
-        return '(' . $this->operator['NOT'] . '(' . key($operands) . '=' . $operand . '))';
+        return empty($parts) ? '' : '(' . $this->operator[$operator] . '(' . implode(') (', $parts) . '))';
     }
 
     /**
@@ -177,76 +140,33 @@ class FilterBuilder extends BaseObject
     public function buildInCondition($operator, $operands)
     {
         if (!isset($operands[0], $operands[1])) {
-            throw new Exception("Operator '$operator' requires two operands.");
+            throw new InvalidParamException("Operator '$operator' requires two operands.");
         }
 
-        list($column, $values) = $operands;
+        list($attribute, $values) = $operands;
 
-        if ($column === []) {
-            return $operator === 'IN' ? '0=1' : '';
+        if (is_string($attribute) || !is_array($values)) {
+            throw new InvalidParamException('First operand must to be string and secund operand must to be array.');
         }
 
-        if (!is_array($values) && !$values instanceof \Traversable) {
-            // ensure values is an array
-            $values = (array) $values;
-        }
-
-        if ($column instanceof \Traversable || (is_array($column) && count($column) > 1)) {
-            return $this->buildCompositeInCondition($operator, $column, $values);
-        } elseif (is_array($column)) {
-            $column = reset($column);
-        }
-
-        $sqlValues = [];
-        foreach ($values as $i => $value) {
-            if (is_array($value) || $value instanceof \ArrayAccess) {
-                $value = isset($value[$column]) ? $value[$column] : null;
+        $parts = [];
+        foreach ($values as $value) {
+            if (is_array($value)) {
+                $value = isset($value[$attribute]) ? $value[$attribute] : null;
             }
             if ($value === null) {
-                $sqlValues[$i] = 'NULL';
+                $parts[] = "!$attribute=*";
             } else {
-                $sqlValues[$i] = $value;
+                $parts[] = "$attribute=$value";
             }
         }
 
-        if (empty($sqlValues)) {
-            return $operator === 'IN' ? '0=1' : '';
+        if (empty($parts)) {
+            return '';
+        } elseif ($operator === 'NOT IN') {
+            return '!(' . implode(') (', $parts) . ')';
         }
-
-        if (count($sqlValues) > 1) {
-            return "&($column=" . implode(")($column=", $sqlValues) . ')';
-        } else {
-            $operator = $operator === 'IN' ? '=' : '<>';
-            return $column . $operator . reset($sqlValues);
-        }
-    }
-
-    /**
-     * Builds SQL for IN condition
-     *
-     * @param string $operator
-     * @param array|Traversable $columns
-     * @param array|Traversable $values
-     * @return string SQL
-     */
-    protected function buildCompositeInCondition($operator, $columns, $values)
-    {
-        $vss = [];
-        foreach ($values as $value) {
-            $vs = [];
-            foreach ($columns as $column) {
-                if (isset($value[$column])) {
-                    $vs[] = "($column=$value[$column])";
-                }
-            }
-            $vss[] = implode('', $vs);
-        }
-
-        if (empty($vss)) {
-            return $operator === 'IN' ? '0=1' : '';
-        }
-
-        return '(&' . implode('', $vss) . ')';
+        return count($parts) === 1 ? '(' . $parts[0] . ')' : '|(' . implode(') (', $parts) . ')';
     }
 
     /**
@@ -277,21 +197,21 @@ class FilterBuilder extends BaseObject
         $escape = isset($operands[2]) ? $operands[2] : ['*' => '\*', '_' => '\_', '\\' => '\\\\'];
         unset($operands[2]);
 
-        if (!preg_match('/^(AND |OR |)(((NOT |))I?LIKE)/', $operator, $matches)) {
+        if (!preg_match('/^(OR|)(((NOT|))LIKE)/', $operator, $matches)) {
             throw new InvalidParamException("Invalid operator '$operator'.");
         }
-        $andor    = (!empty($matches[1]) ? $matches[1] : 'AND ');
+        $andor    = (!empty($matches[1]) ? $matches[1] : 'AND');
         $not      = !empty($matches[3]);
         $operator = $matches[2];
 
-        list($column, $values) = $operands;
+        list($attribute, $values) = $operands;
 
         if (!is_array($values)) {
             $values = [$values];
         }
 
         if (empty($values)) {
-            return $not ? '' : '0=1';
+            return '';
         }
 
         $not = ($operator == 'NOT LIKE') ? '(' . $this->operator['NOT'] : false;
@@ -299,17 +219,17 @@ class FilterBuilder extends BaseObject
         $parts = [];
         foreach ($values as $value) {
             $value   = empty($escape) ? $value : strtr($value, $escape);
-            $parts[] = $not . '(' . $column . '=*' . $value . '*)' . ($not ? ')' : '');
+            $parts[] = $not . '(' . $attribute . '=*' . $value . '*)' . ($not ? ')' : '');
         }
 
         return '(' . $this->operator[trim($andor)] . implode($parts) . ')';
     }
 
     /**
-     * Creates an SQL expressions like `"column" operator value`.
-     * @param string $operator the operator to use. Anything could be used e.g. `>`, `<=`, etc.
+     * Creates an LDAP filter expressions like `(attribute operator value)`.
+     * @param string $operator the operator to use. A valid list could be used e.g. `=`, `>=`, `<=`, `~<`.
      * @param array $operands contains two column names.
-     * @return string the generated SQL expression
+     * @return string the generated LDAP filter expression
      * @throws InvalidParamException if wrong number of operands have been given.
      */
     public function buildSimpleCondition($operator, $operands)
@@ -318,12 +238,12 @@ class FilterBuilder extends BaseObject
             throw new InvalidParamException("Operator '$operator' requires two operands.");
         }
 
-        list($column, $value) = $operands;
+        list($attribute, $value) = $operands;
 
         if ($value === null) {
-            return "$column $operator NULL";
+            return "(!$attribute = *)";
         } else {
-            return "($column $operator $value)";
+            return "($attribute $operator $value)";
         }
     }
 
