@@ -48,7 +48,7 @@ class ActiveRecord extends BaseActiveRecord
     /**
      * Returns the LDAP connection used by this AR class.
      *
-     * @return Connection the LDAP connection used by this AR class.
+     * @return Connection|null the LDAP connection used by this AR class.
      */
     public static function getDb()
     {

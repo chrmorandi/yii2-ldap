@@ -236,7 +236,7 @@ class DataReader extends BaseObject implements Iterator, Countable
             $cacheKey = [__CLASS__, $entry['dn']];
             $result   = $cache->get($cacheKey);
             if (is_array($result) && isset($result[0])) {
-                Yii::trace('Query result served from cache', __METHOD__);
+                Yii::debug('Query result served from cache', __METHOD__);
                 return $result[0];
             }
         }
@@ -260,7 +260,7 @@ class DataReader extends BaseObject implements Iterator, Countable
 
         if (isset($cache, $cacheKey, $info)) {
             $cache->set($cacheKey, [$entry], $info[1], $info[2]);
-            Yii::trace('Saved query result in cache', __METHOD__);
+            Yii::debug('Saved query result in cache', __METHOD__);
         }
 
         return $entry;
