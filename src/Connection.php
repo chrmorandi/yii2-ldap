@@ -150,7 +150,7 @@ class Connection extends Component
      * This method is used internally by [[Command]].
      * @param integer $duration the preferred caching duration. If null, it will be ignored.
      * @param \yii\caching\Dependency $dependency the preferred caching dependency. If null, it will be ignored.
-     * @return array the current query cache information, or null if query cache is not enabled.
+     * @return array|null the current query cache information, or null if query cache is not enabled.
      * @internal
      */
     public function getCacheInfo($duration = 3600, $dependency = null)

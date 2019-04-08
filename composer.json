@@ -12,19 +12,18 @@
     ],
     "require": {
         "php": ">=7.0",
-        "yiisoft/yii2": "*",
+        "yiisoft/yii2": "~2.0.14",
         "ext-ldap": "*"
     },
     "require-dev": {
         "codeception/codeception": "*",
-        "yiisoft/yii2-coding-standards": "*"
+        "yiisoft/yii2-coding-standards": "*",
+        "yiisoft/yii2-apidoc": "*"
     },
-    "extra": {
-        "asset-vcs-driver-options": {
-            "github-no-api": true
-        },
-        "asset-pattern-skip-version": "(-build|-patch)"
-    },
+    "repositories": [{
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+    }],
     "autoload": {
         "psr-4": {
             "chrmorandi\\ldap\\": "src"

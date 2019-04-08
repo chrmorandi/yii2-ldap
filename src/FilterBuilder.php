@@ -146,7 +146,6 @@ class FilterBuilder extends BaseObject
         }
 
         list($attribute, $values) = $operands;
-
         if (!is_array($values)) {
             $values = [$values];
         }
@@ -172,7 +171,7 @@ class FilterBuilder extends BaseObject
     }
 
     /**
-     * Creates an SQL expressions with the `LIKE` operator.
+     * Creates an LDAP filter expressions with the `LIKE` operator.
      * @param string $operator the operator to use (e.g. `LIKE`, `NOT LIKE`, `OR LIKE` or `OR NOT LIKE`)
      * @param array $operands an array of two or three operands
      *
@@ -187,7 +186,7 @@ class FilterBuilder extends BaseObject
      *   You may use `false` or an empty array to indicate the values are already escaped and no escape
      *   should be applied. Note that when using an escape mapping (or the third operand is not provided),
      *   the values will be automatically enclosed within a pair of percentage characters.
-     * @return string the generated SQL expression
+     * @return string the generated LDAP filter expression.
      * @throws InvalidParamException if wrong number of operands have been given.
      */
     public function buildLikeCondition($operator, $operands)
@@ -196,7 +195,6 @@ class FilterBuilder extends BaseObject
             throw new InvalidParamException("Operator '$operator' requires two operands.");
         }
 
-        $escape = isset($operands[2]) ? $operands[2] : ['*' => '\*', '_' => '\_', '\\' => '\\\\'];
         unset($operands[2]);
 
         if (!preg_match('/^(OR|)(((NOT|))LIKE)/', $operator, $matches)) {
@@ -204,34 +202,28 @@ class FilterBuilder extends BaseObject
         }
         $andor    = (!empty($matches[1]) ? $matches[1] : 'AND');
         $not      = !empty($matches[3]);
-        $operator = $matches[2];
 
         list($attribute, $values) = $operands;
-
         if (!is_array($values)) {
             $values = [$values];
         }
-
         if (empty($values)) {
             return '';
         }
 
-        $not = ($operator == 'NOT LIKE') ? '(' . $this->operator['NOT'] : false;
-
         $parts = [];
         foreach ($values as $value) {
-            $value   = empty($escape) ? $value : strtr($value, $escape);
-            $parts[] = $not . '(' . $attribute . '=*' . $value . '*)' . ($not ? ')' : '');
+            $parts[] = ($not ? '(!' : '') . '(' . $attribute . '=*' . $value . '*)' . ($not ? ')' : '');
         }
 
-        return '(' . $this->operator[trim($andor)] . implode($parts) . ')';
+        return '(' . $this->operator[$andor] . implode($parts) . ')';
     }
 
     /**
      * Creates an LDAP filter expressions like `(attribute operator value)`.
      * @param string $operator the operator to use. A valid list could be used e.g. `=`, `>=`, `<=`, `~<`.
      * @param array $operands contains two column names.
-     * @return string the generated LDAP filter expression
+     * @return string the generated LDAP filter expression.
      * @throws InvalidParamException if wrong number of operands have been given.
      */
     public function buildSimpleCondition($operator, $operands)
