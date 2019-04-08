@@ -10,7 +10,6 @@
 namespace chrmorandi\ldap;
 
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidArgumentException;
 
 /**
  * Some common helper LDAP functions.
@@ -81,7 +80,7 @@ class LdapHelper
      * @param   bool    $trim_all      trim ALL whitespace from string
      * @return  string  imploded array
      */
-    public static function recursive_implode(array $array, $glue = ',', $include_keys = false, $trim_all = true)
+    public static function recursiveImplode(array $array, $glue = ',', $include_keys = false, $trim_all = true)
     {
         $glued_string = '';
 

@@ -190,7 +190,7 @@ class Connection extends Component
      */
     public function open($anonymous = false)
     {
-        $token = 'Opening LDAP connection: ' . LdapHelper::recursive_implode($this->dc, ' or ');
+        $token = 'Opening LDAP connection: ' . LdapHelper::recursiveImplode($this->dc, ' or ');
         Yii::info($token, __METHOD__);
         Yii::beginProfile($token, __METHOD__);
         // Connect to the LDAP server.
@@ -336,7 +336,7 @@ class Connection extends Component
         $this->open();
         $results = [];
         $cookie  = '';
-        $token   = $function . ' - params: ' . LdapHelper::recursive_implode($params, ';');
+        $token   = $function . ' - params: ' . LdapHelper::recursiveImplode($params, ';');
 
         Yii::info($token, 'chrmorandi\ldap\Connection::query');
 
