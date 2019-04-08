@@ -12,6 +12,9 @@ namespace chrmorandi\ldap;
 use Yii;
 use yii\base\Component;
 use yii\caching\Cache;
+use yii\caching\CacheInterface;
+use yii\caching\Dependency;
+use yii\caching\TagDependency;
 
 /**
  * @property resource $resource
@@ -149,7 +152,7 @@ class Connection extends Component
      * Returns the current query cache information.
      * This method is used internally by [[Command]].
      * @param integer $duration the preferred caching duration. If null, it will be ignored.
-     * @param \yii\caching\Dependency $dependency the preferred caching dependency. If null, it will be ignored.
+     * @param Dependency $dependency the preferred caching dependency. If null, it will be ignored.
      * @return array|null the current query cache information, or null if query cache is not enabled.
      * @internal
      */
@@ -176,7 +179,9 @@ class Connection extends Component
     public function clearCache($tags)
     {
         $cache = Yii::$app->get($this->cache, false);
-        \yii\caching\TagDependency::invalidate($cache, $tags);
+        if ($cache instanceof CacheInterface) {
+            TagDependency::invalidate($cache, $tags);
+        }
     }
 
     /**
