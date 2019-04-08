@@ -53,7 +53,7 @@ class Connection extends Component
     public $followReferrals = false;
 
     /**
-     * @var string The LDAP port to use when connecting to the domain controllers.
+     * @var int The LDAP port to use when connecting to the domain controllers.
      */
     public $port = self::PORT;
 
@@ -456,7 +456,7 @@ class Connection extends Component
     /**
      * Retrieves the first entry from a search result.
      * @param resource $searchResult
-     * @return resource link identifier
+     * @return resource|false the result entry identifier for the first entry on success and FALSE on error.
      */
     public function getFirstEntry($searchResult)
     {
@@ -516,7 +516,7 @@ class Connection extends Component
     public function getValuesLen($entry, $attribute)
     {
         $result = ldap_get_values_len($this->resource, $entry, $attribute);
-        return is_array($result) ? $result : [];
+        return ($result == false) ? [] : $result;
     }
 
     /**

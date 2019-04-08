@@ -230,7 +230,7 @@ class DataReader extends BaseObject implements Iterator, Countable
         $entry = ['dn' => $this->key()];
 
         $info = $this->_conn->getCacheInfo(3600, new TagDependency(['tags' => self::CACHE_TAG]));
-        if (is_array($info)) {
+        if ($info !== NULL) {
             /* @var $cache Cache */
             $cache    = $info[0];
             $cacheKey = [__CLASS__, $entry['dn']];

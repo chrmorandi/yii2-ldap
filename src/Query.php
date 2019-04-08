@@ -59,7 +59,7 @@ class Query extends Component implements QueryInterface
      * This is used to construct the SEARCH function in a LDAP statement. If not set, it means selecting all columns.
      * @see select()
      */
-    public $select;
+    public $select = [];
 
     /**
      * @var string The search filter. Format is described in the LDAP documentation.
@@ -92,8 +92,6 @@ class Query extends Component implements QueryInterface
             throw new InvalidValueException('You must define a filter for the search.');
         }
 
-        $select = (is_array($this->select)) ? $this->select : [];
-
         if (ctype_digit((string) $this->limit)) {
             $db->pageSize = $this->limit;
         }
@@ -101,7 +99,7 @@ class Query extends Component implements QueryInterface
             $db->offset = $this->offset == 0 ? 1 : $this->offset;
         }
 
-        $params = [$this->dn, $this->filter, $select, 0, $this->limit, 0];
+        $params = [$this->dn, $this->filter, $this->select, 0, $this->limit, 0];
 
         return $db->executeQuery($this->scope, $params);
     }
