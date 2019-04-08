@@ -1,15 +1,11 @@
 {
     "name": "chrmorandi/yii2-ldap",
     "description": "Ldap",
-    "type": "library",
     "keywords": ["yii2", "extension", "ldap", "Active Directory", "OpenLDAP"],
+    "type": "yii2-extension",
     "license": "MIT",
-    "authors": [
-        {
-            "name": "Christopher Mota",
-            "email": "chrmorandi@gmail.com"
-        }
-    ],
+    "homepage": "http://chrmorandi.github.io/yii2-ldap/",
+    "authors": [{"name": "Christopher Mota","email": "chrmorandi@gmail.com"}],
     "require": {
         "php": ">=7.0",
         "yiisoft/yii2": "~2.0.14",

@@ -9,7 +9,7 @@
 
 namespace chrmorandi\ldap;
 
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 use yii\base\BaseObject;
 
 /**
@@ -113,7 +113,7 @@ class FilterBuilder extends BaseObject
     public function buildAndCondition($operator, $operands)
     {
         if ($operator === 'NOT' && count($operands) !== 1) {
-            throw new InvalidParamException("Operator '$operator' requires exactly one operand.");
+            throw new InvalidArgumentException("Operator '$operator' requires exactly one operand.");
         }
 
         $parts = [];
@@ -142,7 +142,7 @@ class FilterBuilder extends BaseObject
     public function buildInCondition($operator, $operands)
     {
         if (!isset($operands[0], $operands[1])) {
-            throw new InvalidParamException("Operator '$operator' requires two operands.");
+            throw new InvalidArgumentException("Operator '$operator' requires two operands.");
         }
 
         list($attribute, $values) = $operands;
@@ -187,18 +187,18 @@ class FilterBuilder extends BaseObject
      *   should be applied. Note that when using an escape mapping (or the third operand is not provided),
      *   the values will be automatically enclosed within a pair of percentage characters.
      * @return string the generated LDAP filter expression.
-     * @throws InvalidParamException if wrong number of operands have been given.
+     * @throws InvalidArgumentException if wrong number of operands have been given.
      */
     public function buildLikeCondition($operator, $operands)
     {
         if (!isset($operands[0], $operands[1])) {
-            throw new InvalidParamException("Operator '$operator' requires two operands.");
+            throw new InvalidArgumentException("Operator '$operator' requires two operands.");
         }
 
         unset($operands[2]);
 
         if (!preg_match('/^(OR|)(((NOT|))LIKE)/', $operator, $matches)) {
-            throw new InvalidParamException("Invalid operator '$operator'.");
+            throw new InvalidArgumentException("Invalid operator '$operator'.");
         }
         $andor    = (!empty($matches[1]) ? $matches[1] : 'AND');
         $not      = !empty($matches[3]);
@@ -224,12 +224,12 @@ class FilterBuilder extends BaseObject
      * @param string $operator the operator to use. A valid list could be used e.g. `=`, `>=`, `<=`, `~<`.
      * @param array $operands contains two column names.
      * @return string the generated LDAP filter expression.
-     * @throws InvalidParamException if wrong number of operands have been given.
+     * @throws InvalidArgumentException if wrong number of operands have been given.
      */
     public function buildSimpleCondition($operator, $operands)
     {
         if (count($operands) !== 2) {
-            throw new InvalidParamException("Operator '$operator' requires two operands.");
+            throw new InvalidArgumentException("Operator '$operator' requires two operands.");
         }
 
         list($attribute, $value) = $operands;

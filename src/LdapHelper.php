@@ -10,7 +10,7 @@
 namespace chrmorandi\ldap;
 
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidParamException;
+use yii\base\InvalidArgumentException;
 
 /**
  * Some common helper LDAP functions.
@@ -29,7 +29,7 @@ class LdapHelper
         $pieces = ldap_explode_dn($dn, $withAttributes);
 
         if ($pieces === false || !isset($pieces['count']) || $pieces['count'] == 0) {
-            throw new InvalidParamException(sprintf('Unable to parse DN "%s".', $dn));
+            throw new InvalidArgumentException(sprintf('Unable to parse DN "%s".', $dn));
         }
         unset($pieces['count']);
         return $pieces;
