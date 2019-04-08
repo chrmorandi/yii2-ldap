@@ -48,9 +48,9 @@ class FilterBuilder extends BaseObject
      * @var array map of operator for builder methods.
      */
     protected $operator = [
-        'NOT'  => '!',
-        'AND'  => '&',
-        'OR'   => '|',
+        'NOT' => '!',
+        'AND' => '&',
+        'OR'  => '|',
     ];
 
     /**
@@ -94,14 +94,14 @@ class FilterBuilder extends BaseObject
                 // IN condition
                 $parts[] = $this->buildInCondition('IN', [$attribute, $value]);
             } elseif ($value === null) {
-                $parts[] = "!$attribute=*";
+                $parts[] = "(!($attribute=*))";
             } elseif ($attribute === 'dn') {
-                $parts[] = LdapHelper::getRdnFromDn($value);
+                $parts[] = '(' . LdapHelper::getRdnFromDn($value) . ')';
             } else {
-                $parts[] = "$attribute=$value";
+                $parts[] = "($attribute=$value)";
             }
         }
-        return count($parts) === 1 ? '(' . $parts[0] . ')' : '&(' . implode(') (', $parts) . ')';
+        return count($parts) === 1 ? $parts[0] : '(&' . implode('', $parts) . ')';
     }
 
     /**
@@ -125,7 +125,7 @@ class FilterBuilder extends BaseObject
             }
         }
 
-        return empty($parts) ? '' : '(' . $this->operator[$operator] . '(' . implode(') (', $parts) . '))';
+        return empty($parts) ? '' : '(' . $this->operator[$operator] . implode('', $parts) . ')';
     }
 
     /**
@@ -147,8 +147,8 @@ class FilterBuilder extends BaseObject
 
         list($attribute, $values) = $operands;
 
-        if (is_string($attribute) || !is_array($values)) {
-            throw new InvalidParamException('First operand must to be string and secund operand must to be array.');
+        if (!is_array($values)) {
+            $values = [$values];
         }
 
         $parts = [];
@@ -157,18 +157,18 @@ class FilterBuilder extends BaseObject
                 $value = isset($value[$attribute]) ? $value[$attribute] : null;
             }
             if ($value === null) {
-                $parts[] = "!$attribute=*";
+                $parts[] = "(!$attribute=*)";
             } else {
-                $parts[] = "$attribute=$value";
+                $parts[] = "($attribute=$value)";
             }
         }
 
         if (empty($parts)) {
             return '';
         } elseif ($operator === 'NOT IN') {
-            return '!(' . implode(') (', $parts) . ')';
+            return '(!' . implode('', $parts) . ')';
         }
-        return count($parts) === 1 ? '(' . $parts[0] . ')' : '|(' . implode(') (', $parts) . ')';
+        return count($parts) === 1 ? $parts[0] : '(|' . implode('', $parts) . ')';
     }
 
     /**
@@ -243,7 +243,7 @@ class FilterBuilder extends BaseObject
         list($attribute, $value) = $operands;
 
         if ($value === null) {
-            return "(!$attribute = *)";
+            return "(!($attribute = *))";
         } else {
             return "($attribute $operator $value)";
         }
