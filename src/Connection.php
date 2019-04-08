@@ -375,17 +375,6 @@ class Connection extends Component
     }
 
     /**
-     * Sorts an AD search result by the specified attribute.
-     * @param resource $result
-     * @param string   $attribute
-     * @return bool
-     */
-    public function sort($result, $attribute)
-    {
-        return ldap_sort($this->resource, $result, $attribute);
-    }
-
-    /**
      * Adds an entry to the current connection.
      * @param string $dn
      * @param array  $entry
