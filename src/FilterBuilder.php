@@ -9,10 +9,8 @@
 
 namespace chrmorandi\ldap;
 
-use Traversable;
 use yii\base\InvalidParamException;
 use yii\base\BaseObject;
-use yii\helpers\ArrayHelper;
 
 /**
  * FilterBuilder builds a Filter for search in LDAP.
@@ -92,7 +90,7 @@ class FilterBuilder extends BaseObject
     {
         $parts = [];
         foreach ($condition as $attribute => $value) {
-            if (ArrayHelper::isTraversable($value)) {
+            if (is_array($value)) {
                 // IN condition
                 $parts[] = $this->buildInCondition('IN', [$attribute, $value]);
             } elseif ($value === null) {
@@ -114,6 +112,10 @@ class FilterBuilder extends BaseObject
      */
     public function buildAndCondition($operator, $operands)
     {
+        if ($operator === 'NOT' && count($operands) !== 1) {
+            throw new InvalidParamException("Operator '$operator' requires exactly one operand.");
+        }
+
         $parts = [];
         foreach ($operands as $operand) {
             if (is_array($operand)) {

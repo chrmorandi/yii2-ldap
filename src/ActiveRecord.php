@@ -153,7 +153,6 @@ class ActiveRecord extends BaseActiveRecord
         $primaryKey = static::primaryKey();
         $values     = $this->getDirtyAttributes($attributes);
         $dn         = $values[$primaryKey[0]];
-        //$dn         = $this->getPrimaryKey();
         unset($values[$primaryKey[0]]);
 
         static::getDb()->open();
@@ -184,25 +183,22 @@ class ActiveRecord extends BaseActiveRecord
             return false;
         }
         $values = $this->getDirtyAttributes($attributes);
-        if (isset($values[self::primaryKey()[0]])) {
-            unset($values[self::primaryKey()[0]]);
-        }
-        if (empty($values)) {
-            $this->afterSave(false, $values);
-            return 0;
-        }
 
         if ($this->getOldPrimaryKey() !== $this->getPrimaryKey()) {
-            static::getDb()->open();
-            static::getDb()->rename($this->getOldPrimaryKey(), $this->getPrimaryKey(), $newParent, true);
-            static::getDb()->close();
-            if (!$this->refresh()) {
-                Yii::info('Model not refresh.', __METHOD__);
-                return 0;
-            }
+//            static::getDb()->open();
+//            static::getDb()->rename($this->getOldPrimaryKey(), $this->getPrimaryKey(), $newParent, true);
+//            static::getDb()->close();
+//            if (!$this->refresh()) {
+//                Yii::info('Model not refresh.', __METHOD__);
+//                return 0;
+//            }
         }
 
+        $attributes = [];
         foreach ($values as $key => $value) {
+            if ($key == 'dn') {
+                continue;
+            }
             if (empty($this->getOldAttribute($key)) && $value === '') {
                 unset($values[$key]);
             } elseif ($value === '') {
@@ -212,6 +208,11 @@ class ActiveRecord extends BaseActiveRecord
             } else {
                 $attributes[] = ['attrib' => $key, 'modtype' => LDAP_MODIFY_BATCH_REPLACE, 'values' => is_array($value) ? array_map('strval', $value) : [(string) $value]];
             }
+        }
+
+        if (empty($attributes)) {
+            $this->afterSave(false, $attributes);
+            return 0;
         }
 
         // We do not check the return value of updateAll() because it's possible
