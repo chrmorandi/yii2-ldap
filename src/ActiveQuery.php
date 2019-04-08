@@ -11,7 +11,6 @@ namespace chrmorandi\ldap;
 
 use chrmorandi\ldap\ActiveRecord;
 use chrmorandi\ldap\Connection;
-use chrmorandi\ldap\query\QueryBuilder;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveQueryTrait;
 use yii\db\ActiveRelationTrait;
@@ -81,13 +80,6 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      * @event Event an event that is triggered when the query is initialized via [[init()]].
      */
     const EVENT_INIT = 'init';
-
-    /**
-     * Stores the current query builder instance.
-     *
-     * @var QueryBuilder
-     */
-    protected $queryBuilder;
 
     /**
      * Constructor.
