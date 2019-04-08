@@ -15,7 +15,7 @@ use yii\caching\Cache;
 
 /**
  * @property resource $resource
- * @property bool  $bount
+ * @property bool     $bount
  * @property int      $errNo Error number of the last command
  * @property string   $lastError Error message of the last command
  *
@@ -32,9 +32,9 @@ class Connection extends Component
 
     /**
      * LDAP port number.
-     * @var string
+     * @var int
      */
-    const PORT = '389';
+    const PORT = 389;
 
     /**
      * @event Event an event that is triggered after a DB connection is established
@@ -206,10 +206,10 @@ class Connection extends Component
     /**
      * Connection.
      * @param string|array $hostname
-     * @param type $port
+     * @param int $port
      * @return void
      */
-    protected function connect($hostname = [], $port = '389')
+    protected function connect($hostname = [], $port = 389)
     {
         if (is_array($hostname)) {
             $hostname = self::PROTOCOL . implode(' ' . self::PROTOCOL, $hostname);

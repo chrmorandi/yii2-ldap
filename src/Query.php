@@ -13,7 +13,6 @@ use chrmorandi\ldap\Connection;
 use Yii;
 use yii\base\Component;
 use yii\base\InvalidValueException;
-use yii\db\Expression;
 use yii\db\QueryInterface;
 use yii\db\QueryTrait;
 
@@ -40,8 +39,8 @@ use yii\db\QueryTrait;
  */
 class Query extends Component implements QueryInterface
 {
-
     use QueryTrait;
+
     const SEARCH_SCOPE_SUB  = 'ldap_search';
     const SEARCH_SCOPE_ONE  = 'ldap_list';
     const SEARCH_SCOPE_BASE = 'ldap_read';
@@ -115,14 +114,14 @@ class Query extends Component implements QueryInterface
      */
     public function all($db = null)
     {
+        if ($db === null) {
+            $db = Yii::$app->get('ldap');
+        }
+
         if (!($this->dataReader instanceof DataReader)) {
             /** @var $result DataReader */
             $this->dataReader = $this->execute($db);
         } else {
-            if ($db === null) {
-                $db = Yii::$app->get('ldap');
-            }
-
             if (ctype_digit((string) $this->limit)) {
                 $db->pageSize = $this->limit;
             }
@@ -167,6 +166,9 @@ class Query extends Component implements QueryInterface
      */
     public function one($db = null)
     {
+        if ($db === null) {
+            $db = Yii::$app->get('ldap');
+        }
         $this->limit = 1;
         $result      = $this->execute($db);
         return $result->toArray();
@@ -225,7 +227,7 @@ class Query extends Component implements QueryInterface
      * $query->addSelect(['cn, mail'])->one();
      * ```
      *
-     * @param string|array|Expression $columns the columns to add to the select. See [[select()]] for more
+     * @param string|array $columns the columns to add to the select. See [[select()]] for more
      * details about the format of this parameter.
      * @return $this the query object itself
      * @see select()
