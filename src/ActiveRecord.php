@@ -1,15 +1,13 @@
 <?php
 /**
  * @link      https://github.com/chrmorandi/yii2-ldap for the source repository
- * @package   yii2-ldap
+ *
  * @author    Christopher Mota <chrmorandi@gmail.com>
  * @license   MIT License - view the LICENSE file that was distributed with this source code.
  */
 
 namespace chrmorandi\ldap;
 
-use chrmorandi\ldap\ActiveQuery;
-use chrmorandi\ldap\Connection;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\db\BaseActiveRecord;
@@ -56,7 +54,8 @@ class ActiveRecord extends BaseActiveRecord
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @return ActiveQuery the newly created [[ActiveQuery]] instance.
      */
     public static function find()
@@ -80,6 +79,7 @@ class ActiveRecord extends BaseActiveRecord
     /**
      * Returns the list of attribute names.
      * You must override this method to define avaliable attributes.
+     *
      * @return array list of attribute names.
      */
     public function attributes()
@@ -119,18 +119,20 @@ class ActiveRecord extends BaseActiveRecord
      * $customer->insert();
      * ```
      *
-     * @param bool $runValidation whether to perform validation (calling [[validate()]])
-     * before saving the record. Defaults to `true`. If the validation fails, the record
-     * will not be saved to the LDAP and this method will return `false`.
-     * @param string[]|null $attributes list of attributes that need to be saved.
-     * Defaults to null, meaning all attributes that are loaded from LDAP will be saved.
-     * meaning all attributes that are loaded from DB will be saved.
+     * @param bool          $runValidation whether to perform validation (calling [[validate()]])
+     *                                     before saving the record. Defaults to `true`. If the validation fails, the record
+     *                                     will not be saved to the LDAP and this method will return `false`.
+     * @param string[]|null $attributes    list of attributes that need to be saved.
+     *                                     Defaults to null, meaning all attributes that are loaded from LDAP will be saved.
+     *                                     meaning all attributes that are loaded from DB will be saved.
+     *
      * @return bool whether the attributes are valid and the record is inserted successfully.
      */
     public function insert($runValidation = true, $attributes = null)
     {
         if ($runValidation && !$this->validate($attributes)) {
             Yii::info('Model not inserted due to validation error.', __METHOD__);
+
             return false;
         }
 
@@ -140,8 +142,9 @@ class ActiveRecord extends BaseActiveRecord
     /**
      * Inserts an ActiveRecord into LDAP without.
      *
-     * @param  string[]|null $attributes list of attributes that need to be saved. Defaults to null,
-     * meaning all attributes that are loaded will be saved.
+     * @param string[]|null $attributes list of attributes that need to be saved. Defaults to null,
+     *                                  meaning all attributes that are loaded will be saved.
+     *
      * @return bool whether the record is inserted successfully.
      */
     protected function insertInternal($attributes = null)
@@ -151,8 +154,8 @@ class ActiveRecord extends BaseActiveRecord
         }
 
         $primaryKey = static::primaryKey();
-        $values     = $this->getDirtyAttributes($attributes);
-        $dn         = $values[$primaryKey[0]];
+        $values = $this->getDirtyAttributes($attributes);
+        $dn = $values[$primaryKey[0]];
         unset($values[$primaryKey[0]]);
 
         static::getDb()->open();
@@ -174,7 +177,9 @@ class ActiveRecord extends BaseActiveRecord
 
     /**
      * @see update()
+     *
      * @param string[]|null $attributes the names of the attributes to update.
+     *
      * @return int|false number of rows updated
      */
     protected function updateInternal($attributes = null)
@@ -212,6 +217,7 @@ class ActiveRecord extends BaseActiveRecord
 
         if (empty($attributes)) {
             $this->afterSave(false, $attributes);
+
             return 0;
         }
 
@@ -231,16 +237,17 @@ class ActiveRecord extends BaseActiveRecord
 
     /**
      * Updates the whole table using the provided attribute values and conditions.
-     * For example, to change the status to be 1 for all customers whose status is 2:
+     * For example, to change the status to be 1 for all customers whose status is 2:.
      *
      * ```php
      * Customer::updateAll(['status' => 1], 'status = 2');
      * ```
      *
-     * @param string[] $attributes attribute values (name-value pairs) to be saved into the table
-     * @param string|array $condition the conditions that will be put in the WHERE part of the UPDATE SQL.
-     * Please refer to [[Query::where()]] on how to specify this parameter.
-     * @return integer the number of rows updated
+     * @param string[]     $attributes attribute values (name-value pairs) to be saved into the table
+     * @param string|array $condition  the conditions that will be put in the WHERE part of the UPDATE SQL.
+     *                                 Please refer to [[Query::where()]] on how to specify this parameter.
+     *
+     * @return int the number of rows updated
      */
     public static function updateAll($attributes, $condition = '')
     {
@@ -265,14 +272,15 @@ class ActiveRecord extends BaseActiveRecord
      * Customer::deleteAll('status = 3');
      * ```
      *
-     * @param  string|array $condition the conditions that will be put in the WHERE part of the DELETE SQL.
-     * Please refer to [[Query::where()]] on how to specify this parameter.
-     * @return integer the number of rows deleted
+     * @param string|array $condition the conditions that will be put in the WHERE part of the DELETE SQL.
+     *                                Please refer to [[Query::where()]] on how to specify this parameter.
+     *
+     * @return int the number of rows deleted
      */
     public static function deleteAll($condition = '')
     {
         $entries = (new Query())->select(self::primaryKey())->where($condition)->execute()->toArray();
-        $count   = 0;
+        $count = 0;
 
         static::getDb()->open();
         foreach ($entries as $entry) {
@@ -284,5 +292,4 @@ class ActiveRecord extends BaseActiveRecord
 
         return $count;
     }
-
 }

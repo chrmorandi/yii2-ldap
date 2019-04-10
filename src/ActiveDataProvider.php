@@ -1,9 +1,10 @@
 <?php
 /**
  * @link      https://github.com/chrmorandi/yii2-ldap for the source repository
- * @package   yii2-ldap
+ *
  * @author    Christopher Mota <chrmorandi@gmail.com>
  * @license   MIT License - view the LICENSE file that was distributed with this source code.
+ *
  * @since     1.0.0
  */
 
@@ -45,19 +46,18 @@ use yii\db\QueryInterface;
  * // get the posts in the current page
  * $posts = $provider->getModels();
  * ```
- *
  */
 class ActiveDataProvider extends \yii\data\ActiveDataProvider
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function prepareTotalCount()
     {
         if (!$this->query instanceof QueryInterface) {
             throw new InvalidConfigException('The "query" property must be an instance of a class that implements the QueryInterface e.g. yii\db\Query or its subclasses.');
         }
+
         return (int) $this->query->limit($this->getPagination()->getLimit())->offset(-1)->orderBy([])->count('*', $this->db);
     }
-
 }

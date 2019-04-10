@@ -1,16 +1,17 @@
 <?php
 /**
  * @link      https://github.com/chrmorandi/yii2-ldap for the source repository
- * @package   yii2-ldap
+ *
  * @author    Christopher Mota <chrmorandi@gmail.com>
  * @license   MIT License - view the LICENSE file that was distributed with this source code.
+ *
  * @since     1.0.0
  */
 
 namespace chrmorandi\ldap;
 
-use yii\base\InvalidArgumentException;
 use yii\base\BaseObject;
+use yii\base\InvalidArgumentException;
 
 /**
  * FilterBuilder builds a Filter for search in LDAP.
@@ -18,19 +19,20 @@ use yii\base\BaseObject;
  * FilterBuilder is also used by [[Query]] to build Filters.
  *
  * @author Christopher Mota <chrmorandi@gmail.com>
+ *
  * @since 1.0.0
  */
 class FilterBuilder extends BaseObject
 {
     /**
      * @var string the separator between different fragments of a SQL statement.
-     * Defaults to an empty space. This is mainly used by [[build()]] when generating a SQL statement.
+     *             Defaults to an empty space. This is mainly used by [[build()]] when generating a SQL statement.
      */
     public $separator = ' ';
 
     /**
      * @var array map of query condition to builder methods.
-     * These methods are used by [[buildCondition]] to build SQL conditions from array syntax.
+     *            These methods are used by [[buildCondition]] to build SQL conditions from array syntax.
      */
     protected $conditionBuilders = [
         'NOT'         => 'buildAndCondition',
@@ -55,8 +57,10 @@ class FilterBuilder extends BaseObject
 
     /**
      * Parses the condition specification and generates the corresponding filters.
+     *
      * @param string|array $condition the condition specification. Please refer to [[Query::where()]]
-     * on how to specify a condition.
+     *                                on how to specify a condition.
+     *
      * @return string the generated
      */
     public function build($condition)
@@ -75,6 +79,7 @@ class FilterBuilder extends BaseObject
                 $method = 'buildSimpleCondition';
             }
             array_shift($condition);
+
             return $this->$method($operator, $condition);
         } else { // hash format: 'column1' => 'value1', 'column2' => 'value2', ...
             return $this->buildHashCondition($condition);
@@ -83,7 +88,9 @@ class FilterBuilder extends BaseObject
 
     /**
      * Creates a condition based on column-value pairs.
+     *
      * @param array $condition the condition specification.
+     *
      * @return string the generated
      */
     public function buildHashCondition($condition)
@@ -96,18 +103,21 @@ class FilterBuilder extends BaseObject
             } elseif ($value === null) {
                 $parts[] = "(!($attribute=*))";
             } elseif ($attribute === 'dn') {
-                $parts[] = '(' . LdapHelper::getRdnFromDn($value) . ')';
+                $parts[] = '('.LdapHelper::getRdnFromDn($value).')';
             } else {
                 $parts[] = "($attribute=$value)";
             }
         }
-        return count($parts) === 1 ? $parts[0] : '(&' . implode('', $parts) . ')';
+
+        return count($parts) === 1 ? $parts[0] : '(&'.implode('', $parts).')';
     }
 
     /**
      * Connects two or more filters expressions with the `AND`(&) or `OR`(|) operator.
+     *
      * @param string $operator The operator to use for connecting the given operands
-     * @param array $operands The filter expressions to connect.
+     * @param array  $operands The filter expressions to connect.
+     *
      * @return string The generated filter
      */
     public function buildAndCondition($operator, $operands)
@@ -125,19 +135,22 @@ class FilterBuilder extends BaseObject
             }
         }
 
-        return empty($parts) ? '' : '(' . $this->operator[$operator] . implode('', $parts) . ')';
+        return empty($parts) ? '' : '('.$this->operator[$operator].implode('', $parts).')';
     }
 
     /**
      * Creates an filter expressions with the `IN` operator.
+     *
      * @param string $operator the operator to use (e.g. `IN` or `NOT IN`)
-     * @param array $operands the first operand is the column name. If it is an array
-     * a composite IN condition will be generated.
-     * The second operand is an array of values that column value should be among.
-     * If it is an empty array the generated expression will be a `false` value if
-     * operator is `IN` and empty if operator is `NOT IN`.
-     * @return string the generated SQL expression
+     * @param array  $operands the first operand is the column name. If it is an array
+     *                         a composite IN condition will be generated.
+     *                         The second operand is an array of values that column value should be among.
+     *                         If it is an empty array the generated expression will be a `false` value if
+     *                         operator is `IN` and empty if operator is `NOT IN`.
+     *
      * @throws Exception if wrong number of operands have been given.
+     *
+     * @return string the generated SQL expression
      */
     public function buildInCondition($operator, $operands)
     {
@@ -165,15 +178,17 @@ class FilterBuilder extends BaseObject
         if (empty($parts)) {
             return '';
         } elseif ($operator === 'NOT IN') {
-            return '(!' . implode('', $parts) . ')';
+            return '(!'.implode('', $parts).')';
         }
-        return count($parts) === 1 ? $parts[0] : '(|' . implode('', $parts) . ')';
+
+        return count($parts) === 1 ? $parts[0] : '(|'.implode('', $parts).')';
     }
 
     /**
      * Creates an LDAP filter expressions with the `LIKE` operator.
+     *
      * @param string $operator the operator to use (e.g. `LIKE`, `NOT LIKE`, `OR LIKE` or `OR NOT LIKE`)
-     * @param array $operands an array of two or three operands
+     * @param array  $operands an array of two or three operands
      *
      * - The first operand is the column name.
      * - The second operand is a single value or an array of values that column value
@@ -186,8 +201,10 @@ class FilterBuilder extends BaseObject
      *   You may use `false` or an empty array to indicate the values are already escaped and no escape
      *   should be applied. Note that when using an escape mapping (or the third operand is not provided),
      *   the values will be automatically enclosed within a pair of percentage characters.
-     * @return string the generated LDAP filter expression.
+     *
      * @throws InvalidArgumentException if wrong number of operands have been given.
+     *
+     * @return string the generated LDAP filter expression.
      */
     public function buildLikeCondition($operator, $operands)
     {
@@ -200,8 +217,8 @@ class FilterBuilder extends BaseObject
         if (!preg_match('/^(OR|)(((NOT|))LIKE)/', $operator, $matches)) {
             throw new InvalidArgumentException("Invalid operator '$operator'.");
         }
-        $andor    = (!empty($matches[1]) ? $matches[1] : 'AND');
-        $not      = !empty($matches[3]);
+        $andor = (!empty($matches[1]) ? $matches[1] : 'AND');
+        $not = !empty($matches[3]);
 
         list($attribute, $values) = $operands;
         if (!is_array($values)) {
@@ -213,18 +230,21 @@ class FilterBuilder extends BaseObject
 
         $parts = [];
         foreach ($values as $value) {
-            $parts[] = ($not ? '(!' : '') . '(' . $attribute . '=*' . $value . '*)' . ($not ? ')' : '');
+            $parts[] = ($not ? '(!' : '').'('.$attribute.'=*'.$value.'*)'.($not ? ')' : '');
         }
 
-        return '(' . $this->operator[$andor] . implode($parts) . ')';
+        return '('.$this->operator[$andor].implode($parts).')';
     }
 
     /**
      * Creates an LDAP filter expressions like `(attribute operator value)`.
+     *
      * @param string $operator the operator to use. A valid list could be used e.g. `=`, `>=`, `<=`, `~<`.
-     * @param array $operands contains two column names.
-     * @return string the generated LDAP filter expression.
+     * @param array  $operands contains two column names.
+     *
      * @throws InvalidArgumentException if wrong number of operands have been given.
+     *
+     * @return string the generated LDAP filter expression.
      */
     public function buildSimpleCondition($operator, $operands)
     {
@@ -240,5 +260,4 @@ class FilterBuilder extends BaseObject
             return "($attribute $operator $value)";
         }
     }
-
 }

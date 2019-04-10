@@ -1,9 +1,10 @@
 <?php
 /**
  * @link      https://github.com/chrmorandi/yii2-ldap for the source repository
- * @package   yii2-ldap
+ *
  * @author    Christopher Mota <chrmorandi@gmail.com>
  * @license   MIT License - view the LICENSE file that was distributed with this source code.
+ *
  * @since     1.0.0
  */
 
@@ -12,8 +13,8 @@ namespace chrmorandi\ldap;
 use Countable;
 use Iterator;
 use Yii;
-use yii\base\InvalidCallException;
 use yii\base\BaseObject;
+use yii\base\InvalidCallException;
 use yii\caching\Cache;
 use yii\caching\TagDependency;
 
@@ -43,11 +44,12 @@ use yii\caching\TagDependency;
  * Note that since DataReader is a forward-only stream, you can only traverse it once.
  * Doing it the second time will throw an exception.
  *
- * @property integer $columnCount The number of columns in the result set. This property is read-only.
+ * @property int $columnCount The number of columns in the result set. This property is read-only.
  * @property bool $isClosed Whether the reader is closed or not. This property is read-only.
- * @property integer $rowCount Number of rows contained in the result. This property is read-only.
+ * @property int $rowCount Number of rows contained in the result. This property is read-only.
  *
  * @author Christopher Mota <chrmorandi@gmail.com>
+ *
  * @since 1.0.0
  */
 class DataReader extends BaseObject implements Iterator, Countable
@@ -65,19 +67,20 @@ class DataReader extends BaseObject implements Iterator, Countable
     private $_conn;
     private $_closed = false;
     private $_row;
-    private $_index  = -1;
-    private $_count  = 0;
+    private $_index = -1;
+    private $_count = 0;
     private $_results;
 
     /**
      * Constructor.
-     * @param Connection $conn connection interact with result
+     *
+     * @param Connection          $conn    connection interact with result
      * @param resource[]|resource $results result array of search in ldap directory
-     * @param array $config name-value pairs that will be used to initialize the object properties
+     * @param array               $config  name-value pairs that will be used to initialize the object properties
      */
     public function __construct(Connection $conn, $results, $config = [])
     {
-        $this->_conn    = $conn;
+        $this->_conn = $conn;
         $this->_results = $results;
 
         if (is_array($this->_results)) {
@@ -90,7 +93,6 @@ class DataReader extends BaseObject implements Iterator, Countable
             //$this->setEntries($this->_results);
         }
 
-
         parent::__construct($config);
     }
 
@@ -100,8 +102,8 @@ class DataReader extends BaseObject implements Iterator, Countable
     }
 
     /**
-     *
      * @param resource $result
+     *
      * @return void
      */
     protected function setEntries($result)
@@ -119,7 +121,8 @@ class DataReader extends BaseObject implements Iterator, Countable
     }
 
     /**
-     * Get all entries as an array
+     * Get all entries as an array.
+     *
      * @return array
      */
     public function toArray()
@@ -128,7 +131,7 @@ class DataReader extends BaseObject implements Iterator, Countable
             return [];
         }
 
-        $token = 'Get entries with limit pagination ' . $this->_conn->pageSize;
+        $token = 'Get entries with limit pagination '.$this->_conn->pageSize;
         Yii::beginProfile($token, __METHOD__);
         if ($this->_conn->offset > 0) {
             $this->setEntries($this->_results[intval($this->_conn->offset / $this->_conn->pageSize)]);
@@ -143,9 +146,9 @@ class DataReader extends BaseObject implements Iterator, Countable
         }
         Yii::endProfile($token, __METHOD__);
 
-        $token = 'Get Attributes of entries with limit pagination in ' . $this->_conn->pageSize;
+        $token = 'Get Attributes of entries with limit pagination in '.$this->_conn->pageSize;
         Yii::beginProfile($token, __METHOD__);
-        $data  = [];
+        $data = [];
         foreach ($this as $item) {
             $data[] = $item;
         }
@@ -169,13 +172,14 @@ class DataReader extends BaseObject implements Iterator, Countable
             $this->_conn->freeResult($this->_results);
         }
 
-        $this->_closed  = true;
+        $this->_closed = true;
         $this->_results = null;
-        $this->_row     = null;
+        $this->_row = null;
     }
 
     /**
      * whether the reader is closed or not.
+     *
      * @return bool whether the reader is closed or not.
      */
     public function getIsClosed()
@@ -186,7 +190,8 @@ class DataReader extends BaseObject implements Iterator, Countable
     /**
      * Returns the number of rows in the result set.
      * This method is required by the Countable interface.
-     * @return integer number of entries stored in the result.
+     *
+     * @return int number of entries stored in the result.
      */
     public function count()
     {
@@ -196,14 +201,15 @@ class DataReader extends BaseObject implements Iterator, Countable
     /**
      * Resets the iterator to the initial state.
      * This method is required by the interface [[\Iterator]].
+     *
      * @throws InvalidCallException if this method is invoked twice
      */
     public function rewind()
     {
         if ($this->_index < 0) {
             reset($this->entries);
-            $nextEntry    = current($this->entries);
-            $this->_row   = $nextEntry['resource'];
+            $nextEntry = current($this->entries);
+            $this->_row = $nextEntry['resource'];
             $this->_index = 0;
         } else {
             throw new InvalidCallException('DataReader cannot rewind. It is a forward-only reader.');
@@ -213,6 +219,7 @@ class DataReader extends BaseObject implements Iterator, Countable
     /**
      * Returns the result of the current item.
      * This method is required by the interface [[\Iterator]].
+     *
      * @return string the index of the current row.
      */
     public function key()
@@ -223,6 +230,7 @@ class DataReader extends BaseObject implements Iterator, Countable
     /**
      * Returns the current row.
      * This method is required by the interface [[\Iterator]].
+     *
      * @return mixed the current row.
      */
     public function current()
@@ -230,13 +238,14 @@ class DataReader extends BaseObject implements Iterator, Countable
         $entry = ['dn' => $this->key()];
 
         $info = $this->_conn->getCacheInfo(3600, new TagDependency(['tags' => self::CACHE_TAG]));
-        if ($info !== NULL) {
+        if ($info !== null) {
             /* @var $cache Cache */
-            $cache    = $info[0];
+            $cache = $info[0];
             $cacheKey = [__CLASS__, $entry['dn']];
-            $result   = $cache->get($cacheKey);
+            $result = $cache->get($cacheKey);
             if (is_array($result) && isset($result[0])) {
                 Yii::debug('Query result served from cache', __METHOD__);
+
                 return $result[0];
             }
         }
@@ -250,8 +259,8 @@ class DataReader extends BaseObject implements Iterator, Countable
                 unset($data['count']);
             }
 
-            $attrName         = $name;
-            $entry[$attrName] = implode(",", $data);
+            $attrName = $name;
+            $entry[$attrName] = implode(',', $data);
 
             $name = $this->_conn->getNextAttribute($this->_row);
         }
@@ -273,7 +282,7 @@ class DataReader extends BaseObject implements Iterator, Countable
     public function next()
     {
         next($this->entries);
-        $nextEntry  = current($this->entries);
+        $nextEntry = current($this->entries);
         $this->_row = $nextEntry['resource'];
         $this->_index++;
     }
@@ -281,11 +290,11 @@ class DataReader extends BaseObject implements Iterator, Countable
     /**
      * Returns whether there is a row of resource at current position.
      * This method is required by the interface [[\Iterator]].
+     *
      * @return bool whether there is a row of data at current position.
      */
     public function valid()
     {
-        return (is_resource($this->_row));
+        return is_resource($this->_row);
     }
-
 }

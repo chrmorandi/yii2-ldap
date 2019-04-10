@@ -1,16 +1,15 @@
 <?php
 /**
  * @link      https://github.com/chrmorandi/yii2-ldap for the source repository
- * @package   yii2-ldap
+ *
  * @author    Christopher Mota <chrmorandi@gmail.com>
  * @license   MIT License - view the LICENSE file that was distributed with this source code.
+ *
  * @since     1.0.0
  */
 
 namespace chrmorandi\ldap;
 
-use chrmorandi\ldap\ActiveRecord;
-use chrmorandi\ldap\Connection;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveQueryTrait;
 use yii\db\ActiveRelationTrait;
@@ -69,11 +68,11 @@ use yii\db\ActiveRelationTrait;
  * is to be added to relational query join condition.
  *
  * @author Christopher Mota <chrmorandi@gmail.com>
+ *
  * @since 1.0.0
  */
 class ActiveQuery extends Query implements ActiveQueryInterface
 {
-
     use ActiveQueryTrait;
     use ActiveRelationTrait;
     /**
@@ -83,8 +82,9 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     /**
      * Constructor.
+     *
      * @param string $modelClass the model class associated with this query
-     * @param array $config configurations to be applied to the newly created query object
+     * @param array  $config     configurations to be applied to the newly created query object
      */
     public function __construct($modelClass, $config = [])
     {
@@ -106,8 +106,10 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     /**
      * Executes query and returns all results as an array.
+     *
      * @param Connection $db the DB connection used to create the DB command.
-     * If null, the DB connection returned by [[modelClass]] will be used.
+     *                       If null, the DB connection returned by [[modelClass]] will be used.
+     *
      * @return array|ActiveRecord[] the query results. If the query results in nothing, an empty array will be returned.
      */
     public function all($db = null)
@@ -116,7 +118,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function populate($rows)
     {
@@ -140,20 +142,22 @@ class ActiveQuery extends Query implements ActiveQueryInterface
 
     /**
      * Executes the query and returns a single row of result.
+     *
      * @param Connection $db the database connection used to generate the SQL statement.
-     * If this parameter is not given, the `db` application component will be used.
+     *                       If this parameter is not given, the `db` application component will be used.
+     *
      * @return array|bool the first row (in terms of an array) of the query result. False is returned if the query
-     * results in nothing.
+     *                    results in nothing.
      */
     public function one($db = null)
     {
         $row = parent::one($db);
         if ($row !== false) {
             $models = $this->populate($row);
+
             return reset($models) ?: null;
         } else {
-            return null;
+            return;
         }
     }
-
 }

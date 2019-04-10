@@ -1,15 +1,15 @@
 <?php
 /**
  * @link      https://github.com/chrmorandi/yii2-ldap for the source repository
- * @package   yii2-ldap
+ *
  * @author    Christopher Mota <chrmorandi@gmail.com>
  * @license   MIT License - view the LICENSE file that was distributed with this source code.
+ *
  * @since     1.0.0
  */
 
 namespace chrmorandi\ldap;
 
-use chrmorandi\ldap\Connection;
 use Yii;
 use yii\base\Component;
 use yii\base\InvalidValueException;
@@ -35,40 +35,42 @@ use yii\db\QueryTrait;
  * ```
  *
  * Query internally uses the [[FilterBuilder]] class to generate the LDAP filters.
- *
  */
 class Query extends Component implements QueryInterface
 {
     use QueryTrait;
 
-    const SEARCH_SCOPE_SUB  = 'ldap_search';
-    const SEARCH_SCOPE_ONE  = 'ldap_list';
+    const SEARCH_SCOPE_SUB = 'ldap_search';
+    const SEARCH_SCOPE_ONE = 'ldap_list';
     const SEARCH_SCOPE_BASE = 'ldap_read';
 
     /**
      * @var string the scope of search
-     * The search scope:
-     * Query::SEARCH_SCOPE_SUB searches the complete subtree including the $baseDn node. This is the default value.
-     * Query::SEARCH_SCOPE_ONE restricts search to one level below $baseDn.
-     * Query::SEARCH_SCOPE_BASE restricts search to the $baseDn itself; this can be used to efficiently retrieve a single entry by its DN.
+     *             The search scope:
+     *             Query::SEARCH_SCOPE_SUB searches the complete subtree including the $baseDn node. This is the default value.
+     *             Query::SEARCH_SCOPE_ONE restricts search to one level below $baseDn.
+     *             Query::SEARCH_SCOPE_BASE restricts search to the $baseDn itself; this can be used to efficiently retrieve a single entry by its DN.
      */
     public $scope = self::SEARCH_SCOPE_SUB;
 
     /**
      * @var array the columns being selected. For example, `['id', 'name']`.
-     * This is used to construct the SEARCH function in a LDAP statement. If not set, it means selecting all columns.
+     *            This is used to construct the SEARCH function in a LDAP statement. If not set, it means selecting all columns.
+     *
      * @see select()
      */
     public $select = [];
 
     /**
      * @var string The search filter. Format is described in the LDAP documentation.
+     *
      * @see http://www.faqs.org/rfcs/rfc4515.html
      */
     public $filter;
 
     /**
      * The distinguished name to perform searches upon.
+     *
      * @var string|null
      */
     protected $dn;
@@ -76,8 +78,10 @@ class Query extends Component implements QueryInterface
 
     /**
      * Creates a LDAP command that can be used to execute this query.
+     *
      * @param Connection $db the database connection.
-     * If this parameter is not given, the `db` application component will be used.
+     *                       If this parameter is not given, the `db` application component will be used.
+     *
      * @return DataReader
      */
     public function execute($db = null)
@@ -87,7 +91,7 @@ class Query extends Component implements QueryInterface
         }
         $this->dn = isset($this->dn) ? $this->dn : $db->baseDn;
 
-        $this->filter = (new FilterBuilder)->build($this->where);
+        $this->filter = (new FilterBuilder())->build($this->where);
         if (empty($this->filter)) {
             throw new InvalidValueException('You must define a filter for the search.');
         }
@@ -106,8 +110,10 @@ class Query extends Component implements QueryInterface
 
     /**
      * Executes the query and returns all results as an array.
+     *
      * @param Connection $db the database connection.
-     * If this parameter is not given, the `db` application component will be used.
+     *                       If this parameter is not given, the `db` application component will be used.
+     *
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      */
     public function all($db = null)
@@ -117,7 +123,7 @@ class Query extends Component implements QueryInterface
         }
 
         if (!($this->dataReader instanceof DataReader)) {
-            /** @var $result DataReader */
+            /* @var $result DataReader */
             $this->dataReader = $this->execute($db);
         } else {
             if (ctype_digit((string) $this->limit)) {
@@ -135,7 +141,9 @@ class Query extends Component implements QueryInterface
      * Converts the raw query results into the format as specified by this query.
      * This method is internally used to convert the data fetched from database
      * into the format as required by this query.
+     *
      * @param array $rows the raw query result from database
+     *
      * @return array the converted query result
      */
     public function populate($rows)
@@ -152,15 +160,18 @@ class Query extends Component implements QueryInterface
             }
             $result[$key] = $row;
         }
+
         return $result;
     }
 
     /**
      * Executes the query and returns a single row of result.
+     *
      * @param Connection $db the database connection.
-     * If this parameter is not given, the `db` application component will be used.
+     *                       If this parameter is not given, the `db` application component will be used.
+     *
      * @return array|bool the first row (in terms of an array) of the query result. False is returned if the query
-     * results in nothing.
+     *                    results in nothing.
      */
     public function one($db = null)
     {
@@ -168,40 +179,48 @@ class Query extends Component implements QueryInterface
             $db = Yii::$app->get('ldap');
         }
         $this->limit = 1;
-        $result      = $this->execute($db);
+        $result = $this->execute($db);
+
         return $result->toArray();
     }
 
     /**
      * Returns the number of entries in a search.
-     * @param string $q do not use
+     *
+     * @param string     $q  do not use
      * @param Connection $db the database connection
-     * If this parameter is not given (or null), the `db` application component will be used.
-     * @return integer number of entries.
+     *                       If this parameter is not given (or null), the `db` application component will be used.
+     *
+     * @return int number of entries.
      */
-    public function count($q = null, $db = NULL)
+    public function count($q = null, $db = null)
     {
-        $this->limit      = 20;
+        $this->limit = 20;
         $this->dataReader = $this->execute($db);
+
         return $this->dataReader->count();
     }
 
     /**
      * Returns a value indicating whether the query result contains any row of data.
+     *
      * @param Connection $db the database connection.
-     * If this parameter is not given, the `db` application component will be used.
+     *                       If this parameter is not given, the `db` application component will be used.
+     *
      * @return bool whether the query result contains any row of entries.
      */
     public function exists($db = null)
     {
         $result = $this->execute($db);
+
         return (bool) $result->count();
     }
 
     /**
      * Sets the SELECT part of the query.
+     *
      * @param string|array $columns the columns to be selected.
-     * Columns can be specified in either a string (e.g. "id, name") or an array (e.g. ['id', 'name']).
+     *                              Columns can be specified in either a string (e.g. "id, name") or an array (e.g. ['id', 'name']).
      *
      * ```php
      * $query->addSelect(['cn, mail'])->one();
@@ -215,6 +234,7 @@ class Query extends Component implements QueryInterface
             $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
         }
         $this->select = $columns;
+
         return $this;
     }
 
@@ -226,8 +246,10 @@ class Query extends Component implements QueryInterface
      * ```
      *
      * @param string|array $columns the columns to add to the select. See [[select()]] for more
-     * details about the format of this parameter.
+     *                              details about the format of this parameter.
+     *
      * @return $this the query object itself
+     *
      * @see select()
      */
     public function addSelect($columns)
@@ -240,6 +262,7 @@ class Query extends Component implements QueryInterface
         } else {
             $this->select = array_merge($this->select, $columns);
         }
+
         return $this;
     }
 
@@ -262,30 +285,34 @@ class Query extends Component implements QueryInterface
      * - `=`: the column must be equal to the given value.
      * - If none of the above operators is detected, the `$defaultOperator` will be used.
      *
-     * @param string $name the column name.
-     * @param string $value the column value optionally prepended with the comparison operator.
+     * @param string $name            the column name.
+     * @param string $value           the column value optionally prepended with the comparison operator.
      * @param string $defaultOperator The operator to use, when no operator is given in `$value`.
-     * Defaults to `=`, performing an exact match.
+     *                                Defaults to `=`, performing an exact match.
+     *
      * @return $this The query object itself
      */
     public function andFilterCompare($name, $value, $defaultOperator = '=')
     {
-        if (preg_match("/^(~=|>=|>|<=|<|=)/", $value, $matches)) {
+        if (preg_match('/^(~=|>=|>|<=|<|=)/', $value, $matches)) {
             $operator = $matches[1];
-            $value    = substr($value, strlen($operator));
+            $value = substr($value, strlen($operator));
         } else {
             $operator = $defaultOperator;
         }
+
         return $this->andFilterWhere([$operator, $name, $value]);
     }
 
     /**
      * Creates a new Query object and copies its property values from an existing one.
      * The properties being copies are the ones to be used by query builders.
+     *
      * @param Query $from the source query object
+     *
      * @return Query the new Query object
      */
-    public static function create(Query $from)
+    public static function create(self $from)
     {
         return new self([
             'where'   => $from->where,
@@ -296,5 +323,4 @@ class Query extends Component implements QueryInterface
             'select'  => $from->select,
         ]);
     }
-
 }
