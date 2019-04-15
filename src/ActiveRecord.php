@@ -184,17 +184,17 @@ class ActiveRecord extends BaseActiveRecord
         }
         $values = $this->getDirtyAttributes($attributes);
 
-        if ($this->getOldPrimaryKey() !== $this->getPrimaryKey()) {
-//            static::getDb()->open();
-//            static::getDb()->rename($this->getOldPrimaryKey(), $this->getPrimaryKey(), $newParent, true);
-//            static::getDb()->close();
-//            if (!$this->refresh()) {
-//                Yii::info('Model not refresh.', __METHOD__);
-//                return 0;
-//            }
+        if (strtolower($this->getOldPrimaryKey()) != strtolower($this->getPrimaryKey())) {
+            static::getDb()->open();
+            static::getDb()->rename($this->getOldPrimaryKey(), LdapHelper::getRdnFromDn($this->getPrimaryKey()), NULL, true);
+            static::getDb()->close();
+            if (!$this->refresh()) {
+                Yii::info('Model not refresh.', __METHOD__);
+                return 0;
+            }
         }
 
-        $attributes = [];
+        $changeAttributes = [];
         foreach ($values as $key => $value) {
             if ($key == 'dn') {
                 continue;
@@ -202,29 +202,29 @@ class ActiveRecord extends BaseActiveRecord
             if (empty($this->getOldAttribute($key)) && $value === '') {
                 unset($values[$key]);
             } elseif ($value === '') {
-                $attributes[] = ['attrib' => $key, 'modtype' => LDAP_MODIFY_BATCH_REMOVE];
+                $changeAttributes[] = ['attrib' => $key, 'modtype' => LDAP_MODIFY_BATCH_REMOVE];
             } elseif (empty($this->getOldAttribute($key))) {
-                $attributes[] = ['attrib' => $key, 'modtype' => LDAP_MODIFY_BATCH_ADD, 'values' => is_array($value) ? array_map('strval', $value) : [(string) $value]];
+                $changeAttributes[] = ['attrib' => $key, 'modtype' => LDAP_MODIFY_BATCH_ADD, 'values' => is_array($value) ? array_map('strval', $value) : [(string) $value]];
             } else {
-                $attributes[] = ['attrib' => $key, 'modtype' => LDAP_MODIFY_BATCH_REPLACE, 'values' => is_array($value) ? array_map('strval', $value) : [(string) $value]];
+                $changeAttributes[] = ['attrib' => $key, 'modtype' => LDAP_MODIFY_BATCH_REPLACE, 'values' => is_array($value) ? array_map('strval', $value) : [(string) $value]];
             }
         }
 
-        if (empty($attributes)) {
-            $this->afterSave(false, $attributes);
+        if (empty($changeAttributes)) {
+            $this->afterSave(false, $changeAttributes);
             return 0;
         }
 
         // We do not check the return value of updateAll() because it's possible
         // that the UPDATE statement doesn't change anything and thus returns 0.
-        $rows = static::updateAll($attributes, $condition);
+        $rows = static::updateAll($changeAttributes, $this->getPrimaryKey());
 
-//        $changedAttributes = [];
-//        foreach ($values as $key => $value) {
-//            $changedAttributes[$key] = empty($this->getOldAttributes($key)) ? $this->getOldAttributes($key) : null;
-//            $this->setOldAttributes([$key=>$value]);
-//        }
-//        $this->afterSave(false, $changedAttributes);
+        $changedAttributes = [];
+        foreach ($values as $key => $value) {
+            $changedAttributes[$key] = empty($this->getOldAttributes($key)) ? $this->getOldAttributes($key) : null;
+            $this->setOldAttributes([$key=>$value]);
+        }
+        $this->afterSave(false, $changedAttributes);
 
         return $rows;
     }
