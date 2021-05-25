@@ -41,7 +41,6 @@ use yii\db\ActiveRelationTrait;
  * ActiveQuery also provides the following additional query options:
  *
  * - [[with()]]: list of relations that this query should be performed with.
- * - [[joinWith()]]: reuse a relation query definition to add a join to a query.
  * - [[indexBy()]]: the name of the column by which the query result should be indexed.
  * - [[asArray()]]: whether to return each record as an array.
  *
