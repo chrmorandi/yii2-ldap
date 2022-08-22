@@ -315,8 +315,8 @@ class Connection extends Component
      */
     public function close()
     {
-        if (is_resource($this->resource)) {
-            ldap_close($this->resource);
+        if (isset($this->resource) && $this->resource !== false) {
+            ldap_unbind($this->resource);
         }
         return true;
     }

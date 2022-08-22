@@ -285,7 +285,7 @@ class DataReader extends BaseObject implements Iterator, Countable
      */
     public function valid()
     {
-        return (is_resource($this->_row));
+        return (isset($this->_row) && $this->_row !== false);
     }
 
 }

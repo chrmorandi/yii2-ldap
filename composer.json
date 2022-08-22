@@ -7,7 +7,7 @@
     "homepage": "http://chrmorandi.github.io/yii2-ldap/",
     "authors": [{"name": "Christopher Mota","email": "chrmorandi@gmail.com"}],
     "require": {
-        "php": ">=7.3",
+        "php": ">=8.0",
         "yiisoft/yii2": "*",
         "ext-ldap": "*"
     },
