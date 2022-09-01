@@ -317,6 +317,7 @@ class Connection extends Component
     {
         if (isset($this->resource) && $this->resource !== false) {
             ldap_unbind($this->resource);
+            $this->resource = false;
         }
         return true;
     }
