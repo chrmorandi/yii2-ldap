@@ -188,7 +188,7 @@ class DataReader extends BaseObject implements Iterator, Countable
      * This method is required by the Countable interface.
      * @return integer number of entries stored in the result.
      */
-    public function count()
+    public function count(): int
     {
         return $this->_count;
     }
@@ -198,7 +198,7 @@ class DataReader extends BaseObject implements Iterator, Countable
      * This method is required by the interface [[\Iterator]].
      * @throws InvalidCallException if this method is invoked twice
      */
-    public function rewind()
+    public function rewind(): void
     {
         if ($this->_index < 0) {
             reset($this->entries);
@@ -215,7 +215,7 @@ class DataReader extends BaseObject implements Iterator, Countable
      * This method is required by the interface [[\Iterator]].
      * @return string the index of the current row.
      */
-    public function key()
+    public function key(): mixed
     {
         return $this->_conn->getDn($this->_row);
     }
@@ -225,7 +225,7 @@ class DataReader extends BaseObject implements Iterator, Countable
      * This method is required by the interface [[\Iterator]].
      * @return mixed the current row.
      */
-    public function current()
+    public function current(): mixed
     {
         $entry = ['dn' => $this->key()];
 
@@ -270,7 +270,7 @@ class DataReader extends BaseObject implements Iterator, Countable
      * Moves the internal pointer to the next row.
      * This method is required by the interface [[\Iterator]].
      */
-    public function next()
+    public function next(): void
     {
         next($this->entries);
         $nextEntry  = current($this->entries);
@@ -283,7 +283,7 @@ class DataReader extends BaseObject implements Iterator, Countable
      * This method is required by the interface [[\Iterator]].
      * @return bool whether there is a row of data at current position.
      */
-    public function valid()
+    public function valid(): bool
     {
         return (isset($this->_row) && $this->_row !== false);
     }

@@ -1,10 +1,10 @@
 {
-    "name": "chrmorandi/yii2-ldap",
+    "name": "eevgbut/yii2-ldap",
     "description": "Ldap",
     "keywords": ["yii2", "extension", "ldap", "Active Directory", "OpenLDAP"],
     "type": "yii2-extension",
     "license": "MIT",
-    "homepage": "http://chrmorandi.github.io/yii2-ldap/",
+    "homepage": "https://github.com/eevgbut/yii2-ldap.git",
     "authors": [{"name": "Christopher Mota","email": "chrmorandi@gmail.com"}],
     "require": {
         "php": ">=8.0",
